@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karne</title>
+    <style>
+        /* Cyber Dark Tema */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; color: #a1a1aa; margin: 0; padding: 0; }
+
+        .navbar { background-color: #111827; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f2937; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .navbar h1 { margin: 0; font-size: 20px; color: #f8fafc; letter-spacing: 1px; }
+        .nav-buttons { display: flex; gap: 15px; }
+        
+        .nav-btn { background-color: transparent; color: #e2e8f0; border: 1px solid #374151; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; }
+        .nav-btn:hover { background-color: #1f2937; border-color: #e2e8f0; }
+
+        .lang-btn { background-color: transparent; color: #00e5ff; border: 1px solid #00e5ff; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; }
+        .lang-btn:hover { background-color: #00e5ff; color: #0b0f19; box-shadow: 0 0 10px rgba(0, 229, 255, 0.4); }
+
+        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        
+        .header-text { text-align: center; margin-bottom: 40px; }
+        .header-text h2 { color: #f8fafc; font-size: 28px; margin-bottom: 10px; }
+        .header-text p { font-size: 16px; color: #9ca3af; }
+
+        /* İstatistik Tablosu (Karne) */
+        .stats-panel { background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+        .stats-panel::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #10b981, #00e5ff); }
+        
+        .stat-row { display: flex; justify-content: space-between; align-items: center; background: #172033; padding: 20px; border-radius: 8px; border: 1px solid #1f2937; margin-bottom: 15px; transition: 0.3s; }
+        .stat-row:hover { border-color: #374151; transform: translateX(5px); }
+        
+        .module-info { display: flex; flex-direction: column; gap: 5px; }
+        .stat-module-name { color: #f8fafc; font-weight: bold; font-size: 18px; }
+        .stat-status { font-size: 13px; color: #6b7280; }
+        .status-done { color: #10b981; }
+
+        .stat-scores { display: flex; gap: 20px; align-items: center; }
+        
+        .score-box { display: flex; flex-direction: column; align-items: center; background: #0b0f19; padding: 10px 15px; border-radius: 6px; border: 1px solid #1f2937; min-width: 90px; }
+        .score-lbl { font-size: 12px; color: #9ca3af; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .score-val { font-size: 20px; font-weight: bold; color: #374151; } /* Varsayılan renk */
+        
+        /* Renklendirmeler */
+        .val-pre { color: #f59e0b; } /* Turuncu */
+        .val-post { color: #10b981; } /* Yeşil */
+        
+        .empty-state { text-align: center; color: #6b7280; padding: 20px; font-style: italic; }
+
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <h1 id="nav-title">Kişisel Gelişim Karnesi</h1>
+        <div class="nav-buttons">
+            <button class="nav-btn" onclick="goToDashboard()" id="nav-back-btn">⬅ Ana Menüye Dön</button>
+            <button class="lang-btn" onclick="toggleLanguage()" id="lang-btn">EN</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header-text">
+            <h2 id="page-title">Eğitim İstatistiklerim</h2>
+            <p id="page-desc">Ön-test ve Son-test skorlarınızı karşılaştırarak farkındalık artışınızı inceleyebilirsiniz.</p>
+        </div>
+
+        <div class="stats-panel" id="stats-container">
+            </div>
+    </div>
+
+    <script>
+ let currentLang = 'tr'; 
+
+    const translations = {
+        tr: {
+            navTitle: "Kişisel Gelişim Karnesi",
+            navBackBtn: "⬅ Ana Menüye Dön",
+            pageTitle: "Eğitim İstatistiklerim",
+            pageDesc: "Ön-test ve Son-test skorlarınızı karşılaştırarak farkındalık artışınızı inceleyebilirsiniz.",
+            lblPre: "Ön-Test",
+            lblPost: "Son-Test",
+            statusDone: "Tamamlandı",
+            statusNotDone: "Henüz Çözülmedi",
+            emptyState: "Henüz tamamlanmış bir modül verisi bulunmuyor veya veriler yükleniyor..."
+        },
+        en: {
+            navTitle: "Personal Progress Report",
+            navBackBtn: "⬅ Back to Dashboard",
+            pageTitle: "My Training Stats",
+            pageDesc: "Compare your pre-test and post-test scores to track your awareness growth.",
+            lblPre: "Pre-Test",
+            lblPost: "Post-Test",
+            statusDone: "Completed",
+            statusNotDone: "Not Started",
+            emptyState: "No completed module data available yet or data is loading..."
+        }
+    };
+
+    // Modüllerin Listesi
+    const modules = [
+        { id: 'sqli', name: '1. SQL Injection' }
+    ];
+
+    window.onload = () => {
+        renderStats();
+    };
+
+    async function renderStats() {
+        const container = document.getElementById('stats-container');
+        const t = translations[currentLang];
+        const email = localStorage.getItem('userEmail');
+
+        if (!email) {
+            container.innerHTML = `<div class="empty-state">Oturum açılmamış. Lütfen giriş yapın.</div>`;
+            return;
+        }
+
+        try {
+            // ARTIK BURASI BULUTTAN (FIREBASE) ÇEKİYOR
+            const response = await fetch(`/api/get-user-stats/${email}`);
+            const result = await response.json();
+
+            container.innerHTML = ''; // Temizle
+            let hasData = false;
+
+            if (result.success && result.data) {
+                const userData = result.data;
+
+                modules.forEach(mod => {
+                    // Firebase'deki isimlendirme: sqli_pre, sqli_post vb.
+                    const preScore = userData[`${mod.id}_pre`];
+                    const postScore = userData[`${mod.id}_post`];
+                    const isCompleted = userData[`${mod.id}_completed`];
+
+                    if (isCompleted) {
+                        hasData = true;
+                        const rowHTML = `
+                            <div class="stat-row">
+                                <div class="module-info">
+                                    <span class="stat-module-name">${mod.name}</span>
+                                    <span class="stat-status status-done">✔ ${t.statusDone}</span>
+                                </div>
+                                <div class="stat-scores">
+                                    <div class="score-box">
+                                        <span class="score-lbl">${t.lblPre}</span>
+                                        <span class="score-val val-pre">%${preScore}</span>
+                                    </div>
+                                    <div class="score-box">
+                                        <span class="score-lbl">${t.lblPost}</span>
+                                        <span class="score-val val-post">%${postScore}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        container.innerHTML += rowHTML;
+                    }
+                });
+            }
+
+            if (!hasData) {
+                container.innerHTML = `<div class="empty-state">${t.emptyState}</div>`;
+            }
+
+        } catch (error) {
+            console.error("Veri çekme hatası:", error);
+            container.innerHTML = `<div class="empty-state">Veriler yüklenirken bir hata oluştu.</div>`;
+        }
+    }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'tr' ? 'en' : 'tr';
+        document.getElementById('lang-btn').innerText = currentLang === 'tr' ? 'EN' : 'TR';
+        const t = translations[currentLang];
+        document.getElementById('nav-title').innerText = t.navTitle;
+        document.getElementById('nav-back-btn').innerText = t.navBackBtn;
+        document.getElementById('page-title').innerText = t.pageTitle;
+        document.getElementById('page-desc').innerText = t.pageDesc;
+        renderStats();
+    }
+
+    function goToDashboard() {
+        window.location.href = "/dashboard.html";
+    }
+    </script>
+
+</body>
+</html>

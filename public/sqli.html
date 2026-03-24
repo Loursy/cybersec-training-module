@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Injection Modülü</title>
+    <style>
+        /* Cyber Dark Theme */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; color: #a1a1aa; margin: 0; padding: 40px 20px; display: flex; justify-content: center; position: relative; }
+        
+        /* Language Button */
+        .lang-btn { position: absolute; top: 20px; right: 20px; background-color: transparent; color: #00e5ff; border: 1px solid #00e5ff; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; }
+        .lang-btn:hover { background-color: #00e5ff; color: #0b0f19; box-shadow: 0 0 10px rgba(0, 229, 255, 0.4); }
+
+        .module-container { background: #111827; width: 100%; max-width: 900px; padding: 40px; border-radius: 12px; border: 1px solid #1f2937; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+        .module-container::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #00e5ff, #007bff); }
+
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h2 { color: #f8fafc; border-bottom: 1px solid #1f2937; padding-bottom: 15px; margin-top: 0; }
+        h3 { color: #e2e8f0; }
+        p { line-height: 1.6; }
+        b { color: #e2e8f0; }
+
+        .btn-next { background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 25px; float: right; transition: all 0.3s ease; letter-spacing: 1px; }
+        .btn-next:hover { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); transform: translateY(-2px); }
+
+        .question-box { margin-bottom: 25px; background: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #374151; }
+        .question-box p { margin-top: 0; font-size: 16px; }
+        .question-box label { display: block; margin: 12px 0; cursor: pointer; color: #d1d5db; transition: color 0.2s; padding: 8px; border-radius: 4px; border: 1px solid transparent; }
+        .question-box label:hover { color: #00e5ff; background: rgba(0, 229, 255, 0.05); border-color: #374151; }
+        
+        /* Information Boxes */
+        .info-box { background: rgba(0, 229, 255, 0.05); border-left: 4px solid #00e5ff; padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        .info-box ul { padding-left: 20px; margin-bottom: 0; }
+        .info-box li { margin-bottom: 10px; }
+        
+        .summary-box { background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981; padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+
+        .simulation-box { border: 1px solid #ef4444; padding: 25px; border-radius: 8px; background-color: rgba(239, 68, 68, 0.05); margin-top: 25px; box-shadow: inset 0 0 15px rgba(239, 68, 68, 0.1); }
+        .sim-input { width: 100%; padding: 12px; margin: 10px 0; background-color: #1f2937; color: #e2e8f0; border: 1px solid #374151; border-radius: 6px; box-sizing: border-box; transition: 0.3s; }
+        .sim-input:focus { border-color: #ef4444; outline: none; box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+        
+        .sim-btn { background: linear-gradient(135deg, #dc2626, #ef4444); color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 15px; transition: all 0.3s ease; letter-spacing: 1px; }
+        .sim-btn:hover { box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); transform: translateY(-2px); }
+
+        /* Improved Code Block Formatting */
+        pre { background: #0b0f19; padding: 20px; border-radius: 8px; border: 1px solid #1f2937; overflow-x: auto; margin: 15px 0; }
+        code { font-family: 'Consolas', 'Courier New', monospace; color: #e2e8f0; font-size: 14px; line-height: 1.6; }
+        .code-keyword { color: #c678dd; }
+        .code-string { color: #98c379; }
+        .code-var { color: #e5c07b; }
+        .code-comment { color: #6b7280; font-style: italic; }
+        
+        .db-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; background: #111827; }
+        .db-table th { background-color: #1f2937; color: #00e5ff; padding: 12px; text-align: left; border: 1px solid #374151; }
+        .db-table td { padding: 10px 12px; border: 1px solid #374151; color: #e2e8f0; }
+        .db-table tr:nth-child(even) { background-color: #172033; }
+        .db-table tr:hover { background-color: rgba(16, 185, 129, 0.1); }
+    </style>
+</head>
+<body>
+
+<button class="lang-btn" onclick="toggleLanguage()" id="lang-btn">EN</button>
+
+<div class="module-container">
+    
+    <div id="step-pre-test" class="step active">
+        <h2 id="s1-title">Adım 1: Ön-Test (Bilgi Ölçümü)</h2>
+        <p id="s1-desc">Aşağıdaki soruları yanıtlayarak mevcut bilgi seviyenizi ölçelim.</p>
+        
+        <div class="question-box">
+            <p><b style="color: #00e5ff;" id="pre-q1-text">Soru 1: SQL Injection (SQLi) nedir?</b></p>
+            <label><input type="radio" name="pre_q1" value="a"> <span id="pre-q1-a">A) Veritabanı sunucuları arasındaki trafiğin şifrelenmemesinden kaynaklanan bir veri sızıntısı türüdür.</span></label>
+            <label><input type="radio" name="pre_q1" value="b"> <span id="pre-q1-b">B) Kullanıcı girdilerinin, çalıştırılabilir SQL komutlarının bir parçası olarak yorumlanmasına izin veren bir güvenlik açığıdır.</span></label>
+            <label><input type="radio" name="pre_q1" value="c"> <span id="pre-q1-c">C) Sistemi kandırmak amacıyla veritabanına sahte bilgiler enjekte etme işlemidir.</span></label>
+            <label><input type="radio" name="pre_q1" value="d"> <span id="pre-q1-d">D) Web sunucusuna aşırı istek göndererek (DDoS) veritabanını erişilemez hale getirme yöntemidir.</span></label>
+        </div>
+
+        <div class="question-box">
+            <p><b style="color: #00e5ff;" id="pre-q2-text">Soru 2: Siber güvenlikte "Payload" terimi ne anlama gelir?</b></p>
+            <label><input type="radio" name="pre_q2" value="a"> <span id="pre-q2-a">A) Veritabanına sızdıktan sonra elde edilen kullanıcı şifrelerinin bütünü</span></label>
+            <label><input type="radio" name="pre_q2" value="b"> <span id="pre-q2-b">B) Sistemin güvenlik duvarını aşmak için kullanılan şifreleme algoritması</span></label>
+            <label><input type="radio" name="pre_q2" value="c"> <span id="pre-q2-c">C) Bir zafiyeti tetiklemek için hedefe iletilen zararlı veri veya kod parçası</span></label>
+            <label><input type="radio" name="pre_q2" value="d"> <span id="pre-q2-d">D) Sunucunun istemciye yanıt olarak gönderdiği HTTP başlıklarının tamamı</span></label>
+        </div>
+
+        <div class="question-box">
+            <p><b style="color: #00e5ff;" id="pre-q3-text">Soru 3: Bir web sitesinde SQL Injection zafiyeti oluşmasına neden olan en riskli programlama hatası aşağıdakilerden hangisidir?</b></p>
+            <label><input type="radio" name="pre_q3" value="a"> <span id="pre-q3-a">A) Kullanıcı şifrelerinin veritabanına kaydedilmeden önce hashlenmemesi</span></label>
+            <label><input type="radio" name="pre_q3" value="b"> <span id="pre-q3-b">B) Kullanıcı girdilerinin doğrudan SQL sorgu metniyle birleştirilmesi</span></label>
+            <label><input type="radio" name="pre_q3" value="c"> <span id="pre-q3-c">C) Web sitesinde SSL sertifikası bulunmadığı için verilerin açık okunabilmesi</span></label>
+            <label><input type="radio" name="pre_q3" value="d"> <span id="pre-q3-d">D) Sistemin art arda yapılan çok sayıda hatalı giriş denemesini engellememesi</span></label>
+        </div>
+
+        <button class="btn-next" id="btn-next-1" onclick="finishPreTest()">Testi Bitir ve Simülasyona Geç</button>
+    </div>
+
+    <div id="step-simulation" class="step">
+        <h2 id="s2-title">Adım 2: Zafiyet Simülasyonu (Hack Time)</h2>
+        
+        <div class="summary-box">
+            <p id="s2-summary" style="margin: 0; color: #e2e8f0; font-size: 16px; font-style: italic; line-height: 1.6;">
+                Bu login paneline kullanıcı adı ve şifre gibi istenen verileri girmek yerine bir SQL sorgusu yazıyoruz. Yani bize bırakılan bu boşluktan faydalanarak istediğimiz sorguyu yazıp veritabanını manipüle ediyor ve normalde gizlenmesi gereken bilgilere ulaşıyoruz. :)
+            </p>
+        </div>
+
+        <p id="s2-desc">Aşağıda güvenlik açığı barındıran zafiyetli bir sistemin giriş paneli bulunmaktadır. Sizden normal bir "E-posta" bekleniyor. Ancak biz buraya kendi ismimizi yazmak yerine, arka planda çalışan veritabanını kandıracak <b>özel bir metin</b> yazacağız. <br><br>Siber güvenlikte buna <b>"Payload" (Saldırı Yükü)</b> denir. Hedefe gönderdiğimiz bu metni, sistemin masum sanıp içeri aldığı ama aslında kapıları içeriden açan <b>dijital bir Truva Atı 🐴</b> gibi düşünebilirsin!<br><br> Hadi o Truva Atını sisteme yollayalım. E-posta kısmına tam olarak şunu yazın: <b style="color: #ef4444;">' OR 1=1 --</b></p>
+        
+        <div class="info-box">
+            <h4 id="info-title" style="margin-top: 0; color: #00e5ff;">Peki bu payload ne işe yarayacak? (' OR 1=1 --)</h4>
+            <ul style="color: #d1d5db; line-height: 1.8;">
+                <li><b style="color:#00e5ff;">' (Tek Tırnak):</b> <span id="expl-1">Geliştiricinin arka planda yazdığı kodu biz erken kapatıyoruz. Böylece sistemin kodunun içine kendi kelimelerimizi ekleyebiliyoruz.</span></li>
+                <li><b style="color:#10b981;">OR 1=1:</b> <span id="expl-2">"Veya 1 eşittir 1" diyoruz. 1 her zaman 1'e eşit olduğu için, veritabanı "Tamam bu kişi doğru söylüyor" diyerek bizi zorla içeri alıyor.</span></li>
+                <li><b style="color:#ef4444;">-- (İki Tire):</b> <span id="expl-3">Veritabanına "Bundan sonra yazan şifre kontrol kısmını tamamen görmezden gel, sil gitsin" emrini veriyor.</span></li>
+            </ul>
+        </div>
+        
+        <div class="simulation-box">
+            <h3 id="sim-panel-title" style="color: #ef4444; text-align: center; margin-top: 0;">Zafiyetli Yönetici Paneli</h3>
+            <input type="text" id="vuln-email" class="sim-input" placeholder="E-posta Adresi (Saldırı metnini buraya yazın)">
+            <input type="password" id="vuln-pass" class="sim-input" placeholder="Şifre (Rastgele bir şeyler sallayın)">
+            <button class="sim-btn" id="btn-hack" onclick="runExploit()">Giriş Yapmayı Dene (Hack)</button>
+            <div id="sim-result"></div>
+        </div>
+
+        <button class="btn-next" id="btn-next-2" style="background: linear-gradient(135deg, #2563eb, #3b82f6);" onclick="nextStep('step-education')">Saldırıyı Analiz Et (Eğitime Geç)</button>
+    </div>
+
+    <div id="step-education" class="step">
+        <h2 id="s3-title">Adım 3: Zafiyet Analizi ve Çözümü</h2>
+        
+        <h3 id="s3-def-title" style="margin-top: 0; color: #00e5ff;">SQL Injection (SQLi) Nedir?</h3>
+        <p id="s3-def-desc" style="margin-bottom: 25px;">Kötü niyetli kullanıcıların, uygulamanın veritabanına gönderdiği sorgulara müdahale etmesini sağlayan kritik bir güvenlik açığıdır. Geliştirici, kullanıcıdan aldığı veriyi güvenlik süzgecinden geçirmeden doğrudan SQL komutunun içine koyarsa, saldırgan kendi zararlı komutlarını sistemin komutuymuş gibi veritabanına çalıştırttırabilir.</p>
+
+        <h3 id="s3-sol-title" style="color: #10b981; border-top: 1px solid #1f2937; padding-top: 20px;">Nasıl Çözülür? (Prepared Statements)</h3>
+        <p id="s3-sol-desc1">Güvenlik açığının temel sebebi, kullanıcının girdiği metnin bir 'veri' olarak değil, çalıştırılabilir bir 'SQL komutu' olarak algılanmasıdır. Bunu kesin olarak çözmek için <b>Parametreli Sorgular (Prepared Statements)</b> kullanmalıyız.</p>
+        
+        <h4 id="label-vuln-code" style="color: #ef4444; margin-bottom: 5px;">Hatalı (Zafiyetli) Kod Kullanımı:</h4>
+<pre><code><span class="code-comment">// KÖTÜ KULLANIM: Kullanıcı verisi kodun içine doğrudan gömülüyor</span>
+<span class="code-keyword">const</span> <span class="code-var">query</span> = <span class="code-string">`SELECT * FROM users 
+               WHERE email = '<span style="color:#ef4444;">${email}</span>' 
+               AND password = '${password}'`</span>;
+
+<span class="code-comment">// Eğer kullanıcı payload olarak: ' OR 1=1 -- girerse, 
+// Sorgu dinamik olarak çalıştırılabilir bir sızıntı komutuna dönüşür:</span>
+db.all(query, (err, rows) => { ... });</code></pre>
+
+        <p id="s3-sol-desc2">Aşağıdaki güvenli kodda görebileceğiniz gibi, dışarıdan gelen verileri doğrudan SQL metnine yazmak yerine <b>? (soru işareti)</b> koyuyoruz. Veritabanı sürücüsü, bu soru işaretlerinin yerine gelecek verileri otomatik olarak temizler ve sadece düz metin olarak işler.</p>
+
+        <h4 id="label-sec-code" style="color: #10b981; margin-bottom: 5px;">Güvenli (Doğru) Kod Kullanımı:</h4>
+<pre><code><span class="code-comment">// GÜVENLİ: Doğrudan koda yapıştırmak yerine parametre (?) kullanımı</span>
+<span class="code-keyword">const</span> <span class="code-var">query</span> = <span class="code-string">`SELECT * FROM users 
+               WHERE email = <span style="color:#10b981;">?</span> 
+               AND password = <span style="color:#10b981;">?</span>`</span>;
+
+<span class="code-comment">// Veriler ayrı bir dizi [email, password] olarak gönderilir.
+// Kullanıcı saldırı metni yazsa bile, veritabanı bunu bir komut değil, 
+// sadece "saçma bir e-posta adresi" sanıp reddedecektir.</span>
+db.get(query, [email, password], (err, row) => { ... });</code></pre>
+
+        <button class="btn-next" id="btn-next-3" onclick="nextStep('step-post-test')">Öğrendiklerini Test Et (Son-Test)</button>
+    </div>
+
+    <div id="step-post-test" class="step">
+        <h2 id="s4-title">Adım 4: Son-Test</h2>
+        <p id="s4-desc">Bu modülde öğrendiklerinizi pekiştirelim.</p>
+        
+        <div class="question-box">
+            <p><b style="color: #00e5ff;" id="post-q1-text">Soru 1: Bir Node.js uygulamasında SQL Injection'ı KESİN olarak önlemek için en iyi yöntem aşağıdakilerden hangisidir?</b></p>
+            <label><input type="radio" name="post_q1" value="a"> <span id="post-q1-a">A) Sunucuya gelen tüm istekleri Base64 formatına çevirerek veritabanına kaydetmek</span></label>
+            <label><input type="radio" name="post_q1" value="b"> <span id="post-q1-b">B) Veritabanı sorgularında Parametreli Sorgular kullanarak kod ve veriyi yalıtmak</span></label>
+            <label><input type="radio" name="post_q1" value="c"> <span id="post-q1-c">C) Veritabanı şifrelerini SHA-256 gibi algoritmalarla hashleyerek saklamak</span></label>
+            <label><input type="radio" name="post_q1" value="d"> <span id="post-q1-d">D) Kullanıcıdan alınan verilerdeki özel işaretleri sadece Frontend'de engellemek</span></label>
+        </div>
+
+        <div class="question-box">
+            <p><b style="color: #00e5ff;" id="post-q2-text">Soru 2: Simülasyonda kullandığımız <span style="color:#ef4444;">' OR 1=1 --</span> payload'unun teknik olarak tam işlevi nedir?</b></p>
+            <label><input type="radio" name="post_q2" value="a"> <span id="post-q2-a">A) Veritabanındaki 'admin' tablosunu bulup ilk kaydı yetkilendirir.</span></label>
+            <label><input type="radio" name="post_q2" value="b"> <span id="post-q2-b">B) SQL sunucusunda bellek taşması yaratarak sistemi güvenli moda geçirir.</span></label>
+            <label><input type="radio" name="post_q2" value="c"> <span id="post-q2-c">C) Sorgu koşulunu her zaman doğru yapıp kalan komutları yorum satırına çevirir.</span></label>
+            <label><input type="radio" name="post_q2" value="d"> <span id="post-q2-d">D) Veritabanı bağlantı şifresini güncelleyerek sisteme gizli bir arka kapı bırakır.</span></label>
+        </div>
+
+        <div class="question-box">
+            <p><b style="color: #00e5ff;" id="post-q3-text">Soru 3: Eğitim adımında gördüğümüz 'Parametreli Sorgular' yöntemi, SQL Injection saldırılarını temel olarak nasıl durdurur?</b></p>
+            <label><input type="radio" name="post_q3" value="a"> <span id="post-q3-a">A) Gelen tüm metinleri veritabanına ulaşmadan önce şifreleyerek</span></label>
+            <label><input type="radio" name="post_q3" value="b"> <span id="post-q3-b">B) Kullanıcı girdisini çalıştırılabilir kod yerine yalnızca salt veri olarak işleyerek</span></label>
+            <label><input type="radio" name="post_q3" value="c"> <span id="post-q3-c">C) İçerisinde zararlı kelimeler geçen tüm girişleri otomatik olarak silerek</span></label>
+            <label><input type="radio" name="post_q3" value="d"> <span id="post-q3-d">D) Veritabanında sadece yöneticilerin işlem yapabilmesi için yetki kontrolleri uygulayarak</span></label>
+        </div>
+
+        <button class="btn-next" id="btn-finish" onclick="finishPostTest()">Modülü Tamamla</button>
+    </div>
+
+</div>
+
+<script>
+    let currentLang = 'tr';
+
+    // Global Score Variables
+    let preTestScore = 0;
+    let postTestScore = 0;
+
+    // Answer Keys (Soru 1: B, Soru 2: C, Soru 3: B -> both tests are structurally similar)
+    const answerKeys = {
+        pre:  { q1: 'b', q2: 'c', q3: 'b' },
+        post: { q1: 'b', q2: 'c', q3: 'b' }
+    };
+
+    // BILINGUAL DICTIONARY
+    const translations = {
+        tr: {
+            s1Title: "Adım 1: Ön-Test (Bilgi Ölçümü)",
+            s1Desc: "Aşağıdaki soruları yanıtlayarak mevcut bilgi seviyenizi ölçelim.",
+            preQ1Text: "Soru 1: SQL Injection (SQLi) nedir?",
+            preQ1a: "A) Veritabanı sunucuları arasındaki trafiğin şifrelenmemesinden kaynaklanan bir veri sızıntısı türüdür.",
+            preQ1b: "B) Kullanıcı girdilerinin, çalıştırılabilir SQL komutlarının bir parçası olarak yorumlanmasına izin veren bir güvenlik açığıdır.",
+            preQ1c: "C) Sistemi kandırmak amacıyla veritabanına sahte bilgiler enjekte etme işlemidir.",
+            preQ1d: "D) Web sunucusuna aşırı istek göndererek (DDoS) veritabanını erişilemez hale getirme yöntemidir.",
+            preQ2Text: "Soru 2: Siber güvenlikte 'Payload' terimi ne anlama gelir?",
+            preQ2a: "A) Veritabanına sızdıktan sonra elde edilen kullanıcı şifrelerinin bütünü",
+            preQ2b: "B) Sistemin güvenlik duvarını aşmak için kullanılan şifreleme algoritması",
+            preQ2c: "C) Bir zafiyeti tetiklemek için hedefe iletilen zararlı veri veya kod parçası",
+            preQ2d: "D) Sunucunun istemciye yanıt olarak gönderdiği HTTP başlıklarının tamamı",
+            preQ3Text: "Soru 3: Bir web sitesinde SQL Injection zafiyeti oluşmasına neden olan en riskli programlama hatası aşağıdakilerden hangisidir?",
+            preQ3a: "A) Kullanıcı şifrelerinin veritabanına kaydedilmeden önce hashlenmemesi",
+            preQ3b: "B) Kullanıcı girdilerinin doğrudan SQL sorgu metniyle birleştirilmesi",
+            preQ3c: "C) Web sitesinde SSL sertifikası bulunmadığı için verilerin açık okunabilmesi",
+            preQ3d: "D) Sistemin art arda yapılan çok sayıda hatalı giriş denemesini engellememesi",
+            btnNext1: "Testi Bitir ve Simülasyona Geç",
+            
+            s2Title: "Adım 2: Zafiyet Simülasyonu (Hack Time)",
+            s2Summary: "Bu login paneline kullanıcı adı ve şifre gibi istenen verileri girmek yerine bir SQL sorgusu yazıyoruz. Yani bize bırakılan bu boşluktan faydalanarak istediğimiz sorguyu yazıp veritabanını manipüle ediyor ve normalde gizlenmesi gereken bilgilere ulaşıyoruz. :)",
+            s2Desc: "Aşağıda güvenlik açığı barındıran zafiyetli bir sistemin giriş paneli bulunmaktadır. Sizden normal bir 'E-posta' bekleniyor. Ancak biz buraya kendi ismimizi yazmak yerine, arka planda çalışan veritabanını kandıracak <b>özel bir metin</b> yazacağız. <br><br>Siber güvenlikte buna <b>'Payload' (Saldırı Yükü)</b> denir. Hedefe gönderdiğimiz bu metni, sistemin masum sanıp içeri aldığı ama aslında kapıları içeriden açan <b>dijital bir Truva Atı 🐴</b> gibi düşünebilirsin!<br><br> Hadi o Truva Atını sisteme yollayalım. E-posta kısmına tam olarak şunu yazın: <b style='color: #ef4444;'>' OR 1=1 --</b>",
+            infoTitle: "Peki bu payload ne işe yarayacak? (' OR 1=1 --)",
+            expl1: "Geliştiricinin arka planda yazdığı kodu biz erken kapatıyoruz. Böylece sistemin kodunun içine kendi kelimelerimizi ekleyebiliyoruz.",
+            expl2: "'Veya 1 eşittir 1' diyoruz. 1 her zaman 1'e eşit olduğu için, veritabanı 'Tamam bu kişi doğru söylüyor' diyerek bizi zorla içeri alıyor.",
+            expl3: "Veritabanına 'Bundan sonra yazan şifre kontrol kısmını tamamen görmezden gel, sil gitsin' emrini veriyor.",
+            simPanelTitle: "Zafiyetli Yönetici Paneli",
+            emailPlaceholder: "E-posta Adresi (Saldırı metnini buraya yazın)",
+            passPlaceholder: "Şifre (Rastgele bir şeyler sallayın)",
+            btnHack: "Giriş Yapmayı Dene (Hack)",
+            btnNext2: "Saldırıyı Analiz Et (Eğitime Geç)",
+
+            s3Title: "Adım 3: Zafiyet Analizi ve Çözümü",
+            s3DefTitle: "SQL Injection (SQLi) Nedir?",
+            s3DefDesc: "Kötü niyetli kullanıcıların, uygulamanın veritabanına gönderdiği sorgulara müdahale etmesini sağlayan kritik bir güvenlik açığıdır. Geliştirici, kullanıcıdan aldığı veriyi güvenlik süzgecinden geçirmeden doğrudan SQL komutunun içine koyarsa, saldırgan kendi zararlı komutlarını sistemin komutuymuş gibi veritabanına çalıştırttırabilir.",
+            s3SolTitle: "Nasıl Çözülür? (Prepared Statements)",
+            s3SolDesc1: "Güvenlik açığının temel sebebi, kullanıcının girdiği metnin bir 'veri' olarak değil, çalıştırılabilir bir 'SQL komutu' olarak algılanmasıdır. Bunu kesin olarak çözmek için <b>Parametreli Sorgular (Prepared Statements)</b> kullanmalıyız.",
+            s3SolDesc2: "Aşağıdaki güvenli kodda görebileceğiniz gibi, dışarıdan gelen verileri doğrudan SQL metnine yazmak yerine <b>? (soru işareti)</b> koyuyoruz. Veritabanı sürücüsü, bu soru işaretlerinin yerine gelecek verileri otomatik olarak temizler ve sadece düz metin olarak işler.",
+            labelVuln: "Hatalı (Zafiyetli) Kod Kullanımı:",
+            labelSec: "Güvenli (Doğru) Kod Kullanımı:",
+            btnNext3: "Öğrendiklerini Test Et (Son-Test)",
+
+            s4Title: "Adım 4: Son-Test",
+            s4Desc: "Bu modülde öğrendiklerinizi pekiştirelim.",
+            postQ1Text: "Soru 1: Bir Node.js uygulamasında SQL Injection'ı KESİN olarak önlemek için en iyi yöntem aşağıdakilerden hangisidir?",
+            postQ1a: "A) Sunucuya gelen tüm istekleri Base64 formatına çevirerek veritabanına kaydetmek",
+            postQ1b: "B) Veritabanı sorgularında Parametreli Sorgular kullanarak kod ve veriyi yalıtmak",
+            postQ1c: "C) Veritabanı şifrelerini SHA-256 gibi algoritmalarla hashleyerek saklamak",
+            postQ1d: "D) Kullanıcıdan alınan verilerdeki özel işaretleri sadece Frontend'de engellemek",
+            postQ2Text: "Soru 2: Simülasyonda kullandığımız ' OR 1=1 -- payload'unun teknik olarak tam işlevi nedir?",
+            postQ2a: "A) Veritabanındaki 'admin' tablosunu bulup ilk kaydı yetkilendirir.",
+            postQ2b: "B) SQL sunucusunda bellek taşması yaratarak sistemi güvenli moda geçirir.",
+            postQ2c: "C) Sorgu koşulunu her zaman doğru yapıp kalan komutları yorum satırına çevirir.",
+            postQ2d: "D) Veritabanı bağlantı şifresini güncelleyerek sisteme gizli bir arka kapı bırakır.",
+            postQ3Text: "Soru 3: Eğitim adımında gördüğümüz 'Parametreli Sorgular' yöntemi, SQL Injection saldırılarını temel olarak nasıl durdurur?",
+            postQ3a: "A) Gelen tüm metinleri veritabanına ulaşmadan önce şifreleyerek",
+            postQ3b: "B) Kullanıcı girdisini çalıştırılabilir kod yerine yalnızca salt veri olarak işleyerek",
+            postQ3c: "C) İçerisinde zararlı kelimeler geçen tüm girişleri otomatik olarak silerek",
+            postQ3d: "D) Veritabanında sadece yöneticilerin işlem yapabilmesi için yetki kontrolleri uygulayarak",
+            btnFinish: "Modülü Tamamla",
+
+            msgSuccess: "VERİTABANI SIZINTISI BAŞARILI! <br><span style='font-size:14px; color:#d1d5db;'>Şifre kontrolü atlatıldı ve tüm tablo verileri döküldü:</span>",
+            msgError: "SQL Hatası Tetiklendi:",
+            msgFail: "Giriş Başarısız.",
+            tblEmail: "E-posta",
+            tblPass: "Şifre",
+            tblSecret: "Gizli Veri",
+            
+            // Warnings & Alerts
+            warnEmpty: "Lütfen ilerlemeden önce tüm soruları yanıtlayın.",
+            alertResult: (pre, post) => `Modül tamamlandı!\n\n📋 Ön-Test Başarınız: ${pre}/100\n🏆 Son-Test Başarınız: ${post}/100\n\nFarkındalık artışınız kaydediliyor... Dashboard'a yönlendiriliyorsunuz.`
+        },
+        en: {
+            s1Title: "Step 1: Pre-Test (Knowledge Measurement)",
+            s1Desc: "Let's measure your current knowledge level by answering the questions below.",
+            preQ1Text: "Question 1: What is SQL Injection (SQLi)?",
+            preQ1a: "A) A type of data leak caused by unencrypted traffic between database servers.",
+            preQ1b: "B) A security vulnerability that allows user inputs to be interpreted as a part of executable SQL commands.",
+            preQ1c: "C) The process of injecting fake information into the database to deceive the system.",
+            preQ1d: "D) A method of making the database inaccessible by overloading the web server (DDoS).",
+            preQ2Text: "Question 2: What does the term 'Payload' mean in cybersecurity?",
+            preQ2a: "A) The entire set of user passwords obtained after infiltrating a database",
+            preQ2b: "B) The encryption algorithm used to bypass the system's firewall",
+            preQ2c: "C) Malicious data or code sent to the target to trigger a vulnerability",
+            preQ2d: "D) The complete set of HTTP Headers sent by the server to the client",
+            preQ3Text: "Question 3: Which of the following is the most risky programming mistake that causes an SQL Injection vulnerability?",
+            preQ3a: "A) Failing to hash user passwords before saving them",
+            preQ3b: "B) Concatenating user inputs directly into the SQL query string",
+            preQ3c: "C) The website lacking an SSL certificate, allowing cleartext reads",
+            preQ3d: "D) The system failing to block consecutive failed login attempts",
+            btnNext1: "Finish Test & Go to Simulation",
+
+            s2Title: "Step 2: Vulnerability Simulation (Hack Time)",
+            s2Summary: "Instead of entering expected data like a username and password into this login panel, we write an SQL query. By taking advantage of this input field, we write any query we want to manipulate the database, allowing us to access information that should normally be hidden. :)",
+            s2Desc: "Below is a vulnerable login panel. It expects a normal 'Email'. However, instead of typing our name, we will write a <b>special text</b> designed to trick the underlying database. <br><br>In cybersecurity, this is called a <b>'Payload'</b>. Think of the text we send as a <b>digital Trojan Horse 🐴</b> that the system thinks is innocent, but actually opens the doors from the inside!<br><br> Let's send that Trojan Horse. Type exactly this into the email field: <b style='color: #ef4444;'>' OR 1=1 --</b>",
+            infoTitle: "So, what does this payload do? (' OR 1=1 --)",
+            expl1: "We prematurely close the code written by the developer. This allows us to insert our own words into the system's code.",
+            expl2: "We say 'Or 1 equals 1'. Since 1 is always equal to 1, the database says 'Okay, this person is telling the truth' and forcefully lets us in.",
+            expl3: "It gives the database a command: 'Completely ignore the password check part written after this, just delete it'.",
+            simPanelTitle: "Vulnerable Admin Panel",
+            emailPlaceholder: "Email Address (Write the attack text here)",
+            passPlaceholder: "Password (Make up something random)",
+            btnHack: "Attempt Login (Hack)",
+            btnNext2: "Analyze Attack (Go to Education)",
+
+            s3Title: "Step 3: Vulnerability Analysis & Remediation",
+            s3DefTitle: "What is SQL Injection (SQLi)?",
+            s3DefDesc: "It is a critical security vulnerability that allows malicious users to interfere with the queries an application sends to its database. If a developer inserts user input directly into an SQL command without passing it through a security filter, an attacker can exploit this gap to force the system to execute their own malicious commands.",
+            s3SolTitle: "How to Fix It? (Prepared Statements)",
+            s3SolDesc1: "The root cause of this vulnerability is that user input is treated as an executable 'SQL command' rather than just 'data'. To fix this definitively, we must use <b>Parameterized Queries (Prepared Statements)</b>.",
+            s3SolDesc2: "As seen in the secure code below, instead of directly writing external data into the SQL string, we place a <b>? (question mark)</b>. The database driver automatically sanitizes the data replacing these question marks and processes it strictly as plain text.",
+            labelVuln: "Vulnerable (Incorrect) Code Use:",
+            labelSec: "Secure (Correct) Code Use:",
+            btnNext3: "Test Your Knowledge (Post-Test)",
+
+            s4Title: "Step 4: Post-Test",
+            s4Desc: "Let's reinforce what you learned in this module.",
+            postQ1Text: "Question 1: What is the ABSOLUTE best method to prevent SQL Injection in a Node.js application?",
+            postQ1a: "A) Converting all incoming HTTP requests to Base64 format",
+            postQ1b: "B) Isolating code and data by using Parameterized Queries",
+            postQ1c: "C) Storing database passwords by hashing them with algorithms like SHA-256",
+            postQ1d: "D) Blocking special characters in user input using only Frontend scripts",
+            postQ2Text: "Question 2: What is the exact technical function of the ' OR 1=1 -- payload we used in the simulation?",
+            postQ2a: "A) It finds the 'admin' table and automatically authorizes the first record.",
+            postQ2b: "B) It causes a Buffer Overflow, forcing the system into safe mode.",
+            postQ2c: "C) It makes the query condition always true and turns the remaining commands into comments.",
+            postQ2d: "D) It updates the database password and leaves a hidden Backdoor.",
+            postQ3Text: "Question 3: How does the 'Parameterized Queries' method fundamentally stop SQL Injection attacks?",
+            postQ3a: "A) By encrypting all incoming text before it reaches the database",
+            postQ3b: "B) By processing user input strictly as raw data rather than executable code",
+            postQ3c: "C) By automatically deleting any inputs that contain malicious words",
+            postQ3d: "D) By enforcing strict permission checks for Administrators",
+            btnFinish: "Complete Module",
+
+            msgSuccess: "DATABASE LEAK SUCCESSFUL! <br><span style='font-size:14px; color:#d1d5db;'>Password check bypassed and full table dumped:</span>",
+            msgError: "SQL Error Triggered:",
+            msgFail: "Login Failed.",
+            tblEmail: "Email",
+            tblPass: "Password",
+            tblSecret: "Secret Data",
+            
+            // Warnings & Alerts
+            warnEmpty: "Please answer all questions before proceeding.",
+            alertResult: (pre, post) => `Module completed!\n\n📋 Pre-Test Score: ${pre}/100\n🏆 Post-Test Score: ${post}/100\n\nSaving your awareness progress... Redirecting to Dashboard.`
+        }
+    };
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'tr' ? 'en' : 'tr';
+        document.getElementById('lang-btn').innerText = currentLang === 'tr' ? 'EN' : 'TR';
+        
+        const t = translations[currentLang];
+        
+        // Update Step 1 Texts
+        document.getElementById('s1-title').innerText = t.s1Title;
+        document.getElementById('s1-desc').innerText = t.s1Desc;
+        document.getElementById('pre-q1-text').innerText = t.preQ1Text;
+        document.getElementById('pre-q1-a').innerText = t.preQ1a;
+        document.getElementById('pre-q1-b').innerText = t.preQ1b;
+        document.getElementById('pre-q1-c').innerText = t.preQ1c;
+        document.getElementById('pre-q1-d').innerText = t.preQ1d;
+        document.getElementById('pre-q2-text').innerText = t.preQ2Text;
+        document.getElementById('pre-q2-a').innerText = t.preQ2a;
+        document.getElementById('pre-q2-b').innerText = t.preQ2b;
+        document.getElementById('pre-q2-c').innerText = t.preQ2c;
+        document.getElementById('pre-q2-d').innerText = t.preQ2d;
+        document.getElementById('pre-q3-text').innerText = t.preQ3Text;
+        document.getElementById('pre-q3-a').innerText = t.preQ3a;
+        document.getElementById('pre-q3-b').innerText = t.preQ3b;
+        document.getElementById('pre-q3-c').innerText = t.preQ3c;
+        document.getElementById('pre-q3-d').innerText = t.preQ3d;
+        document.getElementById('btn-next-1').innerText = t.btnNext1;
+
+        // Update Step 2 Texts
+        document.getElementById('s2-title').innerText = t.s2Title;
+        document.getElementById('s2-summary').innerText = t.s2Summary;
+        document.getElementById('s2-desc').innerHTML = t.s2Desc;
+        document.getElementById('info-title').innerText = t.infoTitle;
+        document.getElementById('expl-1').innerText = t.expl1;
+        document.getElementById('expl-2').innerText = t.expl2;
+        document.getElementById('expl-3').innerText = t.expl3;
+        document.getElementById('sim-panel-title').innerText = t.simPanelTitle;
+        document.getElementById('vuln-email').placeholder = t.emailPlaceholder;
+        document.getElementById('vuln-pass').placeholder = t.passPlaceholder;
+        document.getElementById('btn-hack').innerText = t.btnHack;
+        document.getElementById('btn-next-2').innerText = t.btnNext2;
+
+        // Update Step 3 Texts
+        document.getElementById('s3-title').innerText = t.s3Title;
+        document.getElementById('s3-def-title').innerText = t.s3DefTitle;
+        document.getElementById('s3-def-desc').innerText = t.s3DefDesc;
+        document.getElementById('s3-sol-title').innerText = t.s3SolTitle;
+        document.getElementById('s3-sol-desc1').innerHTML = t.s3SolDesc1;
+        document.getElementById('s3-sol-desc2').innerHTML = t.s3SolDesc2;
+        document.getElementById('label-vuln-code').innerText = t.labelVuln;
+        document.getElementById('label-sec-code').innerText = t.labelSec;
+        document.getElementById('btn-next-3').innerText = t.btnNext3;
+
+        // Update Step 4 Texts
+        document.getElementById('s4-title').innerText = t.s4Title;
+        document.getElementById('s4-desc').innerText = t.s4Desc;
+        document.getElementById('post-q1-text').innerText = t.postQ1Text;
+        document.getElementById('post-q1-a').innerText = t.postQ1a;
+        document.getElementById('post-q1-b').innerText = t.postQ1b;
+        document.getElementById('post-q1-c').innerText = t.postQ1c;
+        document.getElementById('post-q1-d').innerText = t.postQ1d;
+        document.getElementById('post-q2-text').innerText = t.postQ2Text;
+        document.getElementById('post-q2-a').innerText = t.postQ2a;
+        document.getElementById('post-q2-b').innerText = t.postQ2b;
+        document.getElementById('post-q2-c').innerText = t.postQ2c;
+        document.getElementById('post-q2-d').innerText = t.postQ2d;
+        document.getElementById('post-q3-text').innerText = t.postQ3Text;
+        document.getElementById('post-q3-a').innerText = t.postQ3a;
+        document.getElementById('post-q3-b').innerText = t.postQ3b;
+        document.getElementById('post-q3-c').innerText = t.postQ3c;
+        document.getElementById('post-q3-d').innerText = t.postQ3d;
+        document.getElementById('btn-finish').innerText = t.btnFinish;
+        
+        document.getElementById('sim-result').innerHTML = ''; 
+    }
+
+    /**
+     * General function to move between UI steps
+     */
+    function nextStep(nextId) {
+        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+        document.getElementById(nextId).classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /**
+     * Calculates the score based on the chosen prefix ('pre' or 'post')
+     * Returns a number between 0 and 100.
+     */
+    function calculateScore(testPrefix) {
+        let score = 0;
+        const q1 = document.querySelector(`input[name="${testPrefix}_q1"]:checked`);
+        const q2 = document.querySelector(`input[name="${testPrefix}_q2"]:checked`);
+        const q3 = document.querySelector(`input[name="${testPrefix}_q3"]:checked`);
+
+        // Check against the answerKeys dictionary defined at the top
+        if (q1 && q1.value === answerKeys[testPrefix].q1) score += 33.33;
+        if (q2 && q2.value === answerKeys[testPrefix].q2) score += 33.33;
+        if (q3 && q3.value === answerKeys[testPrefix].q3) score += 33.34; // Ensures max is exactly 100
+
+        return Math.round(score);
+    }
+
+    /**
+     * Validation and processing for Pre-Test
+     */
+    function finishPreTest() {
+        const q1 = document.querySelector('input[name="pre_q1"]:checked');
+        const q2 = document.querySelector('input[name="pre_q2"]:checked');
+        const q3 = document.querySelector('input[name="pre_q3"]:checked');
+
+        // Validation: Ensure all questions are answered
+        if (!q1 || !q2 || !q3) {
+            alert(translations[currentLang].warnEmpty);
+            return;
+        }
+
+        // Calculate and save the pre-test score globally
+        preTestScore = calculateScore('pre');
+        
+        // Move to the next step
+        nextStep('step-simulation');
+    }
+
+    /**
+     * Validation and processing for Post-Test
+     */
+async function finishPostTest() {
+        const q1 = document.querySelector('input[name="post_q1"]:checked');
+        const q2 = document.querySelector('input[name="post_q2"]:checked');
+        const q3 = document.querySelector('input[name="post_q3"]:checked');
+
+        if (!q1 || !q2 || !q3) {
+            alert(translations[currentLang].warnEmpty);
+            return;
+        }
+
+        postTestScore = calculateScore('post');
+        
+        // Giriş yapan kullanıcının mailini localSorage'dan alıyoruz (Login sayfasında kaydetmiş olmalısın)
+        const userEmail = localStorage.getItem('userEmail') || "anonim@test.com";
+
+        // Sunucuya (Firebase'e) gönder
+        try {
+            await fetch('/api/save-score', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: userEmail,
+                    module: 'sqli',
+                    preScore: preTestScore,
+                    postScore: postTestScore
+                })
+            });
+            
+            alert(translations[currentLang].alertResult(preTestScore, postTestScore));
+            window.location.href = "/dashboard.html";
+        } catch (err) {
+            alert("Skor kaydedilirken hata oluştu!");
+        }
+    }
+
+    // --- Simulation Functions Below ---
+
+    function renderDatabaseTable(usersArray, t) {
+        let tableHTML = `<table class="db-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>${t.tblEmail}</th>
+                                    <th>${t.tblPass}</th>
+                                    <th>${t.tblSecret}</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+        
+        usersArray.forEach(user => {
+            tableHTML += `<tr>
+                            <td>${user.id}</td>
+                            <td>${user.email}</td>
+                            <td>${user.password}</td>
+                            <td style="color:#00e5ff; font-weight:bold;">${user.secret_data}</td>
+                          </tr>`;
+        });
+        
+        tableHTML += `</tbody></table>`;
+        return tableHTML;
+    }
+
+    async function runExploit() {
+        const emailInput = document.getElementById('vuln-email').value;
+        const passInput = document.getElementById('vuln-pass').value;
+        const resultDiv = document.getElementById('sim-result');
+        const t = translations[currentLang];
+        
+        resultDiv.innerHTML = `<p style="color:#a1a1aa; text-align:center;">Sunucuya bağlanılıyor...</p>`;
+
+        try {
+            const response = await fetch('/api/vuln/sqli/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: emailInput, password: passInput })
+            });
+
+            const responseData = await response.json();
+
+            if (responseData.success) {
+                const successMsg = `<h3 style="color:#10b981; text-align:center; margin-top:20px;">${t.msgSuccess}</h3>`;
+                const table = renderDatabaseTable(responseData.data, t);
+                resultDiv.innerHTML = successMsg + table;
+                
+            } else if (responseData.error) {
+                resultDiv.innerHTML = `<p style="color:#f59e0b; text-align:center; font-weight:bold; margin-top:20px;">${t.msgError}<br><i>${responseData.error}</i></p>`;
+            } else {
+                resultDiv.innerHTML = `<p style="color:#ef4444; text-align:center; font-weight:bold; margin-top:20px;">${t.msgFail} ${responseData.message}</p>`;
+            }
+        } catch (error) {
+            console.error("Connection error:", error);
+            resultDiv.innerHTML = `<p style="color:#ef4444; text-align:center;">Sunucuya ulaşılamadı. Node.js çalışıyor mu?</p>`;
+        }
+    }
+</script>
+
+</body>
+</html>
