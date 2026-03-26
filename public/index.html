@@ -203,7 +203,13 @@ async function submitForm() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const endpoint = isLoginMode ? '/api/secure/login' : '/api/secure/register';
-
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        const msgElement = document.getElementById('message');
+        msgElement.style.color = '#ef4444';
+        msgElement.innerText = currentLang === 'tr' ? "Geçerli bir e-posta adresi giriniz!" : "Please enter a valid email!";
+        return;
+    }
         if (!email || !password) {
             alert(currentLang === 'tr' ? "Lütfen tüm alanları doldurun." : "Please fill in all fields.");
             return;

@@ -22,6 +22,13 @@ app.use(express.static('public'));
 // Kayıt Ol API
 app.post('/api/secure/register', (req, res) => {
     const { email, password } = req.body;
+    
+    // Sunucu tarafı kontrolü
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ success: false, message: 'Geçersiz e-posta formatı!' });
+    }
+
     const query = `INSERT INTO system_users (email, password) VALUES (?, ?)`;
     db.run(query, [email, password], (err) => {
         if (err) {
