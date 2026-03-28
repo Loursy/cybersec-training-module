@@ -144,6 +144,69 @@ app.get("/api/vuln/bac/profile/:id", (req, res) => {
 });
 
 // ==========================================
+// MODÜL 3: EXCESSIVE DATA EXPOSURE API
+// ==========================================
+app.post("/api/vuln/ede/search", (req, res) => {
+  const { username } = req.body;
+
+  // Zafiyetli Backend: Arayüz sadece isim istiyor ama backend tüm tabloyu yolluyor!
+  if (username === "admin") {
+    return res.json({
+      success: true,
+      user: {
+        id: 1,
+        username: "admin",
+        full_name: "Sistem Yöneticisi",
+        role: "IT Departmanı",
+        salary_usd: 15000,
+        home_address: "Cyber Street No: 404, Istanbul",
+        password_hash: "$2b$12$eImiTXuWVxfM37uY4JANjQ==...",
+        recovery_token: "X7F9-ADMIN-SECURE-KEY", // HACKER'IN ARAYACAĞI VERİ
+      },
+    });
+  }
+
+  return res.json({ success: false, message: "Kullanıcı bulunamadı" });
+});
+
+// ==========================================
+// MODÜL 4: CROSS-SITE SCRIPTING (XSS) API
+// ==========================================
+app.post("/api/vuln/xss/search", (req, res) => {
+  const { term } = req.body;
+
+  // Zafiyetli Backend: Kullanıcıdan gelen "term" değerini HİÇBİR HTML Encode
+  // işlemine tabi tutmadan, olduğu gibi Frontend'e geri yansıtıyor (Reflect).
+  // Frontend (xss.html) bu ham veriyi innerHTML ile ekrana basınca zafiyet tetiklenir.
+
+  return res.json({ success: true, term: term });
+});
+
+// ==========================================
+// MODÜL 5: RATE LIMITING (HIZ SINIRLANDIRMA) API
+// ==========================================
+// ZAFİYET: Bu API noktasına hiçbir hız sınırlandırması (Örn: express-rate-limit)
+// konmamıştır. Bir IP adresi saniyede 1000 istek atsa bile sunucu bunu engellemez.
+app.post("/api/vuln/rate/verify", (req, res) => {
+  const { otp } = req.body;
+  const gercekSmsKodu = "8427"; // Veritabanındaki hedef kod
+
+  // Sistem sadece kodun doğruluğuna bakıyor, kaç kere denendiğine BAKMIYOR!
+  if (otp === gercekSmsKodu) {
+    return res.json({
+      success: true,
+      message: "2FA Doğrulandı! Kripto Cüzdanına erişim sağlandı.",
+    });
+  } else {
+    // Hatalı girişte hesabı kilitleme (Account Lockout) mekanizması YOK.
+    // Saldırgan sonsuza kadar bu hatayı alıp yeni kod deneyebilir.
+    return res.status(401).json({
+      success: false,
+      message: "Hatalı SMS kodu.",
+    });
+  }
+});
+// ==========================================
 // MODÜL 6: OS COMMAND INJECTION (SAHTE SİMÜLASYON)
 // ==========================================
 app.post("/api/vuln/cmd/ping", (req, res) => {

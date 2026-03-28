@@ -1,251 +1,311 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cyber Security Training Platform</title>
     <style>
-        /* Cyber Dark Tema */
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #0b0f19; 
-            color: #a1a1aa;
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            margin: 0; 
-            position: relative; 
-        }
-        
-        /* Dil Butonu (Neon Çerçeveli) */
-        .lang-btn { 
-            position: absolute; 
-            top: 20px; right: 20px; 
-            background-color: transparent; 
-            color: #00e5ff; 
-            border: 1px solid #00e5ff; 
-            padding: 8px 15px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            transition: all 0.3s ease; 
-        }
-        .lang-btn:hover { 
-            background-color: #00e5ff; 
-            color: #0b0f19; 
-            box-shadow: 0 0 10px rgba(0, 229, 255, 0.4); 
-        }
+      /* Cyber Dark Tema */
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #0b0f19;
+        color: #a1a1aa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        position: relative;
+      }
 
-        /* Form Kutusu */
-        .container { 
-            background: #111827; 
-            padding: 40px; 
-            border-radius: 12px; 
-            border: 1px solid #1f2937;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            width: 320px; 
-            text-align: center; 
-            transition: all 0.3s ease; 
-            position: relative;
-            overflow: hidden;
-        }
+      /* Dil Butonu (Neon Çerçeveli) */
+      .lang-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: transparent;
+        color: #00e5ff;
+        border: 1px solid #00e5ff;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+      }
+      .lang-btn:hover {
+        background-color: #00e5ff;
+        color: #0b0f19;
+        box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+      }
 
-        /* Üstte İnce Neon Çizgi */
-        .container::before {
-            content: ""; 
-            position: absolute; 
-            top: 0; left: 0; 
-            width: 100%; height: 3px; 
-            background: linear-gradient(90deg, #00e5ff, #007bff); 
-        }
+      /* Form Kutusu */
+      .container {
+        background: #111827;
+        padding: 40px;
+        border-radius: 12px;
+        border: 1px solid #1f2937;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        width: 320px;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
 
-        h2 { color: #f8fafc; margin-bottom: 25px; letter-spacing: 1px; }
-        
-        /* Girdi Alanları */
-        input { 
-            width: 100%; 
-            padding: 12px; 
-            margin: 10px 0; 
-            background-color: #1f2937;
-            color: #e2e8f0;
-            border: 1px solid #374151; 
-            border-radius: 6px; 
-            font-size: 14px; 
-            box-sizing: border-box; 
-            transition: 0.3s; 
-        }
-        input::placeholder { color: #6b7280; }
-        input:focus { border-color: #007bff; outline: none; box-shadow: 0 0 10px rgba(0,123,255,0.3); }
-        
-        /* Butonlar */
-        button.action-btn { 
-            width: 100%; 
-            padding: 12px; 
-            color: white; 
-            border: none; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            font-weight: bold; 
-            margin-top: 15px; 
-            transition: all 0.3s ease; 
-            letter-spacing: 1px;
-        }
-        
-        /* Giriş Modu (Neon Yeşil) */
-        .btn-login { 
-            background: linear-gradient(135deg, #059669, #10b981); 
-        }
-        .btn-login:hover { 
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); 
-            transform: translateY(-2px); 
-        }
-        
-        /* Kayıt Modu (Neon Mavi) */
-        .btn-register { 
-            background: linear-gradient(135deg, #2563eb, #3b82f6); 
-        }
-        .btn-register:hover { 
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); 
-            transform: translateY(-2px); 
-        }
-        
-        /* Alt Metin */
-        .switch { margin-top: 20px; color: #9ca3af; cursor: pointer; font-size: 14px; transition: 0.3s; }
-        .switch:hover { color: #00e5ff; text-shadow: 0 0 5px rgba(0, 229, 255, 0.3); }
-        .switch b { color: #e2e8f0; }
-        
-        #message { margin-top: 15px; font-size: 14px; font-weight: bold; min-height: 20px; }
+      /* Üstte İnce Neon Çizgi */
+      .container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #00e5ff, #007bff);
+      }
+
+      h2 {
+        color: #f8fafc;
+        margin-bottom: 25px;
+        letter-spacing: 1px;
+      }
+
+      /* Girdi Alanları */
+      input {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        background-color: #1f2937;
+        color: #e2e8f0;
+        border: 1px solid #374151;
+        border-radius: 6px;
+        font-size: 14px;
+        box-sizing: border-box;
+        transition: 0.3s;
+      }
+      input::placeholder {
+        color: #6b7280;
+      }
+      input:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
+      }
+
+      /* Butonlar */
+      button.action-btn {
+        width: 100%;
+        padding: 12px;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 15px;
+        transition: all 0.3s ease;
+        letter-spacing: 1px;
+      }
+
+      /* Giriş Modu (Neon Yeşil) */
+      .btn-login {
+        background: linear-gradient(135deg, #059669, #10b981);
+      }
+      .btn-login:hover {
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        transform: translateY(-2px);
+      }
+
+      /* Kayıt Modu (Neon Mavi) */
+      .btn-register {
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+      }
+      .btn-register:hover {
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        transform: translateY(-2px);
+      }
+
+      /* Alt Metin */
+      .switch {
+        margin-top: 20px;
+        color: #9ca3af;
+        cursor: pointer;
+        font-size: 14px;
+        transition: 0.3s;
+      }
+      .switch:hover {
+        color: #00e5ff;
+        text-shadow: 0 0 5px rgba(0, 229, 255, 0.3);
+      }
+      .switch b {
+        color: #e2e8f0;
+      }
+
+      #message {
+        margin-top: 15px;
+        font-size: 14px;
+        font-weight: bold;
+        min-height: 20px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <button class="lang-btn" onclick="toggleLanguage()" id="lang-btn">
+      EN
+    </button>
 
-<button class="lang-btn" onclick="toggleLanguage()" id="lang-btn">EN</button>
+    <div class="container">
+      <h2 id="form-title">Giriş Yap</h2>
+      <input type="email" id="email" placeholder="E-posta adresiniz" required />
+      <input type="password" id="password" placeholder="Şifreniz" required />
+      <button
+        id="submit-btn"
+        class="action-btn btn-login"
+        onclick="submitForm()"
+      >
+        Giriş
+      </button>
+      <p class="switch" onclick="toggleMode()" id="switch-text">
+        Hesabın yok mu? <b>Kayıt Ol</b>
+      </p>
+      <p id="message"></p>
+    </div>
 
-<div class="container">
-    <h2 id="form-title">Giriş Yap</h2>
-    <input type="email" id="email" placeholder="E-posta adresiniz" required>
-    <input type="password" id="password" placeholder="Şifreniz" required>
-    <button id="submit-btn" class="action-btn btn-login" onclick="submitForm()">Giriş</button>
-    <p class="switch" onclick="toggleMode()" id="switch-text">Hesabın yok mu? <b>Kayıt Ol</b></p>
-    <p id="message"></p>
-</div>
+    <script>
+      let isLoginMode = true;
+      let currentLang = "tr";
 
-<script>
-    let isLoginMode = true;
-    let currentLang = 'tr';
-
-    const translations = {
+      const translations = {
         tr: {
-            titleLogin: "Giriş Yap",
-            titleRegister: "Kayıt Ol",
-            emailPlaceholder: "E-posta adresiniz",
-            passPlaceholder: "Şifreniz",
-            btnLogin: "Giriş",
-            btnRegister: "Kayıt Ol",
-            switchRegister: "Hesabın yok mu? <b>Kayıt Ol</b>",
-            switchLogin: "Zaten hesabın var mı? <b>Giriş Yap</b>",
-            msgLoginSuccess: "Başarıyla giriş yapıldı! Yönlendiriliyorsunuz...",
-            msgRegSuccess: "Kayıt başarılı! Lütfen giriş yapın.",
-            msgErrorLogin: "E-posta veya şifre hatalı!",
-            msgErrorReg: "Bu e-posta kullanımda veya bir hata oluştu."
+          titleLogin: "Giriş Yap",
+          titleRegister: "Kayıt Ol",
+          emailPlaceholder: "E-posta adresiniz",
+          passPlaceholder: "Şifreniz",
+          btnLogin: "Giriş",
+          btnRegister: "Kayıt Ol",
+          switchRegister: "Hesabın yok mu? <b>Kayıt Ol</b>",
+          switchLogin: "Zaten hesabın var mı? <b>Giriş Yap</b>",
+          msgLoginSuccess: "Başarıyla giriş yapıldı! Yönlendiriliyorsunuz...",
+          msgRegSuccess: "Kayıt başarılı! Lütfen giriş yapın.",
+          msgErrorLogin: "E-posta veya şifre hatalı!",
+          msgErrorReg: "Bu e-posta kullanımda veya bir hata oluştu.",
         },
         en: {
-            titleLogin: "Sign In",
-            titleRegister: "Sign Up",
-            emailPlaceholder: "Email address",
-            passPlaceholder: "Password",
-            btnLogin: "Login",
-            btnRegister: "Register",
-            switchRegister: "Don't have an account? <b>Sign Up</b>",
-            switchLogin: "Already have an account? <b>Sign In</b>",
-            msgLoginSuccess: "Login successful! Redirecting...",
-            msgRegSuccess: "Registration successful! Please log in.",
-            msgErrorLogin: "Invalid email or password!",
-            msgErrorReg: "Email already in use or an error occurred."
-        }
-    };
+          titleLogin: "Sign In",
+          titleRegister: "Sign Up",
+          emailPlaceholder: "Email address",
+          passPlaceholder: "Password",
+          btnLogin: "Login",
+          btnRegister: "Register",
+          switchRegister: "Don't have an account? <b>Sign Up</b>",
+          switchLogin: "Already have an account? <b>Sign In</b>",
+          msgLoginSuccess: "Login successful! Redirecting...",
+          msgRegSuccess: "Registration successful! Please log in.",
+          msgErrorLogin: "Invalid email or password!",
+          msgErrorReg: "Email already in use or an error occurred.",
+        },
+      };
 
-    function toggleLanguage() {
-        currentLang = currentLang === 'tr' ? 'en' : 'tr';
-        document.getElementById('lang-btn').innerText = currentLang === 'tr' ? 'EN' : 'TR';
+      function toggleLanguage() {
+        currentLang = currentLang === "tr" ? "en" : "tr";
+        document.getElementById("lang-btn").innerText =
+          currentLang === "tr" ? "EN" : "TR";
         updateTexts();
-        document.getElementById('message').innerText = ''; 
-    }
+        document.getElementById("message").innerText = "";
+      }
 
-    function updateTexts() {
+      function updateTexts() {
         const t = translations[currentLang];
-        document.getElementById('form-title').innerText = isLoginMode ? t.titleLogin : t.titleRegister;
-        document.getElementById('email').placeholder = t.emailPlaceholder;
-        document.getElementById('password').placeholder = t.passPlaceholder;
-        document.getElementById('submit-btn').innerText = isLoginMode ? t.btnLogin : t.btnRegister;
-        document.getElementById('switch-text').innerHTML = isLoginMode ? t.switchRegister : t.switchLogin;
-    }
+        document.getElementById("form-title").innerText = isLoginMode
+          ? t.titleLogin
+          : t.titleRegister;
+        document.getElementById("email").placeholder = t.emailPlaceholder;
+        document.getElementById("password").placeholder = t.passPlaceholder;
+        document.getElementById("submit-btn").innerText = isLoginMode
+          ? t.btnLogin
+          : t.btnRegister;
+        document.getElementById("switch-text").innerHTML = isLoginMode
+          ? t.switchRegister
+          : t.switchLogin;
+      }
 
-    function toggleMode() {
+      function toggleMode() {
         isLoginMode = !isLoginMode;
-        const btn = document.getElementById('submit-btn');
-        
-        if(isLoginMode) {
-            btn.classList.remove('btn-register');
-            btn.classList.add('btn-login');
-        } else {
-            btn.classList.remove('btn-login');
-            btn.classList.add('btn-register');
-        }
-        
-        updateTexts();
-        document.getElementById('message').innerText = ''; 
-    }
+        const btn = document.getElementById("submit-btn");
 
-async function submitForm() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const endpoint = isLoginMode ? '/api/secure/login' : '/api/secure/register';
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        const msgElement = document.getElementById('message');
-        msgElement.style.color = '#ef4444';
-        msgElement.innerText = currentLang === 'tr' ? "Geçerli bir e-posta adresi giriniz!" : "Please enter a valid email!";
-        return;
-    }
+        if (isLoginMode) {
+          btn.classList.remove("btn-register");
+          btn.classList.add("btn-login");
+        } else {
+          btn.classList.remove("btn-login");
+          btn.classList.add("btn-register");
+        }
+
+        updateTexts();
+        document.getElementById("message").innerText = "";
+      }
+
+      async function submitForm() {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const endpoint = isLoginMode
+          ? "/api/secure/login"
+          : "/api/secure/register";
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          const msgElement = document.getElementById("message");
+          msgElement.style.color = "#ef4444";
+          msgElement.innerText =
+            currentLang === "tr"
+              ? "Geçerli bir e-posta adresi giriniz!"
+              : "Please enter a valid email!";
+          return;
+        }
         if (!email || !password) {
-            alert(currentLang === 'tr' ? "Lütfen tüm alanları doldurun." : "Please fill in all fields.");
-            return;
+          alert(
+            currentLang === "tr"
+              ? "Lütfen tüm alanları doldurun."
+              : "Please fill in all fields.",
+          );
+          return;
         }
 
         try {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
 
-            const msgElement = document.getElementById('message');
-            const t = translations[currentLang]; 
-            
-            if (response.ok) {
-                msgElement.style.color = '#10b981';
-                msgElement.innerText = isLoginMode ? t.msgLoginSuccess : t.msgRegSuccess;
-                
-                if (isLoginMode) {
-                    localStorage.setItem('userEmail', email); 
-                    
-                    setTimeout(() => window.location.href = "/dashboard.html", 1000);
-                } else {
-                    setTimeout(() => toggleMode(), 1500);
-                }
+          const msgElement = document.getElementById("message");
+          const t = translations[currentLang];
+
+          if (response.ok) {
+            msgElement.style.color = "#10b981";
+            msgElement.innerText = isLoginMode
+              ? t.msgLoginSuccess
+              : t.msgRegSuccess;
+
+            if (isLoginMode) {
+              localStorage.setItem("userEmail", email);
+
+              setTimeout(
+                () => (window.location.href = "/dashboard.html"),
+                1000,
+              );
             } else {
-                msgElement.style.color = '#ef4444';
-                msgElement.innerText = isLoginMode ? t.msgErrorLogin : t.msgErrorReg;
+              setTimeout(() => toggleMode(), 1500);
             }
+          } else {
+            msgElement.style.color = "#ef4444";
+            msgElement.innerText = isLoginMode
+              ? t.msgErrorLogin
+              : t.msgErrorReg;
+          }
         } catch (error) {
-            console.error("Bağlantı hatası:", error);
-            document.getElementById('message').innerText = "Server error!";
+          console.error("Bağlantı hatası:", error);
+          document.getElementById("message").innerText = "Server error!";
         }
-    }
-</script>
-
-</body>
+      }
+    </script>
+  </body>
 </html>

@@ -67,15 +67,12 @@ const db = new sqlite3.Database("./training.db", (err) => {
       () => {
         db.get("SELECT COUNT(*) AS count FROM dummy_profiles", (err, row) => {
           if (row.count === 0) {
-            // 1: CEO (Kırmızı profil olacak)
             db.run(
               "INSERT INTO dummy_profiles (name, role, department, email, phone, secret_message) VALUES ('Burak Kaya', 'CEO', 'Yönetim Kurulu', 'burak.k@sirket.com', '+90 555 100 0001', 'GİZLİ KARAR: Şirketin satılma planları başladı. Hedef 2027.')",
             );
-            // 2: Sen (Mavi profil olacak)
             db.run(
               "INSERT INTO dummy_profiles (name, role, department, email, phone, secret_message) VALUES ('Atakan', 'YBS Uzmanı', 'Bilişim Teknolojileri', 'atakan@sirket.com', '+90 555 200 0002', 'Sistem güncelleme notu: Sunucu şifreleri yarın sıfırlanacak.')",
             );
-            // 3: İK Müdürü (Mor profil olacak)
             db.run(
               "INSERT INTO dummy_profiles (name, role, department, email, phone, secret_message) VALUES ('Zeynep Demir', 'İK Müdürü', 'İnsan Kaynakları', 'zeynep.d@sirket.com', '+90 555 300 0003', 'DİKKAT: IT departmanındaki küçülme planı onaylandı.')",
             );
