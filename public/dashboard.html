@@ -511,6 +511,7 @@
           "btn-rate",
           "btn-cmd",
         ];
+
         btnIds.forEach((id) => {
           const btn = document.getElementById(id);
           if (!btn.classList.contains("completed")) {
@@ -530,25 +531,24 @@
           const result = await response.json();
 
           if (result.success && result.data) {
-            if (result.data.sqli_completed) {
-              document
-                .getElementById("card-sqli")
-                .classList.add("completed-card");
-              const btnSqli = document.getElementById("btn-sqli");
-              btnSqli.classList.add("completed");
-              btnSqli.innerHTML = `<span>${t.btnCompleted}</span>`;
-              btnSqli.onclick = () => alert(t.alertCompleted);
-            }
+            // Tüm modülleri tek bir döngüde kontrol eden dinamik yapı
+            const modules = ["sqli", "bac", "ede", "xss", "rate", "cmd"];
 
-            if (result.data.bac_completed) {
-              document
-                .getElementById("card-bac")
-                .classList.add("completed-card");
-              const btnBac = document.getElementById("btn-bac");
-              btnBac.classList.add("completed");
-              btnBac.innerHTML = `<span>${t.btnCompleted}</span>`;
-              btnBac.onclick = () => alert(t.alertCompleted);
-            }
+            modules.forEach((mod) => {
+              // Veritabanından gelen veri "modül_completed" olarak geliyorsa (Örn: cmd_completed)
+              if (result.data[`${mod}_completed`]) {
+                const card = document.getElementById(`card-${mod}`);
+                const btn = document.getElementById(`btn-${mod}`);
+
+                if (card && btn) {
+                  card.classList.add("completed-card");
+                  btn.classList.add("completed");
+                  btn.innerHTML = `<span>${t.btnCompleted}</span>`;
+                  // Kullanıcı yeşil butona tıklarsa eğitim yerine uyarı alacak
+                  btn.onclick = () => alert(t.alertCompleted);
+                }
+              }
+            });
           }
         } catch (error) {
           console.error("Kilit mekanizması verisi çekilemedi:", error);

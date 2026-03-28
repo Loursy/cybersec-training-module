@@ -143,6 +143,50 @@ app.get("/api/vuln/bac/profile/:id", (req, res) => {
   });
 });
 
+// ==========================================
+// MODÜL 6: OS COMMAND INJECTION (SAHTE SİMÜLASYON)
+// ==========================================
+app.post("/api/vuln/cmd/ping", (req, res) => {
+  const { ip } = req.body;
+
+  if (!ip) {
+    return res.json({
+      success: false,
+      output: "Hata: Lütfen bir IP adresi girin.",
+    });
+  }
+
+  // Zafiyet Simülasyonu: Eğer kullanıcı araya ; veya && veya | koyup komut eklerse
+  if (ip.includes(";") || ip.includes("&&") || ip.includes("|")) {
+    let output = `PING ${ip.split(/[;&|]/)[0].trim()} (192.168.1.1): 56 data bytes\n64 bytes from 192.168.1.1: icmp_seq=0 ttl=64 time=0.042 ms\n\n`;
+
+    // cat sömürüsü (Daha esnek kontrol: sadece 'cat' kelimesi geçiyorsa)
+    if (ip.toLowerCase().includes("cat")) {
+      output += `root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\nadmin:x:1000:1000:Admin,,,:/home/admin:/bin/bash\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin`;
+      return res.json({ success: true, isHacked: true, output: output });
+    }
+    // ls sömürüsü (Daha esnek kontrol: sadece 'ls' kelimesi geçiyorsa)
+    if (ip.toLowerCase().includes("ls")) {
+      output += `index.html\nserver.js\ndatabase.sqlite\npackage.json\nsecret_keys.txt`;
+      return res.json({ success: true, isHacked: true, output: output });
+    }
+    // whoami sömürüsü (Opsiyonel)
+    if (ip.toLowerCase().includes("whoami")) {
+      output += `root`;
+      return res.json({ success: true, isHacked: true, output: output });
+    }
+
+    // Bilinmeyen komut (Eğer cat veya ls dışında rastgele bir şey yazılırsa)
+    output += `sh: command not found`;
+    return res.json({ success: true, isHacked: true, output: output });
+  }
+
+  // Normal Davranış (Zafiyet tetiklenmezse)
+  const normalOutput = `PING ${ip} (${ip}): 56 data bytes\n64 bytes from ${ip}: icmp_seq=0 ttl=64 time=0.045 ms\n64 bytes from ${ip}: icmp_seq=1 ttl=64 time=0.048 ms\n64 bytes from ${ip}: icmp_seq=2 ttl=64 time=0.041 ms\n\n--- ${ip} ping statistics ---\n3 packets transmitted, 3 packets received, 0.0% packet loss`;
+
+  res.json({ success: true, isHacked: false, output: normalOutput });
+});
+
 app.listen(3000, () =>
   console.log("Sunucu http://localhost:3000 üzerinde çalışıyor."),
 );
