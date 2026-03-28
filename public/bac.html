@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Broken Access Control - Eğitim Modülü</title>
+    <style>
+      /* Ana Temalar */
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #0b0f19;
+        color: #a1a1aa;
+        margin: 0;
+        padding: 20px;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: #111827;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        border-top: 3px solid #f59e0b;
+      }
+      h1,
+      h2,
+      h3 {
+        color: #f8fafc;
+      }
+
+      .lang-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: transparent;
+        color: #00e5ff;
+        border: 1px solid #00e5ff;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+      }
+      .lang-btn:hover {
+        background: rgba(0, 229, 255, 0.15);
+        box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+      }
+
+      .step {
+        display: none;
+      }
+      .active-step {
+        display: block;
+        animation: fadeIn 0.5s;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .question {
+        background: #1f2937;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border-left: 4px solid #3b82f6;
+      }
+      .options label {
+        display: block;
+        margin: 8px 0;
+        cursor: pointer;
+        color: #e2e8f0;
+      }
+
+      button.action-btn {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 15px;
+        transition: 0.3s;
+      }
+      button.action-btn:hover {
+        background: #2563eb;
+      }
+
+      /* Sahte Tarayıcı ve URL Çubuğu */
+      .mock-browser {
+        background: #1f2937;
+        border-radius: 8px;
+        border: 1px solid #374151;
+        overflow: hidden;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      }
+      .browser-header {
+        background: #111827;
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #374151;
+      }
+      .browser-dots {
+        display: flex;
+        gap: 6px;
+        margin-right: 15px;
+      }
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      .url-bar {
+        flex-grow: 1;
+        background: #0b0f19;
+        border-radius: 4px;
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+        border: 1px solid #374151;
+        font-family: monospace;
+        font-size: 15px;
+        cursor: text;
+      }
+      .url-text {
+        color: #9ca3af;
+        letter-spacing: 0.5px;
+      }
+      .url-input {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-weight: bold;
+        font-family: monospace;
+        font-size: 15px;
+        flex-grow: 1;
+        outline: none;
+        padding: 0 2px;
+        transition: 0.3s;
+        caret-color: #10b981;
+        text-align: left;
+      }
+      .browser-content {
+        padding: 20px;
+        min-height: 150px;
+        background: #f8fafc;
+        color: #1e293b;
+      }
+
+      /* Detaylı Profil Kartı */
+      .profile-card {
+        border: 1px solid #e2e8f0;
+        padding: 25px;
+        border-radius: 8px;
+        background: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      }
+      .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 20px;
+      }
+      .avatar {
+        width: 70px;
+        height: 70px;
+        min-width: 70px;
+        min-height: 70px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 30px;
+        font-weight: bold;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      }
+      .profile-info h3 {
+        margin: 0 0 8px 0;
+        color: #0f172a;
+        font-size: 22px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-right: 5px;
+      }
+      .badge-role {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .badge-dept {
+        background: #f1f5f9;
+        color: #475569;
+      }
+      .profile-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+        background: #f8fafc;
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px dashed #cbd5e1;
+      }
+      .profile-details p {
+        margin: 0;
+        color: #334155;
+        font-size: 14px;
+      }
+      .secret-alert {
+        background: #fef2f2;
+        border-left: 4px solid #ef4444;
+        padding: 15px;
+        color: #991b1b;
+        font-size: 15px;
+        border-radius: 4px;
+        line-height: 1.5;
+      }
+
+      /* Eğitim Kutuları CSS */
+      .info-box {
+        background: #1e293b;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #f59e0b;
+        line-height: 1.6;
+        color: #cbd5e1;
+      }
+      .info-box h3 {
+        color: #f8fafc;
+        margin-top: 0;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .info-box.solution {
+        border-left-color: #10b981;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="lang-btn" onclick="toggleLanguage()" id="lang-btn">
+      EN
+    </button>
+
+    <div class="container">
+      <h1 id="mod-title">Modül 2: Broken Access Control</h1>
+      <p id="mod-desc">
+        Sistemin yetkilendirme (authorization) açıklarını keşfedin.
+      </p>
+      <hr style="border-color: #374151; margin-bottom: 30px" />
+
+      <div id="step-pre" class="step active-step">
+        <h2 id="pre-title">Adım 1: Ön-Test</h2>
+
+        <div class="question">
+          <p id="q-pre-1">
+            <b
+              >1. "Broken Access Control" kavramı temelde hangi güvenlik
+              ihlalini ifade eder?</b
+            >
+          </p>
+          <div class="options">
+            <label
+              ><input type="radio" name="pre_q1" value="0" />
+              <span id="opt-pre-1-1"
+                >Uygulamanın şifreleme algoritmalarındaki zayıflıklar nedeniyle
+                verilerin düz metin olarak sızdırılmasıdır.</span
+              ></label
+            >
+            <label
+              ><input type="radio" name="pre_q1" value="1" />
+              <span id="opt-pre-1-2"
+                >Kullanıcıların, oturum açmış olsalar dahi kendilerine atanmamış
+                kaynaklar üzerinde işlem yapabilmesidir.</span
+              ></label
+            >
+            <label
+              ><input type="radio" name="pre_q1" value="0" />
+              <span id="opt-pre-1-3"
+                >Sunucu ile istemci arasındaki trafiğin araya girilerek (MitM)
+                dinlenmesi ve yetkilerin kopyalanmasıdır.</span
+              ></label
+            >
+          </div>
+        </div>
+
+        <div class="question">
+          <p id="q-pre-2">
+            <b>2. Güvenli Olmayan Doğrudan Nesne Başvurusu (IDOR) nedir?</b>
+          </p>
+          <div class="options">
+            <label
+              ><input type="radio" name="pre_q2" value="0" />
+              <span id="opt-pre-2-1"
+                >Veritabanı sunucusuna doğrudan yetkisiz erişim sağlayarak
+                tabloları silme işlemidir.</span
+              ></label
+            >
+            <label
+              ><input type="radio" name="pre_q2" value="0" />
+              <span id="opt-pre-2-2"
+                >Zararlı bir script kodunun girdi alanları üzerinden sunucuya
+                enjekte edilerek çalıştırılmasıdır.</span
+              ></label
+            >
+            <label
+              ><input type="radio" name="pre_q2" value="1" />
+              <span id="opt-pre-2-3"
+                >Sistemin, kullanıcıdan gelen bir parametreyi (örn. ID)
+                doğrulama yapmadan iç nesnelere erişimde doğrudan
+                kullanmasıdır.</span
+              ></label
+            >
+          </div>
+        </div>
+
+        <div class="question">
+          <p id="q-pre-3">
+            <b
+              >3. Uygulamalarda yetki kontrolleri (Access Control) kesin olarak
+              nerede yapılmalıdır?</b
+            >
+          </p>
+          <div class="options">
+            <label
+              ><input type="radio" name="pre_q3" value="0" />
+              <span id="opt-pre-3-1"
+                >Sadece İstemci (Frontend) tarafında.</span
+              ></label
+            >
+            <label
+              ><input type="radio" name="pre_q3" value="1" />
+              <span id="opt-pre-3-2">Sunucu (Backend) tarafında.</span></label
+            >
+            <label
+              ><input type="radio" name="pre_q3" value="0" />
+              <span id="opt-pre-3-3">Sadece veritabanının içinde.</span></label
+            >
+          </div>
+        </div>
+
+        <button class="action-btn" onclick="finishPreTest()" id="btn-pre">
+          Simülasyona Geç
+        </button>
+      </div>
+
+      <div id="step-sim" class="step">
+        <h2 id="sim-title">Adım 2: Zafiyet Simülasyonu</h2>
+        <p id="sim-desc" style="line-height: 1.6">
+          Şirketin İntranet portalına <b>YBS Uzmanı</b> olarak giriş yaptın.
+          Aşağıdaki tarayıcıda kendi profilini görüyorsun. <br /><br />Acaba
+          adres çubuğundaki (URL) <b>ID numaranı</b> silip yerine yöneticilerin
+          ID'sini (Örn: 1 veya 3) yazıp Enter'a basarsan sistem seni engeller
+          mi?
+        </p>
+
+        <div class="mock-browser">
+          <div class="browser-header">
+            <div class="browser-dots">
+              <span class="dot" style="background: #ef4444"></span>
+              <span class="dot" style="background: #f59e0b"></span>
+              <span class="dot" style="background: #10b981"></span>
+            </div>
+            <div
+              class="url-bar"
+              onclick="document.getElementById('fake-url-id').focus()"
+            >
+              <span class="url-text"
+                >🔒 https://intranet.sirket.com/api/profile/</span
+              >
+              <input
+                type="text"
+                id="fake-url-id"
+                class="url-input"
+                value="2"
+                autocomplete="off"
+                onkeydown="if (event.key === 'Enter') loadProfile();"
+              />
+            </div>
+          </div>
+          <div class="browser-content" id="profile-view">
+            <p style="color: #64748b" id="loading-text">Yükleniyor...</p>
+          </div>
+        </div>
+
+        <button
+          class="action-btn"
+          onclick="goToTraining()"
+          id="btn-to-trn"
+          style="
+            display: none;
+            width: 100%;
+            margin-top: 20px;
+            background-color: #10b981;
+          "
+        >
+          Tebrikler Zafiyeti Buldun! Eğitime Geç
+        </button>
+      </div>
+
+      <div id="step-trn" class="step">
+        <h2 id="trn-title">Adım 3: Az Önce Ne Yaşandı?</h2>
+
+        <div class="info-box">
+          <h3 id="trn-h1">🛎️ Otel Resepsiyonu Analojisi</h3>
+          <p id="trn-p1">
+            Düşünün ki bir otele gittiniz ve resepsiyona
+            <b>"Bana 1 numaralı odanın anahtarını verin"</b> dediniz.
+            Resepsiyonist sizin kim olduğunuza bakmadan, o odanın size ait olup
+            olmadığını kontrol etmeden anahtarı direkt elinize verdi.<br /><br />İşte
+            az önce adres çubuğundaki ID'yi değiştirdiğinizde sistemin yaptığı
+            tam olarak buydu! Sistem sadece "1 numaralı profil var mı?" diye
+            sordu, "Bu veriyi isteyen kişinin o profili görme yetkisi var mı?"
+            diye sormadı. Bu zafiyete
+            <b>IDOR (Insecure Direct Object Reference)</b> denir.
+          </p>
+        </div>
+
+        <div class="info-box solution">
+          <h3 id="trn-h2">🛡️ Çözüm: Nasıl Önlenir?</h3>
+          <p id="trn-p2">
+            Yazılımcılar sadece arayüzdeki butonları gizleyerek sistemi
+            koruduklarını sanmamalıdır. Sunucu (Backend), gelen her veri
+            isteğinde mutlaka kullanıcının kimliğini (Oturum veya Token ile)
+            doğrulamalı ve <b>"Bu veriye erişim hakkı var mı?"</b> kontrolünü
+            yapmalıdır.
+          </p>
+        </div>
+
+        <button
+          class="action-btn"
+          onclick="goToPostTest()"
+          id="btn-to-post"
+          style="width: 100%"
+        >
+          Son-Test'e Geç
+        </button>
+      </div>
+
+      <div id="step-post" class="step">
+        <h2 id="post-title">Adım 4: Son-Test</h2>
+
+        <div class="question">
+          <p id="q-post-1">
+            <b
+              >1. "Otel Resepsiyonu" analojisinde resepsiyonistin (sistemin)
+              temel hatası neydi?</b
+            >
+          </p>
+          <div class="options">
+            <label
+              ><input type="radio" name="post_q1" value="0" />
+              <span id="opt-post-1-1"
+                >Otelin kapılarını kilitlemeyi unutması.</span
+              ></label
+            >
+            <label
+              ><input type="radio" name="post_q1" value="1" />
+              <span id="opt-post-1-2"
+                >Oda anahtarını isteyen kişinin o odanın gerçek sahibi olup
+                olmadığını kontrol etmemesi.</span
+              ></label
+            >
+            <label
+              ><input type="radio" name="post_q1" value="0" />
+              <span id="opt-post-1-3">Yanlış anahtar vermesi.</span></label
+            >
+          </div>
+        </div>
+
+        <div class="question">
+          <p id="q-post-2">
+            <b
+              >2. Simülasyonda CEO'nun gizli mesajını okumak için hangi yöntemi
+              kullandık?</b
+            >
+          </p>
+          <div class="options">
+            <label
+              ><input type="radio" name="post_q2" value="1" />
+              <span id="opt-post-2-1"
+                >Adres çubuğundaki kendi ID numaramızı (2) silip, CEO'nun
+                ID'sini (1) yazarak istek atmak.</span
+              ></label
+            >
+            <label
+              ><input type="radio" name="post_q2" value="0" />
+              <span id="opt-post-2-2"
+                >Sisteme zararlı bir yazılım (virüs) yüklemek.</span
+              ></label
+            >
+            <label
+              ><input type="radio" name="post_q2" value="0" />
+              <span id="opt-post-2-3"
+                >CEO'nun e-posta şifresini tahmin etmek.</span
+              ></label
+            >
+          </div>
+        </div>
+
+        <div class="question">
+          <p id="q-post-3">
+            <b>3. Geliştiriciler bu zafiyeti önlemek için ne yapmalıdır?</b>
+          </p>
+          <div class="options">
+            <label
+              ><input type="radio" name="post_q3" value="0" />
+              <span id="opt-post-3-1"
+                >Arayüzdeki (Frontend) menüleri ve butonları kullanıcılardan
+                gizlemek.</span
+              ></label
+            >
+            <label
+              ><input type="radio" name="post_q3" value="0" />
+              <span id="opt-post-3-2"
+                >Kullanıcıların şifrelerini daha karmaşık yapmalarını zorunlu
+                kılmak.</span
+              ></label
+            >
+            <label
+              ><input type="radio" name="post_q3" value="1" />
+              <span id="opt-post-3-3"
+                >Gelen her istekte, isteği yapanın o veriye yetkisi olup
+                olmadığını arka planda (Backend) doğrulamak.</span
+              ></label
+            >
+          </div>
+        </div>
+
+        <button class="action-btn" onclick="finishPostTest()" id="btn-post">
+          Eğitimi Tamamla & Karneme Git
+        </button>
+      </div>
+    </div>
+
+    <script>
+      let currentLang = "tr";
+      let preTestScore = 0;
+      let postTestScore = 0;
+      let simulationSuccess = false;
+
+      const translations = {
+        tr: {
+          warnEmpty: "Lütfen tüm soruları cevaplayın!",
+          alertResult: (pre, post) =>
+            `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nKarnenize yönlendiriliyorsunuz...`,
+          modTitle: "Modül 2: Broken Access Control",
+          modDesc:
+            "Sistemin yetkilendirme (authorization) açıklarını keşfedin.",
+          preTitle: "Adım 1: Ön-Test",
+          simTitle: "Adım 2: Zafiyet Simülasyonu",
+          trnTitle: "Adım 3: Az Önce Ne Yaşandı?",
+          postTitle: "Adım 4: Son-Test",
+          btnPre: "Simülasyona Geç",
+          btnToTrn: "Tebrikler Zafiyeti Buldun! Eğitime Geç",
+          btnToPost: "Son-Test'e Geç",
+          btnPost: "Eğitimi Tamamla & Karneme Git",
+          simDesc:
+            "Şirketin İntranet portalına <b>YBS Uzmanı</b> olarak giriş yaptın. Aşağıdaki tarayıcıda kendi profilini görüyorsun. <br><br>Acaba adres çubuğundaki (URL) <b>ID numaranı</b> silip yerine yöneticilerin ID'sini (Örn: 1 veya 3) yazıp Enter'a basarsan sistem seni engeller mi?",
+          loading: "Sunucuya bağlanılıyor...",
+          notFound: "404 Bulunamadı:",
+          errConn: "Sunucu bağlantı hatası!",
+          email: "E-posta",
+          phone: "Telefon",
+          position: "Pozisyon",
+          secMsg: "Gizli Sistem Mesajı",
+
+          trnH1: "🛎️ Otel Resepsiyonu Analojisi",
+          trnP1:
+            'Düşünün ki bir otele gittiniz ve resepsiyona <b>"Bana 1 numaralı odanın anahtarını verin"</b> dediniz. Resepsiyonist sizin kim olduğunuza bakmadan, o odanın size ait olup olmadığını kontrol etmeden anahtarı direkt elinize verdi.<br><br>İşte az önce adres çubuğundaki ID\'yi değiştirdiğinizde sistemin yaptığı tam olarak buydu! Sistem sadece "1 numaralı profil var mı?" diye sordu, "Bu veriyi isteyen kişinin o profili görme yetkisi var mı?" diye sormadı. Bu zafiyete <b>IDOR (Insecure Direct Object Reference)</b> denir.',
+          trnH2: "🛡️ Çözüm: Nasıl Önlenir?",
+          trnP2:
+            'Yazılımcılar sadece arayüzdeki butonları gizleyerek sistemi koruduklarını sanmamalıdır. Sunucu (Backend), gelen her veri isteğinde mutlaka kullanıcının kimliğini (Oturum veya Token ile) doğrulamalı ve <b>"Bu veriye erişim hakkı var mı?"</b> kontrolünü yapmalıdır.',
+
+          // PRE-TEST
+          qPre1:
+            '1. "Broken Access Control" kavramı temelde hangi güvenlik ihlalini ifade eder?',
+          optPre1_1:
+            "Uygulamanın şifreleme algoritmalarındaki zayıflıklar nedeniyle verilerin düz metin olarak sızdırılmasıdır.",
+          optPre1_2:
+            "Kullanıcıların, oturum açmış olsalar dahi kendilerine atanmamış kaynaklar üzerinde işlem yapabilmesidir.",
+          optPre1_3:
+            "Sunucu ile istemci arasındaki trafiğin araya girilerek (MitM) dinlenmesi ve yetkilerin kopyalanmasıdır.",
+
+          qPre2: "2. Güvenli Olmayan Doğrudan Nesne Başvurusu (IDOR) nedir?",
+          optPre2_1:
+            "Veritabanı sunucusuna doğrudan yetkisiz erişim sağlayarak tabloları silme işlemidir.",
+          optPre2_2:
+            "Zararlı bir script kodunun girdi alanları üzerinden sunucuya enjekte edilerek çalıştırılmasıdır.",
+          optPre2_3:
+            "Sistemin, kullanıcıdan gelen bir parametreyi (örn. ID) doğrulama yapmadan iç nesnelere erişimde doğrudan kullanmasıdır.",
+
+          qPre3:
+            "3. Uygulamalarda yetki kontrolleri (Access Control) kesin olarak nerede yapılmalıdır?",
+          optPre3_1: "Sadece İstemci (Frontend) tarafında.",
+          optPre3_2: "Sunucu (Backend) tarafında.",
+          optPre3_3: "Sadece veritabanının içinde.",
+
+          // POST-TEST
+          qPost1:
+            '1. "Otel Resepsiyonu" analojisinde resepsiyonistin (sistemin) temel hatası neydi?',
+          optPost1_1: "Otelin kapılarını kilitlemeyi unutması.",
+          optPost1_2:
+            "Oda anahtarını isteyen kişinin o odanın gerçek sahibi olup olmadığını kontrol etmemesi.",
+          optPost1_3: "Yanlış anahtar vermesi.",
+
+          qPost2:
+            "2. Simülasyonda CEO'nun gizli mesajını okumak için hangi yöntemi kullandık?",
+          optPost2_1:
+            "Adres çubuğundaki kendi ID numaramızı (2) silip, CEO'nun ID'sini (1) yazarak istek atmak.",
+          optPost2_2: "Sisteme zararlı bir yazılım (virüs) yüklemek.",
+          optPost2_3: "CEO'nun e-posta şifresini tahmin etmek.",
+
+          qPost3: "3. Geliştiriciler bu zafiyeti önlemek için ne yapmalıdır?",
+          optPost3_1:
+            "Arayüzdeki (Frontend) menüleri ve butonları kullanıcılardan gizlemek.",
+          optPost3_2:
+            "Kullanıcıların şifrelerini daha karmaşık yapmalarını zorunlu kılmak.",
+          optPost3_3:
+            "Gelen her istekte, isteği yapanın o veriye yetkisi olup olmadığını arka planda (Backend) doğrulamak.",
+        },
+        en: {
+          warnEmpty: "Please answer all questions!",
+          alertResult: (pre, post) =>
+            `Congratulations!\nPre-Test Score: ${pre}%\nPost-Test Score: ${post}%\n\nRedirecting to your stats...`,
+          modTitle: "Module 2: Broken Access Control",
+          modDesc: "Discover the authorization vulnerabilities of the system.",
+          preTitle: "Step 1: Pre-Test",
+          simTitle: "Step 2: Vulnerability Simulation",
+          trnTitle: "Step 3: What Just Happened?",
+          postTitle: "Step 4: Post-Test",
+          btnPre: "Start Simulation",
+          btnToTrn: "Vulnerability Found! Go to Training",
+          btnToPost: "Go to Post-Test",
+          btnPost: "Complete Training & Go to Stats",
+          simDesc:
+            "You logged into the company Intranet as an <b>MIS Specialist</b>. You see your profile in the browser below. <br><br>What if you delete your <b>ID number</b> in the URL bar and enter managers' IDs (e.g. 1 or 3) and press Enter? Will the system block you?",
+          loading: "Connecting to server...",
+          notFound: "404 Not Found:",
+          errConn: "Server connection error!",
+          email: "Email",
+          phone: "Phone",
+          position: "Position",
+          secMsg: "Secret System Message",
+
+          trnH1: "🛎️ The Hotel Receptionist Analogy",
+          trnP1:
+            'Imagine you walk into a hotel and say to the receptionist, <b>"Give me the key to room 1."</b> The receptionist hands you the key directly without checking your ID or verifying if that room belongs to you.<br><br>That\'s exactly what the system did when you changed the ID in the URL bar! The system only asked "Does profile 1 exist?" but never asked "Does the user requesting this data have the authority to view it?". This vulnerability is called <b>IDOR (Insecure Direct Object Reference)</b>.',
+          trnH2: "🛡️ Solution: How to Prevent It?",
+          trnP2:
+            "Developers shouldn't assume the system is secure just by hiding buttons on the interface. The server (Backend) MUST verify the user's identity (via Session or Token) on every data request and check: <b>\"Does this user have the right to access this specific data?\"</b>.",
+
+          // PRE-TEST
+          qPre1:
+            '1. What is the core mechanism of a "Broken Access Control" vulnerability?',
+          optPre1_1:
+            "The leakage of plaintext data due to weaknesses in the application's encryption algorithms.",
+          optPre1_2:
+            "The ability of users to perform actions on resources not allocated to them, regardless of their authentication status.",
+          optPre1_3:
+            "The interception of traffic between the server and client (MitM) to duplicate privileges.",
+
+          qPre2:
+            "2. Which of the following best describes Insecure Direct Object Reference (IDOR)?",
+          optPre2_1:
+            "Gaining direct unauthorized access to the database server to delete tables.",
+          optPre2_2:
+            "Injecting and executing a malicious script code on the server through input fields.",
+          optPre2_3:
+            "The system's use of a user-supplied parameter (e.g., ID) to directly access internal objects without validation.",
+
+          qPre3:
+            "3. Where MUST access control checks be strictly enforced in an application?",
+          optPre3_1: "Only on the Client-side (Frontend).",
+          optPre3_2: "On the Server-side (Backend).",
+          optPre3_3: "Only inside the database.",
+
+          // POST-TEST
+          qPost1:
+            '1. In the "Hotel Receptionist" analogy, what was the system\'s main mistake?',
+          optPost1_1: "Forgetting to lock the hotel doors.",
+          optPost1_2:
+            "Not checking if the person asking for the key was the actual owner of that room.",
+          optPost1_3: "Giving the wrong key.",
+
+          qPost2:
+            "2. During the simulation, how did we manage to read the CEO's secret message?",
+          optPost2_1:
+            "By deleting our own ID (2) in the URL bar and replacing it with the CEO's ID (1).",
+          optPost2_2: "By uploading malicious software (virus) to the system.",
+          optPost2_3: "By guessing the CEO's email password.",
+
+          qPost3: "3. What should developers do to prevent this vulnerability?",
+          optPost3_1:
+            "Hide menus and buttons on the interface (Frontend) from users.",
+          optPost3_2: "Force users to create more complex passwords.",
+          optPost3_3:
+            "Verify in the background (Backend) on every request if the user has authorization for that data.",
+        },
+        dbTranslations: {
+          "YBS Uzmanı": "MIS Specialist",
+          "İK Müdürü": "HR Manager",
+          "Yönetim Kurulu": "Board of Directors",
+          "Bilişim Teknolojileri": "Information Technology",
+          "İnsan Kaynakları": "Human Resources",
+          Belirtilmedi: "Not Specified",
+          "GİZLİ KARAR: Şirketin satılma planları başladı. Hedef 2027.":
+            "SECRET DECISION: Company sale plans have started. Target 2027.",
+          "Sistem güncelleme notu: Sunucu şifreleri yarın sıfırlanacak.":
+            "System update note: Server passwords will be reset tomorrow.",
+          "DİKKAT: IT departmanındaki küçülme planı onaylandı.":
+            "ATTENTION: The downsizing plan in the IT department is approved.",
+        },
+      };
+
+      function toggleLanguage() {
+        currentLang = currentLang === "tr" ? "en" : "tr";
+        document.getElementById("lang-btn").innerText =
+          currentLang === "tr" ? "EN" : "TR";
+        updateTexts();
+
+        if (document.querySelector(".profile-card")) {
+          loadProfile();
+        }
+      }
+
+      function updateTexts() {
+        const t = translations[currentLang];
+        document.getElementById("mod-title").innerText = t.modTitle;
+        document.getElementById("mod-desc").innerText = t.modDesc;
+        document.getElementById("pre-title").innerText = t.preTitle;
+        document.getElementById("sim-title").innerText = t.simTitle;
+        document.getElementById("trn-title").innerText = t.trnTitle;
+        document.getElementById("post-title").innerText = t.postTitle;
+
+        document.getElementById("btn-pre").innerText = t.btnPre;
+        document.getElementById("btn-to-trn").innerText = t.btnToTrn;
+        document.getElementById("btn-to-post").innerText = t.btnToPost;
+        document.getElementById("btn-post").innerText = t.btnPost;
+
+        document.getElementById("sim-desc").innerHTML = t.simDesc;
+
+        document.getElementById("trn-h1").innerText = t.trnH1;
+        document.getElementById("trn-p1").innerHTML = t.trnP1;
+        document.getElementById("trn-h2").innerText = t.trnH2;
+        document.getElementById("trn-p2").innerHTML = t.trnP2;
+
+        // Ön-Test
+        document.getElementById("q-pre-1").innerHTML = `<b>${t.qPre1}</b>`;
+        document.getElementById("opt-pre-1-1").innerText = t.optPre1_1;
+        document.getElementById("opt-pre-1-2").innerText = t.optPre1_2;
+        document.getElementById("opt-pre-1-3").innerText = t.optPre1_3;
+
+        document.getElementById("q-pre-2").innerHTML = `<b>${t.qPre2}</b>`;
+        document.getElementById("opt-pre-2-1").innerText = t.optPre2_1;
+        document.getElementById("opt-pre-2-2").innerText = t.optPre2_2;
+        document.getElementById("opt-pre-2-3").innerText = t.optPre2_3;
+
+        document.getElementById("q-pre-3").innerHTML = `<b>${t.qPre3}</b>`;
+        document.getElementById("opt-pre-3-1").innerText = t.optPre3_1;
+        document.getElementById("opt-pre-3-2").innerText = t.optPre3_2;
+        document.getElementById("opt-pre-3-3").innerText = t.optPre3_3;
+
+        // Son-Test
+        document.getElementById("q-post-1").innerHTML = `<b>${t.qPost1}</b>`;
+        document.getElementById("opt-post-1-1").innerText = t.optPost1_1;
+        document.getElementById("opt-post-1-2").innerText = t.optPost1_2;
+        document.getElementById("opt-post-1-3").innerText = t.optPost1_3;
+
+        document.getElementById("q-post-2").innerHTML = `<b>${t.qPost2}</b>`;
+        document.getElementById("opt-post-2-1").innerText = t.optPost2_1;
+        document.getElementById("opt-post-2-2").innerText = t.optPost2_2;
+        document.getElementById("opt-post-2-3").innerText = t.optPost2_3;
+
+        document.getElementById("q-post-3").innerHTML = `<b>${t.qPost3}</b>`;
+        document.getElementById("opt-post-3-1").innerText = t.optPost3_1;
+        document.getElementById("opt-post-3-2").innerText = t.optPost3_2;
+        document.getElementById("opt-post-3-3").innerText = t.optPost3_3;
+
+        const loadingText = document.getElementById("loading-text");
+        if (loadingText) loadingText.innerText = t.loading;
+      }
+
+      function calculateScore(type) {
+        let correctCount = 0;
+        const q1 = document.querySelector(`input[name="${type}_q1"]:checked`);
+        const q2 = document.querySelector(`input[name="${type}_q2"]:checked`);
+        const q3 = document.querySelector(`input[name="${type}_q3"]:checked`);
+
+        if (q1 && q1.value === "1") correctCount++;
+        if (q2 && q2.value === "1") correctCount++;
+        if (q3 && q3.value === "1") correctCount++;
+
+        return Math.round((correctCount / 3) * 100);
+      }
+
+      function finishPreTest() {
+        const q1 = document.querySelector('input[name="pre_q1"]:checked');
+        const q2 = document.querySelector('input[name="pre_q2"]:checked');
+        const q3 = document.querySelector('input[name="pre_q3"]:checked');
+
+        if (!q1 || !q2 || !q3)
+          return alert(translations[currentLang].warnEmpty);
+
+        preTestScore = calculateScore("pre");
+        document.getElementById("step-pre").classList.remove("active-step");
+        document.getElementById("step-sim").classList.add("active-step");
+
+        loadProfile();
+      }
+
+      async function loadProfile() {
+        const targetId = document.getElementById("fake-url-id").value;
+        const viewDiv = document.getElementById("profile-view");
+        const t = translations[currentLang];
+
+        viewDiv.innerHTML = `<p style="color: #64748b;" id="loading-text">${t.loading}</p>`;
+
+        try {
+          const response = await fetch(`/api/vuln/bac/profile/${targetId}`);
+          const result = await response.json();
+
+          if (result.success) {
+            const initial = result.data.name.charAt(0);
+
+            let avatarColor = "linear-gradient(135deg, #64748b, #475569)";
+            if (targetId === "1")
+              avatarColor = "linear-gradient(135deg, #ef4444, #b91c1c)";
+            else if (targetId === "2")
+              avatarColor = "linear-gradient(135deg, #3b82f6, #2563eb)";
+            else if (targetId === "3")
+              avatarColor = "linear-gradient(135deg, #8b5cf6, #6d28d9)";
+
+            let displayRole = result.data.role;
+            let displayDept = result.data.department || "Belirtilmedi";
+            let displaySecretMsg = result.data.secret_message;
+
+            if (currentLang === "en") {
+              const dbT = translations.dbTranslations;
+              displayRole = dbT[displayRole] || displayRole;
+              displayDept = dbT[displayDept] || displayDept;
+              displaySecretMsg = dbT[displaySecretMsg] || displaySecretMsg;
+            }
+
+            viewDiv.innerHTML = `
+                    <div class="profile-card">
+                        <div class="profile-header">
+                            <div class="avatar" style="background: ${avatarColor};">${initial}</div>
+                            <div class="profile-info">
+                                <h3>${result.data.name}</h3>
+                                <span class="badge badge-role">${displayRole}</span>
+                                <span class="badge badge-dept">${displayDept}</span>
+                            </div>
+                        </div>
+                        <div class="profile-details">
+                            <p>📧 <b>${t.email}:</b> ${result.data.email || "Belirtilmedi"}</p>
+                            <p>📞 <b>${t.phone}:</b> ${result.data.phone || "Belirtilmedi"}</p>
+                        </div>
+                        <div class="secret-alert">
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                                <span style="font-size:18px;">🔒</span> <b>${t.secMsg}</b>
+                            </div>
+                            ${displaySecretMsg}
+                        </div>
+                    </div>
+                `;
+
+            if (targetId !== "2") {
+              simulationSuccess = true;
+            }
+          } else {
+            viewDiv.innerHTML = `<div style="color: #ef4444; padding: 20px; text-align: center;"><b>${t.notFound}</b> ${result.message}</div>`;
+          }
+        } catch (error) {
+          viewDiv.innerHTML = `<div style="color: #ef4444; padding: 20px; text-align: center;">${t.errConn}</div>`;
+        }
+
+        if (simulationSuccess) {
+          document.getElementById("btn-to-trn").style.display = "block";
+        } else {
+          document.getElementById("btn-to-trn").style.display = "none";
+        }
+      }
+
+      function goToTraining() {
+        document.getElementById("step-sim").classList.remove("active-step");
+        document.getElementById("step-trn").classList.add("active-step");
+      }
+
+      function goToPostTest() {
+        document.getElementById("step-trn").classList.remove("active-step");
+        document.getElementById("step-post").classList.add("active-step");
+      }
+
+      async function finishPostTest() {
+        const q1 = document.querySelector('input[name="post_q1"]:checked');
+        const q2 = document.querySelector('input[name="post_q2"]:checked');
+        const q3 = document.querySelector('input[name="post_q3"]:checked');
+
+        if (!q1 || !q2 || !q3)
+          return alert(translations[currentLang].warnEmpty);
+
+        postTestScore = calculateScore("post");
+        const userEmail =
+          localStorage.getItem("userEmail") || "anonim@test.com";
+
+        try {
+          await fetch("/api/save-score", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: userEmail,
+              module: "bac",
+              preScore: preTestScore,
+              postScore: postTestScore,
+            }),
+          });
+
+          alert(
+            translations[currentLang].alertResult(preTestScore, postTestScore),
+          );
+          window.location.href = "/dashboard.html";
+        } catch (err) {
+          alert("Skor kaydedilirken hata oluştu!");
+        }
+      }
+    </script>
+  </body>
+</html>

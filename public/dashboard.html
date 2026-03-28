@@ -1,203 +1,564 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eğitim Modülleri - Dashboard</title>
     <style>
-        /* Cyber Dark Tema */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; color: #a1a1aa; margin: 0; padding: 0; }
+      /* Dark Cyber Genel Ayarlar */
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #0b1120;
+        color: #94a3b8;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
 
-        .navbar { background-color: #111827; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f2937; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .navbar h1 { margin: 0; font-size: 20px; color: #f8fafc; letter-spacing: 1px; }
-        .nav-buttons { display: flex; gap: 15px; }
-        
-        .nav-btn { background-color: transparent; color: #e2e8f0; border: 1px solid #374151; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; }
-        .nav-btn:hover { background-color: #1f2937; border-color: #e2e8f0; }
+      /* Üst Menüyü Sabitleme (Sticky & Glassmorphism) */
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: rgba(11, 17, 32, 0.85);
+        backdrop-filter: blur(12px);
+        padding: 15px 30px;
+        border-bottom: 1px solid #1e293b;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
 
-        .lang-btn { background-color: transparent; color: #00e5ff; border: 1px solid #00e5ff; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; }
-        .lang-btn:hover { background-color: #00e5ff; color: #0b0f19; box-shadow: 0 0 10px rgba(0, 229, 255, 0.4); }
-        
-        .logout-btn { background-color: transparent; color: #ff4757; border: 1px solid #ff4757; padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: all 0.3s ease; font-weight: bold; }
-        .logout-btn:hover { background-color: #ff4757; color: white; box-shadow: 0 0 10px rgba(255, 71, 87, 0.4); }
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
 
-        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
-        .header-text { text-align: center; margin-bottom: 40px; }
-        .header-text h2 { color: #f8fafc; font-size: 28px; margin-bottom: 10px; }
+      /* Karnem Butonu */
+      .btn-stats {
+        background: #1e293b;
+        color: #f8fafc;
+        border: 1px solid #334155;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: bold;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn-stats:hover {
+        background: #334155;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+      /* Dil ve Çıkış Butonları */
+      .lang-btn {
+        background: transparent;
+        color: #00e5ff;
+        border: 1px solid #00e5ff;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        font-size: 14px;
+      }
+      .lang-btn:hover {
+        background: rgba(0, 229, 255, 0.15);
+        box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+      }
 
-        .card { background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 25px; transition: all 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
-        .card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #00e5ff, #007bff); transform: scaleX(0); transform-origin: left; transition: transform 0.4s ease; }
-        .card:hover { transform: translateY(-5px); border-color: #374151; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); }
-        .card:hover::before { transform: scaleX(1); }
-        
-        .card h3 { margin-top: 0; color: #e2e8f0; border-bottom: 1px solid #1f2937; padding-bottom: 10px; font-size: 18px; display: flex; justify-content: space-between; align-items: center; }
-        .card p { font-size: 14px; line-height: 1.6; flex-grow: 1; }
-        
-        .start-btn { background: linear-gradient(135deg, #007bff, #00e5ff); color: #fff; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; }
-        .start-btn:hover { box-shadow: 0 0 15px rgba(0, 229, 255, 0.5); transform: scale(1.02); }
+      .btn-logout {
+        background: transparent;
+        color: #ef4444;
+        border: 1px solid #ef4444;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.3s;
+        font-size: 14px;
+      }
+      .btn-logout:hover {
+        background: rgba(239, 68, 68, 0.15);
+        box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+      }
 
-        /* Tamamlanmış Kart Stilleri */
-        .completed-card { border-color: #10b981; }
-        .completed-card::before { background: #10b981; }
-        .start-btn.completed { background: #374151; color: #9ca3af; cursor: not-allowed; box-shadow: none; }
-        .start-btn.completed:hover { transform: none; }
-        .check-icon { color: #10b981; font-size: 16px; display: none; }
-        .completed-card .check-icon { display: inline; }
+      /* Ana İçerik Alanı */
+      .container {
+        max-width: 1100px;
+        margin: 40px auto;
+        padding: 0 20px;
+      }
+
+      h1 {
+        color: #f8fafc;
+        font-size: 32px;
+        margin-bottom: 5px;
+        font-weight: 600;
+        text-align: center;
+      }
+      .desc-text {
+        color: #64748b;
+        margin-bottom: 50px;
+        font-size: 16px;
+        text-align: center;
+      }
+
+      /* Modül Kartları Izgarası */
+      .module-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 30px;
+      }
+
+      /* YENİ PREMIUM KART TASARIMI VE ANİMASYONLARI */
+      .module-card {
+        background: #0f172a;
+        border: 1px solid #1e293b;
+        border-radius: 16px;
+        padding: 40px 30px 35px 30px;
+        min-height: 240px;
+        /* Tatlı ve premium bir yaylanma efekti (cubic-bezier) */
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        overflow: hidden; /* Işık parlaması kartın dışına taşmasın diye */
+      }
+
+      /* Kayan Işık Parlaması (Glass Sheen Effect) */
+      .module-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(
+          to right,
+          transparent,
+          rgba(255, 255, 255, 0.05),
+          transparent
+        );
+        transform: skewX(-25deg);
+        transition: all 0.75s ease;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      .module-card:hover {
+        transform: translateY(-8px) scale(1.02); /* Hem yukarı kalkar hem hafif büyür */
+        border-color: #0284c7; /* Çerçeve maviye döner */
+        box-shadow:
+          0 20px 40px rgba(0, 0, 0, 0.5),
+          0 0 20px rgba(2, 132, 199, 0.15);
+      }
+
+      /* Hover anında ışığı soldan sağa kaydır */
+      .module-card:hover::before {
+        left: 200%;
+      }
+
+      /* Tamamlanmış Modül İçin Özel Hover */
+      .completed-card {
+        border-color: rgba(16, 185, 129, 0.3);
+        background: rgba(16, 185, 129, 0.02);
+      }
+      .completed-card:hover {
+        border-color: #10b981;
+        box-shadow:
+          0 20px 40px rgba(0, 0, 0, 0.5),
+          0 0 20px rgba(16, 185, 129, 0.15);
+      }
+
+      /* Sağ Üst Köşe Tik İşareti */
+      .check-icon {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: #10b981;
+        font-size: 16px;
+        font-weight: bold;
+        display: none;
+        background: rgba(16, 185, 129, 0.1);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+        z-index: 2;
+      }
+      .completed-card .check-icon {
+        display: flex;
+      }
+
+      /* Büyütülmüş İkon ve Hover Etkileşimi */
+      .module-icon {
+        font-size: 65px;
+        margin-bottom: 25px;
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.05));
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 2;
+        position: relative;
+      }
+      /* Karta gelince emojiyi hafif büyütüp döndür */
+      .module-card:hover .module-icon {
+        transform: scale(1.15) rotate(5deg);
+        filter: drop-shadow(0 0 20px rgba(2, 132, 199, 0.4));
+      }
+      .completed-card:hover .module-icon {
+        filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.4));
+      }
+
+      .module-title {
+        color: #f8fafc;
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0 0 30px 0;
+        letter-spacing: 0.5px;
+        z-index: 2;
+        position: relative;
+      }
+
+      /* Yeni Profesyonel Dolu Buton (Cyber Blue) */
+      .btn-start {
+        background: linear-gradient(135deg, #0284c7, #2563eb);
+        color: #ffffff;
+        border: none;
+        padding: 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 700;
+        width: 100%;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: auto;
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+        z-index: 2;
+      }
+
+      .btn-start::after {
+        content: "→";
+        position: absolute;
+        opacity: 0;
+        transform: translateX(-15px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        right: 25px;
+        font-size: 18px;
+      }
+
+      .btn-start:hover {
+        background: linear-gradient(135deg, #0369a1, #1d4ed8);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        padding-right: 35px;
+      }
+
+      .btn-start:hover::after {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      /* Tamamlanmış Buton Efekti (Solid Emerald Green) */
+      .btn-start.completed {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: #ffffff;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+        cursor: default;
+      }
+      .btn-start.completed:hover {
+        background: linear-gradient(135deg, #10b981, #059669);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        padding-right: 14px;
+      }
+      .btn-start.completed::after {
+        display: none;
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <div class="navbar">
-        <h1 id="nav-title">Siber Güvenlik API Eğitim Platformu</h1>
-        <div class="nav-buttons">
-            <button class="nav-btn" onclick="goToStats()" id="nav-stats-btn">📊 Karnem</button>
-            <button class="lang-btn" onclick="toggleLanguage()" id="lang-btn">EN</button>
-            <button class="logout-btn" onclick="logout()" id="logout-btn">Çıkış Yap</button>
-        </div>
+      <h2
+        id="welcome-msg"
+        style="margin: 0; color: #e2e8f0; font-weight: 600; font-size: 20px"
+      >
+        Yükleniyor...
+      </h2>
+
+      <div class="nav-right">
+        <button
+          class="btn-stats"
+          onclick="window.location.href = '/stats.html'"
+        >
+          <svg
+            width="18"
+            height="18"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+            ></path>
+          </svg>
+          <span id="btn-stats-text">Karnem</span>
+        </button>
+        <button class="lang-btn" onclick="toggleLanguage()" id="lang-btn">
+          EN
+        </button>
+        <button class="btn-logout" onclick="logout()" id="btn-logout">
+          Çıkış
+        </button>
+      </div>
     </div>
 
     <div class="container">
-        <div class="header-text">
-            <h2 id="welcome-title">Eğitim Modüllerine Hoş Geldiniz</h2>
-            <p id="welcome-desc">Lütfen test etmek ve simüle etmek istediğiniz zafiyet modülünü seçin.</p>
+      <h1 id="page-title">Siber Güvenlik Eğitim Laboratuvarı</h1>
+      <p class="desc-text" id="page-desc">
+        Aşağıdaki modülleri sırasıyla tamamlayarak zafiyetleri uygulamalı olarak
+        öğrenin.
+      </p>
+
+      <div class="module-grid">
+        <div class="module-card" id="card-sqli">
+          <span class="check-icon">✓</span>
+          <div class="module-icon">💉</div>
+          <h3 class="module-title" id="m1-title">1. SQL Injection</h3>
+          <button
+            class="btn-start"
+            id="btn-sqli"
+            onclick="window.location.href = '/sqli.html'"
+          >
+            <span>MODÜLE GİT</span>
+          </button>
         </div>
 
-        <div class="grid">
-            <div class="card" id="card-sqli">
-                <h3>1. SQL Injection <span class="check-icon">✔</span></h3>
-                <p id="desc-sqli">Kullanıcı girdilerinin filtrelenmediği durumlarda veritabanı sorgularının nasıl manipüle edildiğini öğrenin ve test edin.</p>
-                <button class="start-btn" onclick="goToModule('sqli')" id="btn-sqli">Modüle Git</button>
-            </div>
-
-            <div class="card">
-                <h3>2. Broken Access Control</h3>
-                <p id="desc-bac">Yetkilendirme kontrollerinin atlanarak, başka kullanıcılara veya admin paneline nasıl erişilebileceğini deneyimleyin.</p>
-                <button class="start-btn" onclick="goToModule('bac')" id="btn-bac">Modüle Git</button>
-            </div>
-
-            <div class="card">
-                <h3>3. Excessive Data Exposure</h3>
-                <p id="desc-ede">API yanıtlarında gereğinden fazla veri döndürülmesinin yarattığı bilgi sızıntısı risklerini analiz edin.</p>
-                <button class="start-btn" onclick="goToModule('ede')" id="btn-ede">Modüle Git</button>
-            </div>
-
-            <div class="card">
-                <h3>4. Cross-Site Scripting (XSS)</h3>
-                <p id="desc-xss">Zararlı JavaScript kodlarının sisteme enjekte edilerek diğer kullanıcıların tarayıcısında nasıl çalıştırıldığını görün.</p>
-                <button class="start-btn" onclick="goToModule('xss')" id="btn-xss">Modüle Git</button>
-            </div>
-
-            <div class="card">
-                <h3>5. Rate Limiting</h3>
-                <p id="desc-rate">API uç noktalarına sınır konulmadığında Brute Force (Kaba Kuvvet) saldırılarının nasıl yapıldığını simüle edin.</p>
-                <button class="start-btn" onclick="goToModule('rate-limit')" id="btn-rate">Modüle Git</button>
-            </div>
-
-            <div class="card">
-                <h3>6. OS Command Injection</h3>
-                <p id="desc-os">Sistem terminaline doğrudan erişim sağlayan komut enjeksiyonu zafiyetinin kritik etkilerini laboratuvar ortamında test edin.</p>
-                <button class="start-btn" onclick="goToModule('os-command')" id="btn-os">Modüle Git</button>
-            </div>
+        <div class="module-card" id="card-bac">
+          <span class="check-icon">✓</span>
+          <div class="module-icon">🪪</div>
+          <h3 class="module-title" id="m2-title">2. Broken Access Control</h3>
+          <button
+            class="btn-start"
+            id="btn-bac"
+            onclick="window.location.href = '/bac.html'"
+          >
+            <span>MODÜLE GİT</span>
+          </button>
         </div>
+
+        <div class="module-card" id="card-ede">
+          <span class="check-icon">✓</span>
+          <div class="module-icon">🩻</div>
+          <h3 class="module-title" id="m3-title">3. Excessive Data Exposure</h3>
+          <button
+            class="btn-start"
+            id="btn-ede"
+            onclick="window.location.href = '/ede.html'"
+          >
+            <span>MODÜLE GİT</span>
+          </button>
+        </div>
+
+        <div class="module-card" id="card-xss">
+          <span class="check-icon">✓</span>
+          <div class="module-icon">🕷️</div>
+          <h3 class="module-title" id="m4-title">4. Cross-Site Scripting</h3>
+          <button
+            class="btn-start"
+            id="btn-xss"
+            onclick="window.location.href = '/xss.html'"
+          >
+            <span>MODÜLE GİT</span>
+          </button>
+        </div>
+
+        <div class="module-card" id="card-rate">
+          <span class="check-icon">✓</span>
+          <div class="module-icon">🚦</div>
+          <h3 class="module-title" id="m5-title">5. Rate Limiting</h3>
+          <button
+            class="btn-start"
+            id="btn-rate"
+            onclick="window.location.href = '/rate.html'"
+          >
+            <span>MODÜLE GİT</span>
+          </button>
+        </div>
+
+        <div class="module-card" id="card-cmd">
+          <span class="check-icon">✓</span>
+          <div class="module-icon">⚡</div>
+          <h3 class="module-title" id="m6-title">6. OS Command Injection</h3>
+          <button
+            class="btn-start"
+            id="btn-cmd"
+            onclick="window.location.href = '/cmd.html'"
+          >
+            <span>MODÜLE GİT</span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <script>
-        let currentLang = 'tr'; 
+      let currentLang = "tr";
+      const userEmail = localStorage.getItem("userEmail");
 
-        const translations = {
-            tr: {
-                navTitle: "Siber Güvenlik API Eğitim Platformu",
-                navStatsBtn: "📊 Karnem",
-                logoutBtn: "Çıkış Yap",
-                welcomeTitle: "Eğitim Modüllerine Hoş Geldiniz",
-                welcomeDesc: "Lütfen test etmek ve simüle etmek istediğiniz zafiyet modülünü seçin.",
-                descSqli: "Kullanıcı girdilerinin filtrelenmediği durumlarda veritabanı sorgularının nasıl manipüle edildiğini öğrenin ve test edin.",
-                descBac: "Yetkilendirme kontrollerinin atlanarak, başka kullanıcılara veya admin paneline nasıl erişilebileceğini deneyimleyin.",
-                descEde: "API yanıtlarında gereğinden fazla veri döndürülmesinin yarattığı bilgi sızıntısı risklerini analiz edin.",
-                descXss: "Zararlı JavaScript kodlarının sisteme enjekte edilerek diğer kullanıcıların tarayıcısında nasıl çalıştırıldığını görün.",
-                descRate: "API uç noktalarına sınır konulmadığında Brute Force (Kaba Kuvvet) saldırılarının nasıl yapıldığını simüle edin.",
-                descOs: "Sistem terminaline doğrudan erişim sağlayan komut enjeksiyonu zafiyetinin kritik etkilerini laboratuvar ortamında test edin.",
-                moduleBtn: "Modüle Git",
-                moduleBtnCompleted: "Tamamlandı"
-            },
-            en: {
-                navTitle: "Cyber Security API Training Platform",
-                navStatsBtn: "📊 My Stats",
-                logoutBtn: "Logout",
-                welcomeTitle: "Welcome to Training Modules",
-                welcomeDesc: "Please select the vulnerability module you want to test and simulate.",
-                descSqli: "Learn and test how database queries are manipulated when user inputs are not filtered.",
-                descBac: "Experience how authorization checks can be bypassed to access other users or the admin panel.",
-                descEde: "Analyze the data leakage risks caused by returning excessive data in API responses.",
-                descXss: "See how malicious JavaScript codes are injected into the system and executed in other users' browsers.",
-                descRate: "Simulate how Brute Force attacks are conducted when API endpoints are not rate-limited.",
-                descOs: "Test the critical impacts of command injection vulnerabilities that provide direct access to the system terminal.",
-                moduleBtn: "Go to Module",
-                moduleBtnCompleted: "Completed"
+      const translations = {
+        tr: {
+          welcome: "👋 Hoş Geldiniz!",
+          stats: "Karnem",
+          logout: "Çıkış",
+          pageTitle: "Siber Güvenlik Eğitim Laboratuvarı",
+          pageDesc:
+            "Aşağıdaki modülleri sırasıyla tamamlayarak zafiyetleri uygulamalı olarak öğrenin.",
+
+          m1Title: "1. SQL Injection",
+          m2Title: "2. Broken Access Control",
+          m3Title: "3. Excessive Data Exposure",
+          m4Title: "4. Cross-Site Scripting (XSS)",
+          m5Title: "5. Rate Limiting",
+          m6Title: "6. OS Command Injection",
+
+          btnStart: "MODÜLE GİT",
+          btnCompleted: "TAMAMLANDI",
+          alertCompleted:
+            "Bu modülü zaten başarıyla tamamladınız! Karnenizden skorunuzu görebilirsiniz.",
+        },
+        en: {
+          welcome: "👋 Welcome!",
+          stats: "My Stats",
+          logout: "Logout",
+          pageTitle: "Cybersecurity Training Lab",
+          pageDesc:
+            "Complete the modules below sequentially to learn vulnerabilities hands-on.",
+
+          m1Title: "1. SQL Injection",
+          m2Title: "2. Broken Access Control",
+          m3Title: "3. Excessive Data Exposure",
+          m4Title: "4. Cross-Site Scripting (XSS)",
+          m5Title: "5. Rate Limiting",
+          m6Title: "6. OS Command Injection",
+
+          btnStart: "GO TO MODULE",
+          btnCompleted: "COMPLETED",
+          alertCompleted:
+            "You have already completed this module successfully! You can check your score in your stats.",
+        },
+      };
+
+      window.onload = () => {
+        if (!userEmail) {
+          window.location.href = "/";
+          return;
+        }
+
+        document.getElementById("welcome-msg").innerText =
+          translations[currentLang].welcome;
+        checkCompletedModules();
+      };
+
+      function toggleLanguage() {
+        currentLang = currentLang === "tr" ? "en" : "tr";
+        document.getElementById("lang-btn").innerText =
+          currentLang === "tr" ? "EN" : "TR";
+        updateTexts();
+        checkCompletedModules();
+      }
+
+      function updateTexts() {
+        const t = translations[currentLang];
+
+        document.getElementById("welcome-msg").innerText = t.welcome;
+        document.getElementById("btn-stats-text").innerText = t.stats;
+        document.getElementById("btn-logout").innerText = t.logout;
+        document.getElementById("page-title").innerText = t.pageTitle;
+        document.getElementById("page-desc").innerText = t.pageDesc;
+
+        document.getElementById("m1-title").innerText = t.m1Title;
+        document.getElementById("m2-title").innerText = t.m2Title;
+        document.getElementById("m3-title").innerText = t.m3Title;
+        document.getElementById("m4-title").innerText = t.m4Title;
+        document.getElementById("m5-title").innerText = t.m5Title;
+        document.getElementById("m6-title").innerText = t.m6Title;
+
+        const btnIds = [
+          "btn-sqli",
+          "btn-bac",
+          "btn-ede",
+          "btn-xss",
+          "btn-rate",
+          "btn-cmd",
+        ];
+        btnIds.forEach((id) => {
+          const btn = document.getElementById(id);
+          if (!btn.classList.contains("completed")) {
+            btn.innerHTML = `<span>${t.btnStart}</span>`;
+          } else {
+            btn.innerHTML = `<span>${t.btnCompleted}</span>`;
+          }
+        });
+      }
+
+      async function checkCompletedModules() {
+        if (!userEmail) return;
+        const t = translations[currentLang];
+
+        try {
+          const response = await fetch(`/api/get-user-stats/${userEmail}`);
+          const result = await response.json();
+
+          if (result.success && result.data) {
+            if (result.data.sqli_completed) {
+              document
+                .getElementById("card-sqli")
+                .classList.add("completed-card");
+              const btnSqli = document.getElementById("btn-sqli");
+              btnSqli.classList.add("completed");
+              btnSqli.innerHTML = `<span>${t.btnCompleted}</span>`;
+              btnSqli.onclick = () => alert(t.alertCompleted);
             }
-        };
 
-        window.onload = () => {
-            checkCompletedModules();
-        };
-
-    async function checkCompletedModules() {
-        const email = localStorage.getItem('userEmail');
-        const response = await fetch(`/api/get-user-stats/${email}`);
-        const result = await response.json();
-
-        if (result.success && result.data.sqli_completed) {
-            document.getElementById('card-sqli').classList.add('completed-card');
-            const btn = document.getElementById('btn-sqli');
-            btn.classList.add('completed');
-            btn.innerText = currentLang === 'tr' ? "Tamamlandı" : "Completed";
-            btn.onclick = () => alert("Bu modülü zaten tamamladınız!");
+            if (result.data.bac_completed) {
+              document
+                .getElementById("card-bac")
+                .classList.add("completed-card");
+              const btnBac = document.getElementById("btn-bac");
+              btnBac.classList.add("completed");
+              btnBac.innerHTML = `<span>${t.btnCompleted}</span>`;
+              btnBac.onclick = () => alert(t.alertCompleted);
+            }
+          }
+        } catch (error) {
+          console.error("Kilit mekanizması verisi çekilemedi:", error);
         }
-    }
+      }
 
-        function toggleLanguage() {
-            currentLang = currentLang === 'tr' ? 'en' : 'tr';
-            document.getElementById('lang-btn').innerText = currentLang === 'tr' ? 'EN' : 'TR';
-
-            const t = translations[currentLang];
-            document.getElementById('nav-title').innerText = t.navTitle;
-            document.getElementById('nav-stats-btn').innerText = t.navStatsBtn;
-            document.getElementById('logout-btn').innerText = t.logoutBtn;
-            
-            document.getElementById('welcome-title').innerText = t.welcomeTitle;
-            document.getElementById('welcome-desc').innerText = t.welcomeDesc;
-            
-            document.getElementById('desc-sqli').innerText = t.descSqli;
-            document.getElementById('desc-bac').innerText = t.descBac;
-            document.getElementById('desc-ede').innerText = t.descEde;
-            document.getElementById('desc-xss').innerText = t.descXss;
-            document.getElementById('desc-rate').innerText = t.descRate;
-            document.getElementById('desc-os').innerText = t.descOs;
-
-            const isSqliCompleted = localStorage.getItem('sqli_post') !== null;
-            document.getElementById('btn-sqli').innerText = isSqliCompleted ? t.moduleBtnCompleted : t.moduleBtn;
-            
-            document.getElementById('btn-bac').innerText = t.moduleBtn;
-            document.getElementById('btn-ede').innerText = t.moduleBtn;
-            document.getElementById('btn-xss').innerText = t.moduleBtn;
-            document.getElementById('btn-rate').innerText = t.moduleBtn;
-            document.getElementById('btn-os').innerText = t.moduleBtn;
-        }
-
-        function logout() {
-            window.location.href = "/index.html";
-        }
-
-        function goToModule(moduleName) {
-            window.location.href = "/" + moduleName + ".html";
-        }
-
-        function goToStats() {
-            window.location.href = "/stats.html";
-        }
+      function logout() {
+        localStorage.removeItem("userEmail");
+        window.location.href = "/";
+      }
     </script>
-
-</body>
+  </body>
 </html>
