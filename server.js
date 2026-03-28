@@ -250,6 +250,7 @@ app.post("/api/vuln/cmd/ping", (req, res) => {
   res.json({ success: true, isHacked: false, output: normalOutput });
 });
 
-app.listen(3000, () =>
-  console.log("Sunucu http://localhost:3000 üzerinde çalışıyor."),
-);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Sunucu ${PORT} portunda canlıya alındı!`);
+});
