@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const db = require("./database"); // SADECE zafiyetli modüller (simülasyon) için SQLite
 const path = require("path");
 const admin = require("firebase-admin");
+const bcrypt = require("bcrypt"); // Şifre hashleme kütüphanesi eklendi!
 
 // ==========================================
 // FIREBASE ADMİN BAŞLATMA (GERÇEK VERİLER İÇİN)
@@ -41,16 +42,19 @@ app.post("/api/secure/register", async (req, res) => {
     const doc = await userRef.get();
 
     if (doc.exists) {
-      // Firebase'de varsa hata döndür (Oturum kalıcıdır, silinmez)
       return res
         .status(400)
         .json({ success: false, message: "Bu e-posta zaten kullanımda!" });
     }
 
-    // 2. Kullanıcı yoksa Firebase'e güvenle kaydet
+    // 2. Şifreyi Hashle (Güvenlik Katmanı)
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // 3. Kullanıcı yoksa Firebase'e şifrelenmiş halde kaydet
     await userRef.set({
       email: safeEmail,
-      password: password,
+      password: hashedPassword, // Artık düz metin değil, hashlenmiş şifre gidiyor!
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -77,8 +81,16 @@ app.post("/api/secure/login", async (req, res) => {
     const userRef = firestore.collection("users").doc(safeEmail);
     const doc = await userRef.get();
 
-    // Kullanıcı yoksa VEYA şifresi eşleşmiyorsa
-    if (!doc.exists || doc.data().password !== password) {
+    if (!doc.exists) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Hatalı email veya şifre!" });
+    }
+
+    // Hashlenmiş şifreyi, kullanıcının girdiği şifre ile karşılaştırıyoruz
+    const isMatch = await bcrypt.compare(password, doc.data().password);
+
+    if (!isMatch) {
       return res
         .status(401)
         .json({ success: false, message: "Hatalı email veya şifre!" });
