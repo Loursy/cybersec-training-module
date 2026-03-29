@@ -91,7 +91,7 @@
 
               <div class="action-footer space-between" style="margin-top: 25px;">
                 <button class="btn-secondary" @click="currentStep = 1">Önceki</button>
-                <button class="btn-success" @click="currentStep = 3">
+                <button class="btn-success" @click="currentStep = 3" v-if="simResult && simResult.includes('BAŞARILI') || isReviewMode">
                   {{ currentText.btnNext2 }}
                 </button>
               </div>
@@ -236,10 +236,10 @@ const translations = {
     expl2: "'Veya 1 eşittir 1' diyoruz. 1 her zaman 1'e eşit olduğu için, veritabanı 'Tamam bu kişi doğru söylüyor' diyerek bizi zorla içeri alıyor.",
     expl3: "Veritabanına 'Bundan sonra yazan şifre kontrol kısmını tamamen görmezden gel, sil gitsin' emrini veriyor.",
     simPanelTitle: "Zafiyetli Yönetici Paneli",
-    emailPlaceholder: "E-posta Adresi (Saldırı metnini buraya yazın)",
+    emailPlaceholder: "E-posta (Saldırı metnini yazın)",
     passPlaceholder: "Şifre (Rastgele bir şeyler sallayın)",
     btnHack: "Giriş Yapmayı Dene (Hack)",
-    btnNext2: "Saldırıyı Analiz Et (Eğitime Geç)",
+    btnNext2: "Saldırıyı Analiz Et",
 
     s3Title: "Adım 3: Zafiyet Analizi ve Çözümü",
     s3DefTitle: "SQL Injection (SQLi) Nedir?",
@@ -311,7 +311,7 @@ const translations = {
     emailPlaceholder: "Email Address (Type the attack text here)",
     passPlaceholder: "Password (Type anything random)",
     btnHack: "Try to Log In (Hack)",
-    btnNext2: "Analyze Attack (Go to Education)",
+    btnNext2: "Analyze Attack",
 
     s3Title: "Step 3: Vulnerability Analysis and Solution",
     s3DefTitle: "What is SQL Injection (SQLi)?",
@@ -525,7 +525,7 @@ const finishPostTest = async () => {
 .correct-answer { background: rgba(16, 185, 129, 0.1) !important; border-color: #10b981 !important; color: #10b981 !important; font-weight: bold; }
 .wrong-answer { background: rgba(239, 68, 68, 0.1) !important; border-color: #ef4444 !important; color: #ef4444 !important; text-decoration: line-through; }
 
-/* GÖREV REHBERİ (Adım 2) */
+/* GÖREV REHBERİ (Adım 2) - Izgara Tasarımı */
 .mission-layout { display: grid; grid-template-columns: 1fr; gap: 25px; margin-top: 20px; }
 @media (min-width: 850px) { .mission-layout { grid-template-columns: 1fr 1fr; } }
 .guide-panel { display: flex; flex-direction: column; gap: 20px; }
@@ -541,8 +541,8 @@ const finishPostTest = async () => {
 .green-text { color: #10b981; }
 
 /* UYGULAMA PANELİ (Adım 2 Sağ Taraf) */
-.app-container { display: flex; flex-direction: column; }
-.simulation-box { background: #050505; border-radius: 12px; border: 1px solid #334155; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+.app-container { display: flex; flex-direction: column; justify-content: flex-start; }
+.simulation-box { background: #050505; border-radius: 12px; border: 1px solid #334155; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.4); height: max-content;}
 .sim-header { background: #1e293b; padding: 10px 15px; display: flex; align-items: center; border-bottom: 1px solid #000; }
 .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; display: inline-block;}
 .dot.red { background: #ef4444; } .dot.yellow { background: #f59e0b; } .dot.green { background: #10b981; }
