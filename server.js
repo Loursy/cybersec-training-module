@@ -5,7 +5,6 @@ const path = require("path");
 const admin = require("firebase-admin");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const JWT_SECRET = "siber_guvenlik_lab_gizli_anahtari_123!";
@@ -32,23 +31,19 @@ const authenticateToken = (req, res, next) => {
   const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return res
-      .status(401)
-      .json({
-        success: false,
-        message: "Erişim reddedildi. Geçerli bir biletiniz (token) yok.",
-      });
+    return res.status(401).json({
+      success: false,
+      message: "Erişim reddedildi. Geçerli bir biletiniz (token) yok.",
+    });
   }
 
   // Biletin sahte olup olmadığını ve süresini kontrol et
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "Oturum süreniz dolmuş veya bilet geçersiz.",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "Oturum süreniz dolmuş veya bilet geçersiz.",
+      });
     }
 
     // Bilet geçerliyse kullanıcının bilgilerini (user.email) isteğe ekle ve kapıyı aç
