@@ -505,7 +505,7 @@ onMounted(async () => {
 
   if (isReviewMode.value) {
     try {
-      const response = await fetch(`http://localhost:3000/api/get-user-stats/${userEmail}`);
+      const response = await fetch(`/api/get-user-stats/${userEmail}`);
       const result = await response.json();
       if (result.success && result.data && result.data.ede_answers) {
         Object.assign(answers, result.data.ede_answers);

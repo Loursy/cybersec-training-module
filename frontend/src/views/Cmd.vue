@@ -555,7 +555,7 @@ const finishPostTest = async () => {
   postScore = Math.round(postScore);
   
   try {
-    await fetch(`http://localhost:3000/api/save-score`, {
+    await fetch(`/api/save-score`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: userEmail, module: "cmd", preScore, postScore, answers }),

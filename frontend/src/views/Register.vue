@@ -141,7 +141,7 @@ const submitRegister = async () => {
   isLoading.value = true;
 
   try {
-    const response = await fetch(`http://localhost:3000/api/secure/register`, {
+    const response = await fetch(`/api/secure/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email.value, password: password.value })

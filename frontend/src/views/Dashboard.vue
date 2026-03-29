@@ -171,8 +171,7 @@ onMounted(async () => {
   }
 
   try {
-    const baseUrl = "http://localhost:3000";
-    const response = await fetch(`${baseUrl}/api/get-user-stats/${userEmail}`);
+    const response = await fetch(`/api/get-user-stats/${userEmail}`);
     const result = await response.json();
 
     if (result.success && result.data) {
