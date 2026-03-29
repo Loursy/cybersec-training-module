@@ -24,7 +24,9 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "frontend", "dist")));
 
+// ==========================================
 // GÜVENLİK GÖREVLİSİ (JWT Doğrulama Middleware'i)
+// ==========================================
 const authenticateToken = (req, res, next) => {
   // Frontend bileti "Authorization: Bearer <token>" formatında gönderecek
   const authHeader = req.headers["authorization"];
@@ -97,7 +99,7 @@ app.post("/api/secure/register", async (req, res) => {
     // 3. Kullanıcı yoksa Firebase'e şifrelenmiş halde kaydet
     await userRef.set({
       email: safeEmail,
-      password: hashedPassword, // Artık düz metin değil, hashlenmiş şifre gidiyor!
+      password: hashedPassword,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -109,7 +111,7 @@ app.post("/api/secure/register", async (req, res) => {
     res.json({
       success: true,
       message: "Kayıt başarılı! Sisteme giriş yapılıyor...",
-      token: token, // Frontend'in bu bileti alıp saklaması için gönderiyoruz!
+      token: token,
     });
   } catch (error) {
     console.error("Firebase Kayıt Hatası:", error);
@@ -119,9 +121,10 @@ app.post("/api/secure/register", async (req, res) => {
   }
 });
 
-// Giriş Yap API
+// Giriş Yap API (BENİ HATIRLA EKLENDİ)
 app.post("/api/secure/login", async (req, res) => {
-  const { email, password } = req.body;
+  // Frontend'den artık rememberMe bilgisini de bekliyoruz
+  const { email, password, rememberMe } = req.body;
 
   if (!email || !password) {
     return res
@@ -136,7 +139,6 @@ app.post("/api/secure/login", async (req, res) => {
     const userRef = firestore.collection("users").doc(safeEmail);
     const doc = await userRef.get();
 
-    // Kullanıcı yoksa güvenlik gereği "Kullanıcı bulunamadı" yerine genel bir hata mesajı verilir
     if (!doc.exists) {
       return res
         .status(401)
@@ -154,15 +156,18 @@ app.post("/api/secure/login", async (req, res) => {
         .json({ success: false, message: "Hatalı e-posta veya şifre!" });
     }
 
-    // 3. Şifre doğru! Kullanıcıya 24 saatlik giriş bileti (Token) kes
+    // 3. Şifre doğru! Beni Hatırla durumuna göre bilete ömür biç:
+    // İşaretliyse 30 gün (30d), değilse 1 saat (1h)
+    const tokenExpireTime = rememberMe ? "30d" : "1h";
+
     const token = jwt.sign({ email: safeEmail }, JWT_SECRET, {
-      expiresIn: "24h",
+      expiresIn: tokenExpireTime,
     });
 
     res.json({
       success: true,
       message: "Giriş başarılı!",
-      token: token, // Frontend bu bileti alacak!
+      token: token,
     });
   } catch (error) {
     console.error("Firebase Giriş Hatası:", error);
@@ -171,11 +176,10 @@ app.post("/api/secure/login", async (req, res) => {
 });
 
 // ==========================================
-// FIREBASE VERİ YÖNETİMİ (SKORLAR)
+// FIREBASE VERİ YÖNETİMİ (SKORLAR) - KORUMA EKLENDİ
 // ==========================================
 
-app.post("/api/save-score", async (req, res) => {
-  // YENİ: Frontend'den artık "answers" (cevaplar) objesini de bekliyoruz
+app.post("/api/save-score", authenticateToken, async (req, res) => {
   const { email, module, preScore, postScore, answers } = req.body;
 
   try {
@@ -189,10 +193,10 @@ app.post("/api/save-score", async (req, res) => {
           [module + "_pre"]: preScore,
           [module + "_post"]: postScore,
           [module + "_completed"]: true,
-          [module + "_answers"]: answers, // YENİ: Kullanıcının tüm şıklarını veritabanına yazıyoruz!
+          [module + "_answers"]: answers,
           last_updated: admin.firestore.FieldValue.serverTimestamp(),
         },
-        { merge: true }, // merge: true sayesinde eski veriler silinmez, yenileri üstüne eklenir
+        { merge: true },
       );
 
     res.json({ success: true });
@@ -202,7 +206,7 @@ app.post("/api/save-score", async (req, res) => {
 });
 
 // Skor Çekme
-app.get("/api/get-user-stats/:email", async (req, res) => {
+app.get("/api/get-user-stats/:email", authenticateToken, async (req, res) => {
   try {
     const safeEmail = req.params.email.trim().toLowerCase();
     const doc = await firestore.collection("results").doc(safeEmail).get();
@@ -217,11 +221,11 @@ app.get("/api/get-user-stats/:email", async (req, res) => {
 });
 
 // ==========================================
-// ZAFİYETLİ MODÜLLER (VULNERABLE) - BUNLAR SQLITE KULLANIR
+// ZAFİYETLİ MODÜLLER (VULNERABLE) - KORUMA EKLENDİ
 // ==========================================
 
 // Module 1: SQL Injection
-app.post("/api/vuln/sqli/login", (req, res) => {
+app.post("/api/vuln/sqli/login", authenticateToken, (req, res) => {
   const { email } = req.body;
   const query = `SELECT * FROM dummy_admins WHERE email = '${email}'`;
   db.all(query, [], (err, rows) => {
@@ -232,8 +236,8 @@ app.post("/api/vuln/sqli/login", (req, res) => {
   });
 });
 
-// Module 2: Broken Access Control (Vulnerable Endpoint)
-app.get("/api/vuln/bac/profile/:id", (req, res) => {
+// Module 2: Broken Access Control
+app.get("/api/vuln/bac/profile/:id", authenticateToken, (req, res) => {
   const id = req.params.id;
   const query = `SELECT * FROM dummy_profiles WHERE id = ?`;
   db.get(query, [id], (err, row) => {
@@ -246,7 +250,7 @@ app.get("/api/vuln/bac/profile/:id", (req, res) => {
 });
 
 // Module 3: Excessive Data Exposure API
-app.post("/api/vuln/ede/search", (req, res) => {
+app.post("/api/vuln/ede/search", authenticateToken, (req, res) => {
   const { username } = req.body;
   if (username === "admin") {
     return res.json({
@@ -267,13 +271,13 @@ app.post("/api/vuln/ede/search", (req, res) => {
 });
 
 // Module 4: Cross-Site Scripting (XSS) API
-app.post("/api/vuln/xss/search", (req, res) => {
+app.post("/api/vuln/xss/search", authenticateToken, (req, res) => {
   const { term } = req.body;
   return res.json({ success: true, term: term });
 });
 
 // Module 5: Rate Limiting (HIZ SINIRLANDIRMA) API
-app.post("/api/vuln/rate/verify", (req, res) => {
+app.post("/api/vuln/rate/verify", authenticateToken, (req, res) => {
   const { otp } = req.body;
   const gercekSmsKodu = "8427";
   if (otp === gercekSmsKodu) {
@@ -290,7 +294,7 @@ app.post("/api/vuln/rate/verify", (req, res) => {
 });
 
 // Module 6: OS Command Injection
-app.post("/api/vuln/cmd/ping", (req, res) => {
+app.post("/api/vuln/cmd/ping", authenticateToken, (req, res) => {
   const { ip } = req.body;
 
   if (!ip) {

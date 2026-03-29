@@ -41,6 +41,14 @@
           </div>
         </div>
 
+        <div class="remember-options">
+          <label class="checkbox-container">
+            <input type="checkbox" v-model="rememberMe" />
+            <span class="checkmark"></span>
+            {{ currentText.rememberMe }}
+          </label>
+        </div>
+
         <div v-if="errorMessage" class="error-box pulse-error">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
           {{ errorMessage }}
@@ -75,6 +83,7 @@ const translations = {
     desc: "Eğitim platformuna erişmek için kimliğinizi doğrulayın.",
     emailLbl: "E-posta Adresi",
     passwordLbl: "Şifre",
+    rememberMe: "Beni Hatırla",
     showPass: "Şifreyi Göster",
     hidePass: "Şifreyi Gizle",
     loginBtn: "Giriş Yap",
@@ -90,6 +99,7 @@ const translations = {
     desc: "Verify your identity to access the training platform.",
     emailLbl: "Email Address",
     passwordLbl: "Password",
+    rememberMe: "Remember Me",
     showPass: "Show Password",
     hidePass: "Hide Password",
     loginBtn: "Sign In",
@@ -111,6 +121,7 @@ const toggleLanguage = () => {
 
 const email = ref('');
 const password = ref('');
+const rememberMe = ref(false); // Beni hatırla değişkeni
 const errorMessage = ref('');
 const isLoading = ref(false);
 const showPassword = ref(false);
@@ -129,14 +140,17 @@ const submitLogin = async () => {
     const response = await fetch(`/api/secure/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email.value, password: password.value })
+      // rememberMe değişkenini de sunucuya gönderiyoruz
+      body: JSON.stringify({ 
+        email: email.value, 
+        password: password.value,
+        rememberMe: rememberMe.value 
+      })
     });
     
     const data = await response.json();
     if (data.success) {
-      // 1. Backend'den gelen güvenli JWT biletini sakla
-      localStorage.setItem('token', data.token); 
-      // 2. Ekranda göstermek vb. için e-postayı da sakla
+      localStorage.setItem('token', data.token);
       localStorage.setItem('userEmail', email.value);
       router.push('/dashboard');
     } else {
@@ -164,7 +178,6 @@ onMounted(() => {
 
 .auth-container { width: 100%; max-width: 440px; background: #0f172a; padding: 50px 40px; border-radius: 16px; border: 1px solid #1e293b; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5); position: relative; z-index: 1; }
 
-/* Yumuşak Giriş Animasyonu */
 .fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(30px); }
@@ -191,7 +204,19 @@ onMounted(() => {
 .eye-btn { position: absolute; right: 10px; background: transparent; border: none; color: #64748b; cursor: pointer; padding: 6px; border-radius: 6px; display: flex; align-items: center; transition: 0.2s; }
 .eye-btn:hover { background: #1e293b; color: #f8fafc; }
 
-.btn-submit { color: #fff; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; margin-top: 10px; display: flex; justify-content: center; align-items: center; }
+/* Beni Hatırla Kutucuğu Stilleri */
+.remember-options { display: flex; align-items: center; margin-top: -5px; margin-bottom: 5px; }
+.checkbox-container { display: flex; align-items: center; position: relative; padding-left: 28px; cursor: pointer; font-size: 13.5px; color: #94a3b8; user-select: none; transition: 0.2s; font-weight: 500;}
+.checkbox-container:hover { color: #f8fafc; }
+.checkbox-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+.checkmark { position: absolute; top: -1px; left: 0; height: 18px; width: 18px; background-color: #0b1120; border: 1px solid #334155; border-radius: 4px; transition: 0.2s; }
+.checkbox-container:hover input ~ .checkmark { border-color: #0284c7; }
+.checkbox-container input:checked ~ .checkmark { background-color: #0284c7; border-color: #0284c7; }
+.checkmark:after { content: ""; position: absolute; display: none; }
+.checkbox-container input:checked ~ .checkmark:after { display: block; }
+.checkbox-container .checkmark:after { left: 6px; top: 2px; width: 4px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+
+.btn-submit { color: #fff; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; margin-top: 5px; display: flex; justify-content: center; align-items: center; }
 .blue-btn { background: #0284c7; }
 .blue-btn:hover:not(:disabled) { background: #0369a1; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(2, 132, 199, 0.3); }
 .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
