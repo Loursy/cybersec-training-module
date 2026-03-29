@@ -2,3 +2,4 @@ node_modules/
 firebase-key.json
 training.db
 .env
+npm-debug.log

@@ -3,7 +3,8 @@ const bodyParser = require("body-parser");
 const db = require("./database"); // SADECE zafiyetli modüller (simülasyon) için SQLite
 const path = require("path");
 const admin = require("firebase-admin");
-const bcrypt = require("bcrypt"); // Şifre hashleme kütüphanesi eklendi!
+const bcrypt = require("bcrypt"); // Şifre hashleme kütüphanesi
+const cors = require("cors"); // YENİ: CORS (Çapraz Kaynak Paylaşımı) kütüphanesi eklendi!
 
 // ==========================================
 // FIREBASE ADMİN BAŞLATMA (GERÇEK VERİLER İÇİN)
@@ -15,8 +16,11 @@ admin.initializeApp({
 const firestore = admin.firestore();
 
 const app = express();
+
+app.use(cors());
+
 app.use(bodyParser.json());
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "frontend", "dist")));
 
 // ==========================================
 // ANA PLATFORM GİRİŞ/KAYIT (TAMAMEN FIREBASE)
@@ -26,12 +30,21 @@ app.use(express.static("public"));
 app.post("/api/secure/register", async (req, res) => {
   const { email, password } = req.body;
 
-  // Sunucu tarafı format kontrolü
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Geçersiz e-posta formatı!" });
+  // 1. BACKEND GİRDİ DOĞRULAMASI (KATI REGEX)
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!email || !emailRegex.test(email)) {
+    return res.status(400).json({
+      success: false,
+      message:
+        "Geçersiz e-posta formatı. Lütfen gerçek bir e-posta adresi girin.",
+    });
+  }
+
+  if (!password || password.length < 4) {
+    return res.status(400).json({
+      success: false,
+      message: "Şifre en az 4 karakter olmalıdır.",
+    });
   }
 
   try {
@@ -109,11 +122,13 @@ app.post("/api/secure/login", async (req, res) => {
 // FIREBASE VERİ YÖNETİMİ (SKORLAR)
 // ==========================================
 
-// Skor Kaydetme
 app.post("/api/save-score", async (req, res) => {
-  const { email, module, preScore, postScore } = req.body;
+  // YENİ: Frontend'den artık "answers" (cevaplar) objesini de bekliyoruz
+  const { email, module, preScore, postScore, answers } = req.body;
+
   try {
     const safeEmail = email.trim().toLowerCase();
+
     await firestore
       .collection("results")
       .doc(safeEmail)
@@ -122,10 +137,12 @@ app.post("/api/save-score", async (req, res) => {
           [module + "_pre"]: preScore,
           [module + "_post"]: postScore,
           [module + "_completed"]: true,
+          [module + "_answers"]: answers, // YENİ: Kullanıcının tüm şıklarını veritabanına yazıyoruz!
           last_updated: admin.firestore.FieldValue.serverTimestamp(),
         },
-        { merge: true },
+        { merge: true }, // merge: true sayesinde eski veriler silinmez, yenileri üstüne eklenir
       );
+
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -253,6 +270,10 @@ app.post("/api/vuln/cmd/ping", (req, res) => {
 
   const normalOutput = `PING ${ip} (${ip}): 56 data bytes\n64 bytes from ${ip}: icmp_seq=0 ttl=64 time=0.045 ms\n64 bytes from ${ip}: icmp_seq=1 ttl=64 time=0.048 ms\n64 bytes from ${ip}: icmp_seq=2 ttl=64 time=0.041 ms\n\n--- ${ip} ping statistics ---\n3 packets transmitted, 3 packets received, 0.0% packet loss`;
   res.json({ success: true, isHacked: false, output: normalOutput });
+});
+
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
 });
 
 const PORT = process.env.PORT || 3000;
