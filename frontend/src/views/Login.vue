@@ -134,6 +134,9 @@ const submitLogin = async () => {
     
     const data = await response.json();
     if (data.success) {
+      // 1. Backend'den gelen güvenli JWT biletini sakla
+      localStorage.setItem('token', data.token); 
+      // 2. Ekranda göstermek vb. için e-postayı da sakla
       localStorage.setItem('userEmail', email.value);
       router.push('/dashboard');
     } else {

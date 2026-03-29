@@ -1,157 +1,176 @@
 <template>
   <div class="module-wrapper">
-    <button class="lang-btn" @click="toggleLanguage">
-      {{ currentLang === 'tr' ? 'EN' : 'TR' }}
-    </button>
+    <div class="dot-grid"></div>
 
-    <div class="module-container">
-      
-      <div v-if="isLoading" style="text-align: center; padding: 50px 0;">
-        <span class="spinner" style="display:inline-block; border-color: #00e5ff; border-top-color: transparent; width: 40px; height: 40px;"></span>
-        <p style="color: #00e5ff; margin-top: 20px;">Veriler Çekiliyor...</p>
+    <div class="container">
+      <button class="lang-btn" @click="toggleLanguage">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        {{ currentLang === 'tr' ? 'EN' : 'TR' }}
+      </button>
+
+      <div v-if="isLoading" class="loading-screen">
+        <span class="spinner"></span>
+        <p>{{ currentLang === 'tr' ? 'Sunucu ile iletişim kuruluyor...' : 'Communicating with server...' }}</p>
       </div>
 
-      <div v-else-if="currentStep === 1" class="step active">
-        <h2 v-if="isReviewMode" style="color: #10b981;">🔍 İnceleme Modu: Ön-Test Analizi</h2>
-        <h2 v-else>{{ currentText.s1Title }}</h2>
-        <p v-if="!isReviewMode">{{ currentText.s1Desc }}</p>
+      <div v-else class="module-content fade-in">
+        <h1 class="mod-title">{{ currentText.modTitle }}</h1>
+        <div class="neon-divider"></div>
 
-        <div class="question-box">
-          <p><b style="color: #00e5ff">{{ currentText.preQ1Text }}</b></p>
-          <label :class="getLabelClass('pre', 'q1', 'a')"><input type="radio" v-model="answers.preQ1" value="a" :disabled="isReviewMode" /> <span>{{ currentText.preQ1a }}</span></label>
-          <label :class="getLabelClass('pre', 'q1', 'b')"><input type="radio" v-model="answers.preQ1" value="b" :disabled="isReviewMode" /> <span>{{ currentText.preQ1b }}</span></label>
-          <label :class="getLabelClass('pre', 'q1', 'c')"><input type="radio" v-model="answers.preQ1" value="c" :disabled="isReviewMode" /> <span>{{ currentText.preQ1c }}</span></label>
-          <label :class="getLabelClass('pre', 'q1', 'd')"><input type="radio" v-model="answers.preQ1" value="d" :disabled="isReviewMode" /> <span>{{ currentText.preQ1d }}</span></label>
+        <div v-if="currentStep === 1" class="step">
+          <h2 class="step-title" :class="{ 'review-mode-title': isReviewMode }">
+            {{ isReviewMode ? (currentLang === 'tr' ? '🔍 İnceleme Modu: Ön-Test Analizi' : '🔍 Review Mode: Pre-Test Analysis') : currentText.s1Title }}
+          </h2>
+          <p class="step-desc" v-if="!isReviewMode">{{ currentText.s1Desc }}</p>
+
+          <div class="question" v-for="(q, index) in [1, 2, 3]" :key="'pre'+index">
+            <p><b v-html="currentText[`preQ${q}Text`]"></b></p>
+            <div class="options">
+              <label v-for="opt in ['a', 'b', 'c', 'd']" :key="opt" :class="getLabelClass('pre', `q${q}`, opt)">
+                <input type="radio" v-model="answers[`preQ${q}`]" :value="opt" :disabled="isReviewMode" /> 
+                <span>{{ currentText[`preQ${q}${opt}`] }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="action-footer">
+            <button class="btn-primary" @click="finishPreTest">
+              {{ isReviewMode ? (currentLang === 'tr' ? 'Sonraki Aşama (Simülasyon)' : 'Next Step (Simulation)') : currentText.btnNext1 }}
+            </button>
+          </div>
         </div>
 
-        <div class="question-box">
-          <p><b style="color: #00e5ff">{{ currentText.preQ2Text }}</b></p>
-          <label :class="getLabelClass('pre', 'q2', 'a')"><input type="radio" v-model="answers.preQ2" value="a" :disabled="isReviewMode" /> <span>{{ currentText.preQ2a }}</span></label>
-          <label :class="getLabelClass('pre', 'q2', 'b')"><input type="radio" v-model="answers.preQ2" value="b" :disabled="isReviewMode" /> <span>{{ currentText.preQ2b }}</span></label>
-          <label :class="getLabelClass('pre', 'q2', 'c')"><input type="radio" v-model="answers.preQ2" value="c" :disabled="isReviewMode" /> <span>{{ currentText.preQ2c }}</span></label>
-          <label :class="getLabelClass('pre', 'q2', 'd')"><input type="radio" v-model="answers.preQ2" value="d" :disabled="isReviewMode" /> <span>{{ currentText.preQ2d }}</span></label>
+        <div v-else-if="currentStep === 2" class="step">
+          <h2 class="step-title" :class="{ 'review-mode-title': isReviewMode }">
+            {{ isReviewMode ? (currentLang === 'tr' ? '🔍 İnceleme Modu: Simülasyon' : '🔍 Review Mode: Simulation') : currentText.s2Title }}
+          </h2>
+
+          <div class="mission-layout">
+            <div class="guide-panel">
+              <div class="summary-box">
+                <p>{{ currentText.s2Summary }}</p>
+              </div>
+              <p class="guide-desc" v-html="currentText.s2Desc"></p>
+
+              <div class="info-box logic-box">
+                <h4>{{ currentText.infoTitle }}</h4>
+                <ul>
+                  <li><b class="blue-text">' (Tek Tırnak):</b> <span>{{ currentText.expl1 }}</span></li>
+                  <li><b class="yellow-text">OR 1=1:</b> <span>{{ currentText.expl2 }}</span></li>
+                  <li><b class="red-text">-- (İki Tire):</b> <span>{{ currentText.expl3 }}</span></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="app-container">
+              <div class="simulation-box">
+                <div class="sim-header">
+                  <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                  <span style="margin-left: 10px; font-family: monospace; color: #94a3b8;">admin.panel.local</span>
+                </div>
+                <div class="sim-body">
+                  <h3>{{ currentText.simPanelTitle }}</h3>
+                  
+                  <div class="input-group">
+                    <label>E-posta / Kullanıcı Adı</label>
+                    <input type="text" v-model="simEmail" class="sim-input" :placeholder="currentText.emailPlaceholder" autocomplete="off" />
+                  </div>
+                  
+                  <div class="input-group">
+                    <label>Şifre</label>
+                    <input type="password" v-model="simPass" class="sim-input" :placeholder="currentText.passPlaceholder" />
+                  </div>
+
+                  <button class="sim-btn" @click="runExploit">
+                    {{ currentText.btnHack }}
+                  </button>
+                  
+                  <div v-if="simResult" class="result-container fade-in" v-html="simResult"></div>
+                </div>
+              </div>
+
+              <div class="action-footer space-between" style="margin-top: 25px;">
+                <button class="btn-secondary" @click="currentStep = 1">Önceki</button>
+                <button class="btn-success" @click="currentStep = 3">
+                  {{ currentText.btnNext2 }}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="question-box">
-          <p><b style="color: #00e5ff">{{ currentText.preQ3Text }}</b></p>
-          <label :class="getLabelClass('pre', 'q3', 'a')"><input type="radio" v-model="answers.preQ3" value="a" :disabled="isReviewMode" /> <span>{{ currentText.preQ3a }}</span></label>
-          <label :class="getLabelClass('pre', 'q3', 'b')"><input type="radio" v-model="answers.preQ3" value="b" :disabled="isReviewMode" /> <span>{{ currentText.preQ3b }}</span></label>
-          <label :class="getLabelClass('pre', 'q3', 'c')"><input type="radio" v-model="answers.preQ3" value="c" :disabled="isReviewMode" /> <span>{{ currentText.preQ3c }}</span></label>
-          <label :class="getLabelClass('pre', 'q3', 'd')"><input type="radio" v-model="answers.preQ3" value="d" :disabled="isReviewMode" /> <span>{{ currentText.preQ3d }}</span></label>
-        </div>
+        <div v-else-if="currentStep === 3" class="step">
+          <h2 class="step-title" :class="{ 'review-mode-title': isReviewMode }">
+            {{ isReviewMode ? (currentLang === 'tr' ? '🔍 İnceleme Modu: Eğitim Materyali' : '🔍 Review Mode: Training Material') : currentText.s3Title }}
+          </h2>
 
-        <button class="btn-next" @click="finishPreTest">
-          {{ isReviewMode ? 'Sonraki Aşama (Simülasyon)' : currentText.btnNext1 }}
-        </button>
-      </div>
+          <div class="edu-card">
+            <h3 class="edu-heading blue-text">{{ currentText.s3DefTitle }}</h3>
+            <p class="edu-desc">{{ currentText.s3DefDesc }}</p>
 
-      <div v-else-if="currentStep === 2" class="step active">
-        <h2 v-if="isReviewMode" style="color: #10b981;">🔍 İnceleme Modu: Simülasyon</h2>
-        <h2 v-else>{{ currentText.s2Title }}</h2>
+            <div class="neon-divider" style="margin: 30px 0; background: linear-gradient(90deg, #1e293b, #334155, #1e293b);"></div>
 
-        <div class="summary-box">
-          <p style="margin: 0; color: #e2e8f0; font-size: 16px; font-style: italic; line-height: 1.6;">
-            {{ currentText.s2Summary }}
-          </p>
-        </div>
+            <h3 class="edu-heading green-text">{{ currentText.s3SolTitle }}</h3>
+            <p class="edu-desc" v-html="currentText.s3SolDesc1"></p>
 
-        <p v-html="currentText.s2Desc"></p>
-
-        <div class="info-box">
-          <h4 style="margin-top: 0; color: #00e5ff">{{ currentText.infoTitle }}</h4>
-          <ul style="color: #d1d5db; line-height: 1.8">
-            <li><b style="color: #00e5ff">' (Tek Tırnak):</b> <span>{{ currentText.expl1 }}</span></li>
-            <li><b style="color: #10b981">OR 1=1:</b> <span>{{ currentText.expl2 }}</span></li>
-            <li><b style="color: #ef4444">-- (İki Tire):</b> <span>{{ currentText.expl3 }}</span></li>
-          </ul>
-        </div>
-
-        <div class="simulation-box">
-          <h3 style="color: #ef4444; text-align: center; margin-top: 0">{{ currentText.simPanelTitle }}</h3>
-          <input type="text" v-model="simEmail" class="sim-input" :placeholder="currentText.emailPlaceholder" />
-          <input type="password" v-model="simPass" class="sim-input" :placeholder="currentText.passPlaceholder" />
-          <button class="sim-btn" @click="runExploit">{{ currentText.btnHack }}</button>
-          
-          <div v-if="simResult" v-html="simResult" style="margin-top: 20px;"></div>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; margin-top: 25px;">
-          <button class="btn-next" style="background: #374151; float:none;" @click="currentStep = 1">Önceki</button>
-          <button class="btn-next" style="background: linear-gradient(135deg, #2563eb, #3b82f6); float:none;" @click="currentStep = 3">
-            {{ currentText.btnNext2 }}
-          </button>
-        </div>
-      </div>
-
-      <div v-else-if="currentStep === 3" class="step active">
-        <h2 v-if="isReviewMode" style="color: #10b981;">🔍 İnceleme Modu: Eğitim Materyali</h2>
-        <h2 v-else>{{ currentText.s3Title }}</h2>
-
-        <h3 style="margin-top: 0; color: #00e5ff">{{ currentText.s3DefTitle }}</h3>
-        <p style="margin-bottom: 25px">{{ currentText.s3DefDesc }}</p>
-
-        <h3 style="color: #10b981; border-top: 1px solid #1f2937; padding-top: 20px;">{{ currentText.s3SolTitle }}</h3>
-        <p v-html="currentText.s3SolDesc1"></p>
-
-        <h4 style="color: #ef4444; margin-bottom: 5px">{{ currentText.labelVuln }}</h4>
-        <pre><code><span class="code-comment">// KÖTÜ KULLANIM: Kullanıcı verisi kodun içine doğrudan gömülüyor</span>
+            <div class="code-comparison">
+              <div class="code-pane bad-code">
+                <div class="pane-header red-bg">{{ currentText.labelVuln }}</div>
+                <pre><code><span class="code-comment">// KÖTÜ KULLANIM: Kullanıcı verisi kodun içine doğrudan gömülüyor</span>
 <span class="code-keyword">const</span> <span class="code-var">query</span> = <span class="code-string">`SELECT * FROM users 
-               WHERE email = '<span style="color:#ef4444;">${email}</span>' 
-               AND password = '${password}'`</span>;</code></pre>
+               WHERE email = '<span style="color:#ef4444; font-weight:bold;">${email}</span>' 
+               AND password = '<span style="color:#ef4444; font-weight:bold;">${password}</span>'`</span>;</code></pre>
+              </div>
 
-        <p v-html="currentText.s3SolDesc2"></p>
-
-        <h4 style="color: #10b981; margin-bottom: 5px">{{ currentText.labelSec }}</h4>
-        <pre><code><span class="code-comment">// GÜVENLİ: Doğrudan koda yapıştırmak yerine parametre (?) kullanımı</span>
+              <div class="code-pane good-code">
+                <div class="pane-header green-bg">{{ currentText.labelSec }}</div>
+                <pre><code><span class="code-comment">// GÜVENLİ: Doğrudan koda yapıştırmak yerine parametre (?) kullanımı</span>
 <span class="code-keyword">const</span> <span class="code-var">query</span> = <span class="code-string">`SELECT * FROM users 
-               WHERE email = <span style="color:#10b981;">?</span> 
-               AND password = <span style="color:#10b981;">?</span>`</span>;</code></pre>
+               WHERE email = <span style="color:#10b981; font-weight:bold; font-size:18px;">?</span> 
+               AND password = <span style="color:#10b981; font-weight:bold; font-size:18px;">?</span>`</span>;</code></pre>
+              </div>
+            </div>
 
-        <div style="display: flex; justify-content: space-between; margin-top: 25px;">
-          <button class="btn-next" style="background: #374151; float:none;" @click="currentStep = 2">Önceki</button>
-          <button class="btn-next" style="float:none;" @click="currentStep = 4">{{ currentText.btnNext3 }}</button>
+            <p class="edu-desc" v-html="currentText.s3SolDesc2"></p>
+            
+            <div style="margin-top: 25px; text-align: center; border-radius: 8px; overflow: hidden; border: 1px solid #334155;">
+              
+            </div>
+
+          </div>
+
+          <div class="action-footer space-between">
+            <button class="btn-secondary" @click="currentStep = 2">Önceki</button>
+            <button class="btn-primary" @click="currentStep = 4">{{ currentText.btnNext3 }}</button>
+          </div>
         </div>
+
+        <div v-else-if="currentStep === 4" class="step">
+          <h2 class="step-title" :class="{ 'review-mode-title': isReviewMode }">
+            {{ isReviewMode ? (currentLang === 'tr' ? '🔍 İnceleme Modu: Son-Test Analizi' : '🔍 Review Mode: Post-Test Analysis') : currentText.s4Title }}
+          </h2>
+          <p class="step-desc" v-if="!isReviewMode">{{ currentText.s4Desc }}</p>
+
+          <div class="question" v-for="(q, index) in [1, 2, 3]" :key="'post'+index">
+            <p><b v-html="currentText[`postQ${q}Text`]"></b></p>
+            <div class="options">
+              <label v-for="opt in ['a', 'b', 'c', 'd']" :key="opt" :class="getLabelClass('post', `q${q}`, opt)">
+                <input type="radio" v-model="answers[`postQ${q}`]" :value="opt" :disabled="isReviewMode" /> 
+                <span>{{ currentText[`postQ${q}${opt}`] }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="action-footer space-between">
+            <button class="btn-secondary" @click="currentStep = 3">Önceki</button>
+            <button class="btn-warning" @click="finishPostTest" :disabled="isSaving">
+              <span v-if="isSaving" class="spinner-small"></span>
+              {{ isReviewMode ? (currentLang === 'tr' ? 'İncelemeyi Bitir ve Dön' : 'Finish Review & Return') : (isSaving ? (currentLang === 'tr' ? 'Kaydediliyor...' : 'Saving...') : currentText.btnFinish) }}
+            </button>
+          </div>
+        </div>
+
       </div>
-
-      <div v-else-if="currentStep === 4" class="step active">
-        <h2 v-if="isReviewMode" style="color: #10b981;">🔍 İnceleme Modu: Son-Test Analizi</h2>
-        <h2 v-else>{{ currentText.s4Title }}</h2>
-        <p v-if="!isReviewMode">{{ currentText.s4Desc }}</p>
-
-        <div class="question-box">
-          <p><b style="color: #00e5ff">{{ currentText.postQ1Text }}</b></p>
-          <label :class="getLabelClass('post', 'q1', 'a')"><input type="radio" v-model="answers.postQ1" value="a" :disabled="isReviewMode" /> <span>{{ currentText.postQ1a }}</span></label>
-          <label :class="getLabelClass('post', 'q1', 'b')"><input type="radio" v-model="answers.postQ1" value="b" :disabled="isReviewMode" /> <span>{{ currentText.postQ1b }}</span></label>
-          <label :class="getLabelClass('post', 'q1', 'c')"><input type="radio" v-model="answers.postQ1" value="c" :disabled="isReviewMode" /> <span>{{ currentText.postQ1c }}</span></label>
-          <label :class="getLabelClass('post', 'q1', 'd')"><input type="radio" v-model="answers.postQ1" value="d" :disabled="isReviewMode" /> <span>{{ currentText.postQ1d }}</span></label>
-        </div>
-
-        <div class="question-box">
-          <p><b style="color: #00e5ff">{{ currentText.postQ2Text }}</b></p>
-          <label :class="getLabelClass('post', 'q2', 'a')"><input type="radio" v-model="answers.postQ2" value="a" :disabled="isReviewMode" /> <span>{{ currentText.postQ2a }}</span></label>
-          <label :class="getLabelClass('post', 'q2', 'b')"><input type="radio" v-model="answers.postQ2" value="b" :disabled="isReviewMode" /> <span>{{ currentText.postQ2b }}</span></label>
-          <label :class="getLabelClass('post', 'q2', 'c')"><input type="radio" v-model="answers.postQ2" value="c" :disabled="isReviewMode" /> <span>{{ currentText.postQ2c }}</span></label>
-          <label :class="getLabelClass('post', 'q2', 'd')"><input type="radio" v-model="answers.postQ2" value="d" :disabled="isReviewMode" /> <span>{{ currentText.postQ2d }}</span></label>
-        </div>
-
-        <div class="question-box">
-          <p><b style="color: #00e5ff">{{ currentText.postQ3Text }}</b></p>
-          <label :class="getLabelClass('post', 'q3', 'a')"><input type="radio" v-model="answers.postQ3" value="a" :disabled="isReviewMode" /> <span>{{ currentText.postQ3a }}</span></label>
-          <label :class="getLabelClass('post', 'q3', 'b')"><input type="radio" v-model="answers.postQ3" value="b" :disabled="isReviewMode" /> <span>{{ currentText.postQ3b }}</span></label>
-          <label :class="getLabelClass('post', 'q3', 'c')"><input type="radio" v-model="answers.postQ3" value="c" :disabled="isReviewMode" /> <span>{{ currentText.postQ3c }}</span></label>
-          <label :class="getLabelClass('post', 'q3', 'd')"><input type="radio" v-model="answers.postQ3" value="d" :disabled="isReviewMode" /> <span>{{ currentText.postQ3d }}</span></label>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; margin-top: 25px;">
-          <button class="btn-next" style="background: #374151; float:none;" @click="currentStep = 3">Önceki</button>
-          
-          <button class="btn-next" @click="finishPostTest" :disabled="isSaving" style="float:none;">
-            <span v-if="isSaving" class="spinner" style="display:inline-block; vertical-align:middle; margin-right:8px;"></span>
-            {{ isReviewMode ? 'İncelemeyi Bitir ve Dön' : (isSaving ? 'Kaydediliyor...' : currentText.btnFinish) }}
-          </button>
-        </div>
-      </div>
-
     </div>
   </div>
 </template>
@@ -161,20 +180,22 @@ import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
 const router = useRouter();
-const route = useRoute(); // URL'deki ?review=true parametresini okumak için
+const route = useRoute(); 
 const currentLang = ref('tr');
 const currentStep = ref(1); 
 const isSaving = ref(false);
-const isLoading = ref(true); // Veriler gelene kadar bekletme ekranı
+const isLoading = ref(true);
 
 const isReviewMode = computed(() => route.query.review === 'true');
-
-const scores = reactive({ pre: 0, post: 0 });
 
 const answers = reactive({
   preQ1: '', preQ2: '', preQ3: '',
   postQ1: '', postQ2: '', postQ3: ''
 });
+
+// JWT Token ve User Email
+const token = localStorage.getItem('token');
+const userEmail = localStorage.getItem('userEmail');
 
 const simEmail = ref('');
 const simPass = ref('');
@@ -185,9 +206,9 @@ const answerKeys = {
   post: { q1: "b", q2: "c", q3: "b" },
 };
 
-// Çeviriler (Aynı bıraktım)
 const translations = {
   tr: {
+    modTitle: "Modül 1: SQL Injection (SQLi)",
     s1Title: "Adım 1: Ön-Test (Bilgi Ölçümü)",
     s1Desc: "Aşağıdaki soruları yanıtlayarak mevcut bilgi seviyenizi ölçelim.",
     preQ1Text: "Soru 1: SQL Injection (SQLi) nedir?",
@@ -249,9 +270,9 @@ const translations = {
     postQ3d: "D) Veritabanında sadece yöneticilerin işlem yapabilmesi için yetki kontrolleri uygulayarak",
     btnFinish: "Modülü Tamamla",
 
-    msgSuccess: "VERİTABANI SIZINTISI BAŞARILI! <br><span style='font-size:14px; color:#d1d5db;'>Şifre kontrolü atlatıldı ve tüm tablo verileri döküldü:</span>",
+    msgSuccess: "VERİTABANI SIZINTISI BAŞARILI! <br><span style='font-size:14px; color:#94a3b8; font-weight:normal;'>Şifre kontrolü atlatıldı ve tüm tablo verileri döküldü:</span>",
     msgError: "SQL Hatası Tetiklendi:",
-    msgFail: "Giriş Başarısız.",
+    msgFail: "Giriş Başarısız. Veritabanı bu sorguyu reddetti.",
     tblEmail: "E-posta",
     tblPass: "Şifre",
     tblSecret: "Gizli Veri",
@@ -259,12 +280,76 @@ const translations = {
     alertResult: (pre, post) => `Modül tamamlandı!\n\n📋 Ön-Test Başarınız: ${pre}/100\n🏆 Son-Test Başarınız: ${post}/100\n\nFarkındalık artışınız kaydediliyor... Dashboard'a yönlendiriliyorsunuz.`,
   },
   en: {
-    // İngilizce çevirileri satır sayısını şişirmemek için kırptım, sen eklersin :)
+    modTitle: "Module 1: SQL Injection (SQLi)",
+    s1Title: "Step 1: Pre-Test (Knowledge Assessment)",
+    s1Desc: "Let's measure your current knowledge level by answering the questions below.",
+    preQ1Text: "Question 1: What is SQL Injection (SQLi)?",
+    preQ1a: "A) A data leak type caused by unencrypted traffic between database servers.",
+    preQ1b: "B) A vulnerability allowing user inputs to be interpreted as part of executable SQL commands.",
+    preQ1c: "C) The process of injecting fake information into the database to deceive the system.",
+    preQ1d: "D) A method of making the database inaccessible by sending excessive requests (DDoS) to the web server.",
+    preQ2Text: "Question 2: What does the term 'Payload' mean in cybersecurity?",
+    preQ2a: "A) The entirety of user passwords obtained after infiltrating the database.",
+    preQ2b: "B) The encryption algorithm used to bypass the system's firewall.",
+    preQ2c: "C) Malicious data or code snippet delivered to the target to trigger a vulnerability.",
+    preQ2d: "D) The entirety of HTTP headers sent by the server in response to the client.",
+    preQ3Text: "Question 3: Which of the following is the riskiest programming error causing an SQL Injection vulnerability on a website?",
+    preQ3a: "A) Not hashing user passwords before saving them to the database.",
+    preQ3b: "B) Directly concatenating user inputs with the SQL query text.",
+    preQ3c: "C) Data being read openly because the website lacks an SSL certificate.",
+    preQ3d: "D) The system not blocking multiple consecutive failed login attempts.",
     btnNext1: "Finish Test & Go to Simulation",
+
+    s2Title: "Step 2: Vulnerability Simulation (Hack Time)",
+    s2Summary: "Instead of entering the requested data like username and password into this login panel, we write an SQL query. In other words, we exploit this gap left for us to write any query we want, manipulate the database, and access information that should normally be hidden. :)",
+    s2Desc: "Below is a vulnerable login panel. A normal 'Email' is expected from you. However, instead of writing our name, we will write a <b>special text</b> that will deceive the background database. <br><br>In cybersecurity, this is called a <b>'Payload'</b>. Think of this text we send to the target as a <b>digital Trojan Horse 🐴</b> that the system thinks is innocent and lets in, but actually opens the doors from the inside!<br><br> Let's send that Trojan Horse. Type exactly this into the Email field: <b style='color: #ef4444;'>' OR 1=1 --</b>",
+    infoTitle: "So, what will this payload do? (' OR 1=1 --)",
+    expl1: "We prematurely close the code written by the developer in the background. Thus, we can add our own words into the system's code.",
+    expl2: "We say 'Or 1 equals 1'. Since 1 always equals 1, the database says 'Okay, this person is telling the truth' and forcefully lets us in.",
+    expl3: "It gives the database the command 'Completely ignore the password checking part written after this, just delete it'.",
+    simPanelTitle: "Vulnerable Admin Panel",
+    emailPlaceholder: "Email Address (Type the attack text here)",
+    passPlaceholder: "Password (Type anything random)",
+    btnHack: "Try to Log In (Hack)",
     btnNext2: "Analyze Attack (Go to Education)",
+
+    s3Title: "Step 3: Vulnerability Analysis and Solution",
+    s3DefTitle: "What is SQL Injection (SQLi)?",
+    s3DefDesc: "It is a critical security vulnerability that allows malicious users to interfere with the queries the application sends to its database. If the developer puts the data received from the user directly into the SQL command without passing it through a security filter, the attacker can make the database execute their own malicious commands as if they were the system's commands.",
+    s3SolTitle: "How to Solve It? (Prepared Statements)",
+    s3SolDesc1: "The root cause of the vulnerability is that the text entered by the user is perceived as an executable 'SQL command' rather than just 'data'. To definitively solve this, we must use <b>Parameterized Queries (Prepared Statements)</b>.",
+    s3SolDesc2: "As you can see in the secure code below, instead of writing external data directly into the SQL text, we put a <b>? (question mark)</b>. The database driver automatically cleans the data that will replace these question marks and processes it only as plain text.",
+    labelVuln: "Incorrect (Vulnerable) Code Usage:",
+    labelSec: "Secure (Correct) Code Usage:",
     btnNext3: "Test Your Knowledge (Post-Test)",
+
+    s4Title: "Step 4: Post-Test",
+    s4Desc: "Let's reinforce what you learned in this module.",
+    postQ1Text: "Question 1: Which of the following is the best method to DEFINITIVELY prevent SQL Injection in a Node.js application?",
+    postQ1a: "A) Converting all incoming requests to the server into Base64 format and saving them to the database.",
+    postQ1b: "B) Isolating code and data by using Parameterized Queries in database queries.",
+    postQ1c: "C) Storing database passwords by hashing them with algorithms like SHA-256.",
+    postQ1d: "D) Blocking special characters in user inputs only on the Frontend.",
+    postQ2Text: "Question 2: What is the exact technical function of the ' OR 1=1 -- payload we used in the simulation?",
+    postQ2a: "A) It finds the 'admin' table in the database and authorizes the first record.",
+    postQ2b: "B) It creates a memory overflow on the SQL server, putting the system into safe mode.",
+    postQ2c: "C) It always makes the query condition true and turns the remaining commands into comments.",
+    postQ2d: "D) It updates the database connection password, leaving a secret backdoor in the system.",
+    postQ3Text: "Question 3: How does the 'Parameterized Queries' method seen in the training step basically stop SQL Injection attacks?",
+    postQ3a: "A) By encrypting all incoming text before it reaches the database.",
+    postQ3b: "B) By processing the user input only as plain data instead of executable code.",
+    postQ3c: "C) By automatically deleting all inputs containing malicious words.",
+    postQ3d: "D) By applying authorization checks in the database so only administrators can perform operations.",
     btnFinish: "Complete Module",
+
+    msgSuccess: "DATABASE LEAK SUCCESSFUL! <br><span style='font-size:14px; color:#94a3b8; font-weight:normal;'>Password check bypassed and all table data dumped:</span>",
+    msgError: "SQL Error Triggered:",
+    msgFail: "Login Failed. The database rejected this query.",
+    tblEmail: "Email",
+    tblPass: "Password",
+    tblSecret: "Secret Data",
     warnEmpty: "Please answer all questions before proceeding.",
+    alertResult: (pre, post) => `Module completed!\n\n📋 Pre-Test Score: ${pre}/100\n🏆 Post-Test Score: ${post}/100\n\nYour awareness increase is being recorded... Redirecting to Dashboard.`,
   }
 };
 
@@ -274,54 +359,46 @@ const toggleLanguage = () => {
   currentLang.value = currentLang.value === 'tr' ? 'en' : 'tr';
 };
 
-// YENİ: Dinamik CSS Sınıfı Belirleyici (Doğru/Yanlış Renklendirmesi)
 const getLabelClass = (testPrefix, questionKey, option) => {
-  if (!isReviewMode.value) return ''; // İnceleme modunda değilsek normal kalsın
+  if (!isReviewMode.value) return ''; 
+  const selectedAnswer = answers[`${testPrefix}${questionKey.charAt(0).toUpperCase() + questionKey.slice(1)}`]; 
+  const correctAnswer = answerKeys[testPrefix][questionKey]; 
   
-  const selectedAnswer = answers[`${testPrefix}${questionKey.charAt(0).toUpperCase() + questionKey.slice(1)}`]; // örn: preQ1
-  const correctAnswer = answerKeys[testPrefix][questionKey]; // örn: b
-  
-  if (option === correctAnswer) return 'correct-answer'; // Doğru şık her zaman yeşil yanar
-  if (selectedAnswer === option && option !== correctAnswer) return 'wrong-answer'; // Seçilen yanlış şık kırmızı yanar
-  
+  if (option === correctAnswer) return 'correct-answer'; 
+  if (selectedAnswer === option && option !== correctAnswer) return 'wrong-answer'; 
   return '';
 };
 
-// YENİ: Kullanıcı cevap işaretledikçe (eğer incelemede değilsek) tarayıcıya taslak olarak kaydet
 watch(answers, (newAnswers) => {
   if (!isReviewMode.value) {
     localStorage.setItem('sqli_draft_answers', JSON.stringify(newAnswers));
   }
 }, { deep: true });
 
-// SAYFA YÜKLENDİĞİNDE: Geçmişi Kontrol Et
 onMounted(async () => {
-  const userEmail = localStorage.getItem('userEmail');
-  if (!userEmail) {
+  if (!userEmail || !token) {
     router.push('/');
     return;
   }
 
   if (isReviewMode.value) {
     try {
-      const response = await fetch(`/api/get-user-stats/${userEmail}`);
+      // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
+      const response = await fetch(`/api/get-user-stats/${userEmail}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const result = await response.json();
       
       if (result.success && result.data && result.data.sqli_answers) {
-        Object.assign(answers, result.data.sqli_answers); // Veritabanındaki şıkları HTML'e yansıt
+        Object.assign(answers, result.data.sqli_answers); 
       }
-    } catch (error) {
-      console.error("Geçmiş veriler çekilemedi:", error);
-    }
+    } catch (error) {}
   } else {
-    // NORMAL MOD: Yarım kalan bir taslak varsa geri yükle
     const savedDraft = localStorage.getItem('sqli_draft_answers');
-    if (savedDraft) {
-      Object.assign(answers, JSON.parse(savedDraft));
-    }
+    if (savedDraft) Object.assign(answers, JSON.parse(savedDraft));
   }
   
-  isLoading.value = false; // Yükleme animasyonunu bitir, sayfayı göster
+  isLoading.value = false; 
 });
 
 
@@ -338,43 +415,45 @@ const finishPreTest = () => {
     alert(currentText.value.warnEmpty);
     return;
   }
-  currentStep.value = 2; // Simülasyona geç veya İleri git
+  currentStep.value = 2; 
 };
 
 const runExploit = async () => {
-  simResult.value = `<p style="color:#a1a1aa; text-align:center;">Sunucuya bağlanılıyor...</p>`;
+  simResult.value = `<p style="color:#94a3b8; text-align:center;">${currentLang.value === 'tr' ? 'Sunucuya bağlanılıyor...' : 'Connecting to server...'}</p>`;
   
   try {
-    const baseUrl = "http://localhost:3000";
-    const response = await fetch(`${baseUrl}/api/vuln/sqli/login`, {
+    // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
+    const response = await fetch(`/api/vuln/sqli/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
       body: JSON.stringify({ email: simEmail.value, password: simPass.value }),
     });
     
     const responseData = await response.json();
     
     if (responseData.success) {
-      let tableHTML = `<table class="db-table"><thead><tr>
-                        <th>ID</th><th>E-posta</th><th>Şifre</th><th>Gizli Veri</th>
+      let tableHTML = `<div class="table-container"><table class="db-table"><thead><tr>
+                        <th>ID</th><th>${currentText.value.tblEmail}</th><th>${currentText.value.tblPass}</th><th>${currentText.value.tblSecret}</th>
                        </tr></thead><tbody>`;
                        
       responseData.data.forEach((user) => {
-        tableHTML += `<tr><td>${user.id}</td><td>${user.email}</td><td>${user.password}</td><td style="color:#00e5ff; font-weight:bold;">${user.secret_data}</td></tr>`;
+        tableHTML += `<tr><td>${user.id}</td><td>${user.email}</td><td><span class="blur-text">${user.password}</span></td><td style="color:#10b981; font-weight:bold;">${user.secret_data}</td></tr>`;
       });
-      tableHTML += `</tbody></table>`;
+      tableHTML += `</tbody></table></div>`;
       
-      simResult.value = `<h3 style="color:#10b981; text-align:center; margin-top:20px;">VERİTABANI SIZINTISI BAŞARILI!</h3>` + tableHTML;
+      simResult.value = `<div class="success-alert"><h3>🔓 ${currentText.value.msgSuccess}</h3></div>` + tableHTML;
     } else {
-      simResult.value = `<p style="color:#ef4444; text-align:center; font-weight:bold; margin-top:20px;">Başarısız!</p>`;
+      simResult.value = `<div class="error-alert"><h3>⛔ ${currentText.value.msgFail}</h3></div>`;
     }
   } catch (error) {
-    simResult.value = `<p style="color:#ef4444; text-align:center;">Sunucuya ulaşılamadı.</p>`;
+    simResult.value = `<div class="error-alert"><h3>📡 Connection Error</h3></div>`;
   }
 };
 
 const finishPostTest = async () => {
-  // Eğer kullanıcı sadece inceleme modundaysa, kaydetmeden direkt çıkmasını sağla
   if (isReviewMode.value) {
     router.push("/dashboard");
     return;
@@ -385,28 +464,28 @@ const finishPostTest = async () => {
     return;
   }
   
-  scores.pre = calculateScore("pre");
-  scores.post = calculateScore("post");
-  const userEmail = localStorage.getItem("userEmail");
+  let preScore = calculateScore("pre");
+  let postScore = calculateScore("post");
   isSaving.value = true;
   
   try {
-    const baseUrl = "http://localhost:3000";
-    await fetch(`${baseUrl}/api/save-score`, {
+    // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
+    await fetch(`/api/save-score`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
       body: JSON.stringify({
         email: userEmail,
         module: "sqli",
-        preScore: scores.pre,
-        postScore: scores.post,
-        answers: answers // YENİ: Tüm işaretlenen şıkları Firebase'e paketleyip yolluyoruz!
+        preScore: preScore,
+        postScore: postScore,
+        answers: answers 
       }),
     });
     
-    alert(currentText.value.alertResult(scores.pre, scores.post));
-    
-    // İşlem tamamen bitince taslağı temizle ki bir sonraki kullanıcıya kalmasın
+    alert(currentText.value.alertResult(preScore, postScore));
     localStorage.removeItem('sqli_draft_answers'); 
     router.push("/dashboard");
   } catch (err) {
@@ -418,64 +497,115 @@ const finishPostTest = async () => {
 </script>
 
 <style scoped>
-/* Senin CSS'inin tamamı duruyor, sadece doğru/yanlış analiz renklerini ekledim */
-.correct-answer {
-  background: rgba(16, 185, 129, 0.15) !important;
-  border-color: #10b981 !important;
-  color: #10b981 !important;
-}
-.wrong-answer {
-  background: rgba(239, 68, 68, 0.15) !important;
-  border-color: #ef4444 !important;
-  color: #ef4444 !important;
-}
+/* Genel Temel */
+.module-wrapper { background-color: #0b0f19; color: #cbd5e1; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 40px 20px; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; position: relative; overflow: hidden; }
+.dot-grid { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: radial-gradient(rgba(148, 163, 184, 0.15) 1px, transparent 1px); background-size: 24px 24px; z-index: 0; pointer-events: none; }
+.container { width: 100%; max-width: 950px; margin: 0 auto; background: #0f172a; padding: 40px 50px; border-radius: 16px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5); border: 1px solid #1e293b; border-top: 4px solid #ef4444; position: relative; z-index: 1; }
 
-.module-wrapper { background-color: #0b0f19; color: #a1a1aa; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 40px 20px; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
-.lang-btn { position: absolute; top: 20px; right: 20px; background-color: transparent; color: #00e5ff; border: 1px solid #00e5ff; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; }
-.lang-btn:hover { background-color: #00e5ff; color: #0b0f19; box-shadow: 0 0 10px rgba(0, 229, 255, 0.4); }
-.module-container { background: #111827; width: 100%; max-width: 900px; padding: 40px; border-radius: 12px; border: 1px solid #1f2937; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); position: relative; overflow: hidden; }
-.module-container::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #00e5ff, #007bff); }
-.step { animation: fadeIn 0.5s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-h2 { color: #f8fafc; border-bottom: 1px solid #1f2937; padding-bottom: 15px; margin-top: 0; }
-h3 { color: #e2e8f0; }
-p { line-height: 1.6; }
-b { color: #e2e8f0; }
+.lang-btn { position: absolute; top: 25px; right: 25px; background: rgba(15, 23, 42, 0.8); color: #94a3b8; border: 1px solid #334155; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; }
+.lang-btn:hover { background: #1e293b; color: #f8fafc; border-color: #475569; }
 
-.btn-next { background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 25px; float: right; transition: all 0.3s ease; letter-spacing: 1px; }
-.btn-next:hover:not(:disabled) { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); transform: translateY(-2px); }
-.btn-next:disabled { opacity: 0.7; cursor: wait; }
+/* Başlık ve Metinler */
+.mod-title { color: #f8fafc; font-size: 32px; font-weight: 700; margin-bottom: 20px; }
+.neon-divider { height: 1px; background: linear-gradient(90deg, #ef4444, transparent); margin-bottom: 35px; }
 
-.question-box { margin-bottom: 25px; background: #1f2937; padding: 20px; border-radius: 8px; border: 1px solid #374151; }
-.question-box p { margin-top: 0; font-size: 16px; }
-.question-box label { display: block; margin: 12px 0; cursor: pointer; color: #d1d5db; transition: color 0.2s; padding: 8px; border-radius: 4px; border: 1px solid transparent; }
-.question-box label:hover { color: #00e5ff; background: rgba(0, 229, 255, 0.05); border-color: #374151; }
-.question-box label input:disabled { cursor: not-allowed; }
+.step-title { color: #f8fafc; font-size: 24px; border-left: 4px solid #ef4444; padding-left: 15px; margin-bottom: 10px; }
+.step-desc { font-size: 15px; color: #94a3b8; margin-bottom: 25px;}
+.review-mode-title { color: #10b981; border-left-color: #10b981; }
 
-.info-box { background: rgba(0, 229, 255, 0.05); border-left: 4px solid #00e5ff; padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
-.info-box ul { padding-left: 20px; margin-bottom: 0; }
-.info-box li { margin-bottom: 10px; }
-.summary-box { background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981; padding: 15px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
-.simulation-box { border: 1px solid #ef4444; padding: 25px; border-radius: 8px; background-color: rgba(239, 68, 68, 0.05); margin-top: 25px; box-shadow: inset 0 0 15px rgba(239, 68, 68, 0.1); }
-.sim-input { width: 100%; padding: 12px; margin: 10px 0; background-color: #1f2937; color: #e2e8f0; border: 1px solid #374151; border-radius: 6px; box-sizing: border-box; transition: 0.3s; }
-.sim-input:focus { border-color: #ef4444; outline: none; box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
-.sim-btn { background: linear-gradient(135deg, #dc2626, #ef4444); color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 15px; transition: all 0.3s ease; letter-spacing: 1px; }
-.sim-btn:hover { box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); transform: translateY(-2px); }
+/* Sorular ve Seçenekler */
+.question { background: #1e293b; padding: 25px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
+.question p { margin-top: 0; font-size: 16px; color: #f8fafc; margin-bottom: 15px; }
+.options label { display: block; margin: 10px 0; cursor: pointer; color: #94a3b8; transition: all 0.2s; padding: 12px 15px; border-radius: 8px; border: 1px solid #334155; background: #0b1120; }
+.options label:hover:not(.correct-answer):not(.wrong-answer) { border-color: #ef4444; background: rgba(239, 68, 68, 0.05); color: #f8fafc; }
+.options label input { margin-right: 10px; accent-color: #ef4444; }
+.options label input:disabled { cursor: not-allowed; }
 
-pre { background: #0b0f19; padding: 20px; border-radius: 8px; border: 1px solid #1f2937; overflow-x: auto; margin: 15px 0; }
-code { font-family: "Consolas", "Courier New", monospace; color: #e2e8f0; font-size: 14px; line-height: 1.6; }
+/* İnceleme Modu Renkleri */
+.correct-answer { background: rgba(16, 185, 129, 0.1) !important; border-color: #10b981 !important; color: #10b981 !important; font-weight: bold; }
+.wrong-answer { background: rgba(239, 68, 68, 0.1) !important; border-color: #ef4444 !important; color: #ef4444 !important; text-decoration: line-through; }
+
+/* GÖREV REHBERİ (Adım 2) */
+.mission-layout { display: grid; grid-template-columns: 1fr; gap: 25px; margin-top: 20px; }
+@media (min-width: 850px) { .mission-layout { grid-template-columns: 1fr 1fr; } }
+.guide-panel { display: flex; flex-direction: column; gap: 20px; }
+.summary-box { background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981; padding: 15px 20px; border-radius: 0 8px 8px 0; font-style: italic; color: #a7f3d0;}
+.guide-desc { font-size: 15px; line-height: 1.6; color: #cbd5e1; margin: 0; }
+
+.info-box { background: #1e293b; padding: 20px; border-radius: 8px; border: 1px solid #334155; }
+.info-box h4 { color: #f8fafc; margin-top: 0; margin-bottom: 15px; font-size: 16px;}
+.info-box ul { padding-left: 20px; margin: 0; line-height: 1.8; color: #94a3b8; font-size: 14px;}
+.blue-text { color: #38bdf8; }
+.yellow-text { color: #f59e0b; }
+.red-text { color: #ef4444; }
+.green-text { color: #10b981; }
+
+/* UYGULAMA PANELİ (Adım 2 Sağ Taraf) */
+.app-container { display: flex; flex-direction: column; }
+.simulation-box { background: #050505; border-radius: 12px; border: 1px solid #334155; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+.sim-header { background: #1e293b; padding: 10px 15px; display: flex; align-items: center; border-bottom: 1px solid #000; }
+.dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; display: inline-block;}
+.dot.red { background: #ef4444; } .dot.yellow { background: #f59e0b; } .dot.green { background: #10b981; }
+
+.sim-body { padding: 30px; }
+.sim-body h3 { margin-top: 0; color: #f8fafc; font-size: 20px; margin-bottom: 25px; text-align: center;}
+.input-group { margin-bottom: 20px; }
+.input-group label { display: block; color: #94a3b8; font-size: 13px; margin-bottom: 8px; font-weight: bold;}
+.sim-input { width: 100%; padding: 12px 15px; background: #0f172a; color: #f8fafc; border: 1px solid #334155; border-radius: 6px; box-sizing: border-box; outline: none; transition: 0.3s; font-size: 14px;}
+.sim-input:focus { border-color: #ef4444; box-shadow: inset 0 0 0 1px #ef4444; }
+.sim-btn { width: 100%; background: #ef4444; color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; margin-top: 10px;}
+.sim-btn:hover { background: #dc2626; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4); }
+
+.result-container { margin-top: 25px; }
+.success-alert { background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; padding: 15px; border-radius: 6px; text-align: center; margin-bottom: 15px;}
+.success-alert h3 { margin: 0; color: #10b981; font-size: 16px;}
+.error-alert { background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 15px; border-radius: 6px; text-align: center; }
+.error-alert h3 { margin: 0; color: #ef4444; font-size: 16px;}
+
+.table-container { overflow-x: auto; border-radius: 6px; border: 1px solid #334155; }
+.db-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+.db-table th { background: #1e293b; color: #94a3b8; padding: 12px 15px; font-weight: 600; border-bottom: 1px solid #334155;}
+.db-table td { padding: 12px 15px; border-bottom: 1px solid #1e293b; color: #cbd5e1;}
+.db-table tr:last-child td { border-bottom: none; }
+.blur-text { filter: blur(3px); user-select: none; }
+.blur-text:hover { filter: none; }
+
+/* Eğitim Adımı (Adım 3) */
+.edu-card { background: transparent; }
+.edu-heading { margin-top: 0; font-size: 20px; margin-bottom: 15px; }
+.edu-desc { font-size: 15px; line-height: 1.6; color: #cbd5e1; margin-bottom: 20px; }
+
+.code-comparison { display: flex; flex-direction: column; gap: 20px; margin: 25px 0; }
+.code-pane { border-radius: 8px; overflow: hidden; border: 1px solid #334155; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+.pane-header { padding: 10px 15px; font-size: 13px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 1px; }
+.red-bg { background: #ef4444; }
+.green-bg { background: #10b981; }
+pre { margin: 0; padding: 20px; background: #0b1120; overflow-x: auto; }
+code { font-family: "Consolas", "Courier New", monospace; font-size: 14px; line-height: 1.6; color: #e2e8f0; }
+.code-comment { color: #64748b; font-style: italic; }
 .code-keyword { color: #c678dd; }
 .code-string { color: #98c379; }
 .code-var { color: #e5c07b; }
-.code-comment { color: #6b7280; font-style: italic; }
 
-:deep(.db-table) { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; background: #111827; }
-:deep(.db-table th) { background-color: #1f2937; color: #00e5ff; padding: 12px; text-align: left; border: 1px solid #374151; }
-:deep(.db-table td) { padding: 10px 12px; border: 1px solid #374151; color: #e2e8f0; }
-:deep(.db-table tr:nth-child(even)) { background-color: #172033; }
-:deep(.db-table tr:hover) { background-color: rgba(16, 185, 129, 0.1); }
+/* Butonlar & Aksiyonlar */
+.action-footer { margin-top: 30px; display: flex; justify-content: flex-end; }
+.action-footer.space-between { justify-content: space-between; }
+button { font-family: inherit; }
+.btn-primary { background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+.btn-primary:hover { background: #dc2626; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4); }
+.btn-secondary { background: #334155; color: #f8fafc; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+.btn-secondary:hover { background: #475569; }
+.btn-success { background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; width: auto;}
+.btn-success:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4); }
+.btn-warning { background: #f59e0b; color: #0f172a; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; }
+.btn-warning:hover:not(:disabled) { background: #d97706; transform: translateY(-2px); }
+.btn-warning:disabled { opacity: 0.7; cursor: not-allowed; }
 
-/* Yükleme animasyonu CSS'i */
-.spinner { border-radius: 50%; border: 3px solid; border-top-color: transparent; animation: spin 1s linear infinite; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+/* Animasyonlar */
+.fade-in { animation: fadeIn 0.5s ease-out forwards; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.loading-screen { text-align: center; padding: 80px 0; }
+.spinner { display: inline-block; border: 4px solid rgba(239, 68, 68, 0.2); border-top-color: #ef4444; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+.spinner-small { display: inline-block; border: 3px solid rgba(15, 23, 42, 0.3); border-top-color: #0f172a; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; margin-right: 10px; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
 </style>

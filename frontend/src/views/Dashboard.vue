@@ -92,9 +92,11 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const currentLang = ref('tr');
-const userEmail = localStorage.getItem('userEmail');
 
-// Modüllerin tamamlanma durumunu tutan obje (Reaktif)
+// Kullanıcı Email'i ve Token'ı alınıyor
+const userEmail = localStorage.getItem('userEmail');
+const token = localStorage.getItem('token');
+
 const completedStatus = ref({
   sqli: false,
   bac: false,
@@ -118,8 +120,7 @@ const translations = {
     m5Title: "5. Rate Limiting",
     m6Title: "6. OS Command Injection",
     btnStart: "MODÜLE GİT",
-    btnCompleted: "TAMAMLANDI",
-    alertCompleted: "Bu modülü zaten başarıyla tamamladınız! Karnenizden skorunuzu görebilirsiniz.",
+    btnCompleted: "İncele",
   },
   en: {
     welcome: "👋 Welcome!",
@@ -133,9 +134,8 @@ const translations = {
     m4Title: "4. Cross-Site Scripting (XSS)",
     m5Title: "5. Rate Limiting",
     m6Title: "6. OS Command Injection",
-    btnStart: "GO TO MODULE",
-    btnCompleted: "COMPLETED",
-    alertCompleted: "You have already completed this module successfully! You can check your score in your stats.",
+    btnStart: "START MODULE",
+    btnCompleted: "REVIEW",
   }
 };
 
@@ -146,7 +146,8 @@ const toggleLanguage = () => {
 };
 
 const logout = () => {
-  localStorage.removeItem("userEmail"); // Bileti yırt
+  localStorage.removeItem("userEmail"); 
+  localStorage.removeItem("token"); // Bileti yırtıp çöpe atıyoruz
   router.push("/"); // Login sayfasına ışınla
 };
 
@@ -158,29 +159,38 @@ const handleModuleClick = (moduleKey, routePath) => {
   if (completedStatus.value[moduleKey]) {
     router.push(`${routePath}?review=true`);
   } else {
-    // Bitmemişse normal olarak girsin
     router.push(routePath);
   }
 };
 
-// Sayfa yüklendiğinde (onMounted) Backend'den skorları çekiyoruz
 onMounted(async () => {
-  if (!userEmail) {
+  // Eğer e-posta VEYA token yoksa güvenlik gereği dışarı at!
+  if (!userEmail || !token) {
     router.push('/');
     return;
   }
 
   try {
-    const response = await fetch(`/api/get-user-stats/${userEmail}`);
+    // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
+    const response = await fetch(`/api/get-user-stats/${userEmail}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}` // BİLET GÖSTERİLİYOR
+      }
+    });
+    
     const result = await response.json();
 
     if (result.success && result.data) {
       const modules = ["sqli", "bac", "ede", "xss", "rate", "cmd"];
       modules.forEach((mod) => {
         if (result.data[`${mod}_completed`]) {
-          completedStatus.value[mod] = true; // Sadece true yapıyoruz, Vue anında HTML'i yeşile boyuyor!
+          completedStatus.value[mod] = true;
         }
       });
+    } else if (response.status === 401 || response.status === 403) {
+      // Eğer token süresi dolmuşsa (Backend 403/401 dönerse) zorla çıkış yaptır
+      logout();
     }
   } catch (error) {
     console.error("Kilit mekanizması verisi çekilemedi:", error);
@@ -189,7 +199,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Senin orjinal CSS'in, sadece body kısmını sildik çünkü App.vue içinde tanımlı */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -435,7 +444,7 @@ h1 {
   background: linear-gradient(135deg, #10b981, #059669);
   color: #ffffff;
   box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
-  cursor: default;
+  cursor: pointer; /* Tamamlanan modüle tıklayıp Review'e gidebilsin diye düzeltildi */
 }
 .btn-start.completed:hover {
   background: linear-gradient(135deg, #10b981, #059669);

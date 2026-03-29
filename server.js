@@ -1,11 +1,14 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const db = require("./database"); // SADECE zafiyetli modüller (simülasyon) için SQLite
+const db = require("./database");
 const path = require("path");
 const admin = require("firebase-admin");
-const bcrypt = require("bcrypt"); // Şifre hashleme kütüphanesi
-const cors = require("cors"); // YENİ: CORS (Çapraz Kaynak Paylaşımı) kütüphanesi eklendi!
+const bcrypt = require("bcrypt");
+const cors = require("cors");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
+const JWT_SECRET = "siber_guvenlik_lab_gizli_anahtari_123!";
 // ==========================================
 // FIREBASE ADMİN BAŞLATMA (GERÇEK VERİLER İÇİN)
 // ==========================================
@@ -21,6 +24,38 @@ app.use(cors());
 
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "frontend", "dist")));
+
+// GÜVENLİK GÖREVLİSİ (JWT Doğrulama Middleware'i)
+const authenticateToken = (req, res, next) => {
+  // Frontend bileti "Authorization: Bearer <token>" formatında gönderecek
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res
+      .status(401)
+      .json({
+        success: false,
+        message: "Erişim reddedildi. Geçerli bir biletiniz (token) yok.",
+      });
+  }
+
+  // Biletin sahte olup olmadığını ve süresini kontrol et
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "Oturum süreniz dolmuş veya bilet geçersiz.",
+        });
+    }
+
+    // Bilet geçerliyse kullanıcının bilgilerini (user.email) isteğe ekle ve kapıyı aç
+    req.user = user;
+    next();
+  });
+};
 
 // ==========================================
 // ANA PLATFORM GİRİŞ/KAYIT (TAMAMEN FIREBASE)
@@ -71,9 +106,15 @@ app.post("/api/secure/register", async (req, res) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
+    // Kullanıcıya 24 saat geçerli bir giriş bileti (token) kesiyoruz.
+    const token = jwt.sign({ email: safeEmail }, JWT_SECRET, {
+      expiresIn: "24h",
+    });
+
     res.json({
       success: true,
-      message: "Kayıt başarılı! Giriş yapabilirsiniz.",
+      message: "Kayıt başarılı! Sisteme giriş yapılıyor...",
+      token: token, // Frontend'in bu bileti alıp saklaması için gönderiyoruz!
     });
   } catch (error) {
     console.error("Firebase Kayıt Hatası:", error);
@@ -87,31 +128,47 @@ app.post("/api/secure/register", async (req, res) => {
 app.post("/api/secure/login", async (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res
+      .status(400)
+      .json({ success: false, message: "E-posta ve şifre zorunludur." });
+  }
+
   try {
     const safeEmail = email.trim().toLowerCase();
 
-    // Firebase'den kullanıcı belgesini çekiyoruz
+    // 1. Kullanıcıyı Firebase'den bul
     const userRef = firestore.collection("users").doc(safeEmail);
     const doc = await userRef.get();
 
+    // Kullanıcı yoksa güvenlik gereği "Kullanıcı bulunamadı" yerine genel bir hata mesajı verilir
     if (!doc.exists) {
       return res
         .status(401)
-        .json({ success: false, message: "Hatalı email veya şifre!" });
+        .json({ success: false, message: "Hatalı e-posta veya şifre!" });
     }
 
-    // Hashlenmiş şifreyi, kullanıcının girdiği şifre ile karşılaştırıyoruz
-    const isMatch = await bcrypt.compare(password, doc.data().password);
+    const userData = doc.data();
+
+    // 2. Girilen şifre ile Firebase'deki Hashlenmiş şifreyi karşılaştır
+    const isMatch = await bcrypt.compare(password, userData.password);
 
     if (!isMatch) {
       return res
         .status(401)
-        .json({ success: false, message: "Hatalı email veya şifre!" });
+        .json({ success: false, message: "Hatalı e-posta veya şifre!" });
     }
 
-    // Başarılı giriş
-    console.log(`Giriş başarılı (Firebase): ${safeEmail}`);
-    res.json({ success: true, message: "Giriş başarılı!" });
+    // 3. Şifre doğru! Kullanıcıya 24 saatlik giriş bileti (Token) kes
+    const token = jwt.sign({ email: safeEmail }, JWT_SECRET, {
+      expiresIn: "24h",
+    });
+
+    res.json({
+      success: true,
+      message: "Giriş başarılı!",
+      token: token, // Frontend bu bileti alacak!
+    });
   } catch (error) {
     console.error("Firebase Giriş Hatası:", error);
     res.status(500).json({ success: false, message: "Sunucu hatası oluştu." });

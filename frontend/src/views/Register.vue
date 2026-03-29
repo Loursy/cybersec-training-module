@@ -148,8 +148,13 @@ const submitRegister = async () => {
     });
     
     const data = await response.json();
+    
     if (data.success) {
-      localStorage.setItem('userEmail', email.value);
+      // 1. Backend'den gelen güvenli JWT biletini sakla
+      localStorage.setItem('token', data.token); 
+      // 2. Ekranda göstermek için e-postayı da sakla
+      localStorage.setItem('userEmail', email.value); 
+      // 3. İçeri al
       router.push('/dashboard');
     } else {
       errorMessage.value = data.message || "Bir hata oluştu.";

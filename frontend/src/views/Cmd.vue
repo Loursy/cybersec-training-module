@@ -156,8 +156,6 @@
               </div>
             </div>
             
-            
-
             <div style="background: rgba(16, 185, 129, 0.05); padding: 20px; border-radius: 8px; border: 1px solid #10b981; margin-top: 35px;">
               <b style="color: #10b981; font-size: 16px; display: block; margin-bottom: 10px;">{{ currentText.trnH4 }}</b>
               <p style="margin: 0; font-size: 14.5px; line-height: 1.7; color: #cbd5e1;" v-html="currentText.trnP4"></p>
@@ -229,6 +227,10 @@ const answers = reactive({
   preQ1: '', preQ2: '', preQ3: '',
   postQ1: '', postQ2: '', postQ3: ''
 });
+
+// JWT Token ve Kullanıcı Bilgisi
+const token = localStorage.getItem('token');
+const userEmail = localStorage.getItem('userEmail');
 
 // Simülasyon / Terminal Değişkenleri
 const currentMission = ref(1);
@@ -397,12 +399,14 @@ watch(answers, (newAnswers) => {
 }, { deep: true });
 
 onMounted(async () => {
-  const userEmail = localStorage.getItem('userEmail');
-  if (!userEmail) return router.push('/');
+  if (!userEmail || !token) return router.push('/'); // Token yoksa doğrudan Login'e atıyoruz
 
   if (isReviewMode.value) {
     try {
-      const response = await fetch(`http://localhost:3000/api/get-user-stats/${userEmail}`);
+      // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
+      const response = await fetch(`/api/get-user-stats/${userEmail}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const result = await response.json();
       if (result.success && result.data && result.data.cmd_answers) {
         Object.assign(answers, result.data.cmd_answers);
@@ -415,7 +419,6 @@ onMounted(async () => {
   
   isLoading.value = false;
   
-  // Terminal input focus
   nextTick(() => {
     if(terminalInputRef.value) terminalInputRef.value.focus();
   });
@@ -441,20 +444,17 @@ const scrollToBottom = () => {
   }
 };
 
-// --- EFSANEVİ TYPEWRITER (HARF HARF YAZMA) FONKSİYONU ---
+// Harf Harf Yazma (Typewriter) Efekti
 const typeLines = async (linesArray, cssClass) => {
   for (let line of linesArray) {
     if (line.trim() === '') continue;
     
-    // Yeni bir satır objesi oluştur
     let currentLineObj = reactive({ type: cssClass, text: '' });
     terminalLines.value.push(currentLineObj);
     
-    // Harf harf ekle
     for (let i = 0; i < line.length; i++) {
       currentLineObj.text += line[i];
       scrollToBottom();
-      // Çok hızlı bir daktilo efekti (Matrix stili)
       await new Promise(r => setTimeout(r, 5)); 
     }
   }
@@ -467,7 +467,6 @@ const executeCommand = async () => {
   terminalInput.value = '';
   isExecuting.value = true;
 
-  // Kullanıcının yazdığı komutu anında ekle
   terminalLines.value.push({ type: 'cmd', text: cmd });
   scrollToBottom();
 
@@ -488,27 +487,27 @@ const executeCommand = async () => {
     return;
   }
 
-  // API'yi çağır (Simüle edilmiş backend)
   let backendIp = cmd.replace(/^ping\s+/i, "");
   
   try {
-    const response = await fetch("http://localhost:3000/api/vuln/cmd/ping", {
+    // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
+    const response = await fetch("/api/vuln/cmd/ping", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}` 
+      },
       body: JSON.stringify({ ip: backendIp }),
     });
     const res = await response.json();
 
     const outputLines = res.output.split("\n");
     
-    // Çıktıyı harf harf terminale bas
     await typeLines(outputLines, 'output');
-    
-    // Analiz mesajını bas ve görev kontrolü yap
     await processMission(cmd, res.isHacked);
 
   } catch (error) {
-    await typeLines(["Connection failed. Is the Node.js server running?"], 'error');
+    await typeLines(["Connection failed. Ensure backend is running and you have authorization."], 'error');
   }
 
   isExecuting.value = false;
@@ -528,7 +527,7 @@ const processMission = async (cmd, isHacked) => {
   } 
   else if (currentMission.value === 3 && isHacked && cmd.includes("cat")) {
     await typeLines([currentText.value.cAnalysis], 'analysis');
-    currentMission.value = 4; // Tamamlandı
+    currentMission.value = 4; 
   } 
   else {
     await typeLines([currentText.value.wrongCmd], 'error');
@@ -539,7 +538,6 @@ const finishPostTest = async () => {
   if (isReviewMode.value) return router.push("/stats");
   if (!answers.postQ1 || !answers.postQ2 || !answers.postQ3) return alert(currentText.value.warnEmpty);
   
-  const userEmail = localStorage.getItem("userEmail");
   isSaving.value = true;
   
   let preScore = 0; let postScore = 0;
@@ -555,9 +553,13 @@ const finishPostTest = async () => {
   postScore = Math.round(postScore);
   
   try {
+    // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
     await fetch(`/api/save-score`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}` 
+      },
       body: JSON.stringify({ email: userEmail, module: "cmd", preScore, postScore, answers }),
     });
     alert(currentText.value.alertResult(preScore, postScore));

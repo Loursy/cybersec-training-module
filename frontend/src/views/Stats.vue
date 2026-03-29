@@ -1,5 +1,6 @@
 <template>
   <div class="stats-wrapper">
+    <div class="dot-grid"></div>
     <div class="container">
       
       <div class="header">
@@ -55,6 +56,10 @@ const router = useRouter();
 const isLoading = ref(true);
 const statsData = ref({});
 
+// JWT Token ve User Email
+const token = localStorage.getItem('token');
+const userEmail = localStorage.getItem('userEmail');
+
 // Platformdaki tüm modüllerin listesi ve rotaları
 const modules = [
   { id: 'sqli', title: '1. SQL Injection', path: '/module/sqli' },
@@ -65,20 +70,30 @@ const modules = [
   { id: 'cmd', title: '6. OS Command Injection', path: '/module/cmd' }
 ];
 
-// Sayfa açıldığında Backend'den kullanıcının verilerini çekiyoruz
 onMounted(async () => {
-  const userEmail = localStorage.getItem('userEmail');
-  if (!userEmail) {
+  // 1. Güvenlik Kontrolü: Token veya Email yoksa girişe şutla
+  if (!userEmail || !token) {
     router.push('/');
     return;
   }
 
   try {
-    const response = await fetch(`/api/get-user-stats/${userEmail}`);
+    // 2. JWT ENTEGRASYONU ve LOCALHOST TEMİZLİĞİ
+    const response = await fetch(`/api/get-user-stats/${userEmail}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}` // GÜVENLİK BİLETİ
+      }
+    });
+    
     const result = await response.json();
     
     if (result.success && result.data) {
-      statsData.value = result.data; // Veritabanından gelen tüm puanları Vue'ya kaydet
+      statsData.value = result.data; 
+    } else if (response.status === 401 || response.status === 403) {
+      // Token geçersizse çıkış yaptır
+      localStorage.clear();
+      router.push('/');
     }
   } catch (error) {
     console.error("Karne verileri çekilemedi:", error);
@@ -92,11 +107,9 @@ const goToDashboard = () => {
 };
 
 const goToReview = (path) => {
-  // Sırrımız burada: Tıklanan modülün sonuna ?review=true ekleyip gönderiyoruz!
   router.push(`${path}?review=true`);
 };
 
-// Puanlara göre dinamik renk ataması
 const getScoreColor = (score) => {
   if (score >= 80) return 'text-green';
   if (score >= 50) return 'text-yellow';
@@ -105,17 +118,34 @@ const getScoreColor = (score) => {
 </script>
 
 <style scoped>
+/* Mevcut stillerini korudum, arka plana derinlik katmak için dot-grid ekledim */
 .stats-wrapper {
   background-color: #0b0f19;
   color: #a1a1aa;
   min-height: 100vh;
   padding: 40px 20px;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.dot-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+  background-size: 24px 24px;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .container {
   max-width: 1000px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .header {
@@ -157,8 +187,8 @@ const getScoreColor = (score) => {
 }
 
 .stat-card {
-  background: #111827;
-  border: 1px solid #1f2937;
+  background: #0f172a;
+  border: 1px solid #1e293b;
   border-radius: 12px;
   padding: 25px;
   transition: all 0.3s ease;
