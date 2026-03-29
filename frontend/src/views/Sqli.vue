@@ -47,10 +47,6 @@
 
           <div class="mission-layout">
             <div class="guide-panel">
-              <div class="summary-box">
-                <p>{{ currentText.s2Summary }}</p>
-              </div>
-              
               <div class="mission-briefing">
                 <div class="brief-header">
                   <span class="pulse-icon"></span> 
@@ -59,6 +55,15 @@
                 <div class="brief-body">
                   <p v-html="currentText.s2Desc"></p>
                 </div>
+              </div>
+
+              <div class="info-box logic-box">
+                <h4>{{ currentText.infoTitle }}</h4>
+                <ul>
+                  <li><b class="blue-text">' (Tek Tırnak):</b> <span>{{ currentText.expl1 }}</span></li>
+                  <li><b class="yellow-text">OR 1=1:</b> <span>{{ currentText.expl2 }}</span></li>
+                  <li><b class="red-text">-- (İki Tire):</b> <span>{{ currentText.expl3 }}</span></li>
+                </ul>
               </div>
             </div>
 
@@ -71,7 +76,6 @@
 
                 <div class="hacking-overlay" v-if="exploitStatus === 'hacking'">
                   <div class="hack-spinner"></div>
-                  <p>{{ currentLang === 'tr' ? 'Veritabanı sorgusu enjekte ediliyor...' : 'Injecting database query...' }}</p>
                   <p class="blink-text">{{ currentLang === 'tr' ? 'Kimlik doğrulama atlatılıyor...' : 'Bypassing authentication...' }}</p>
                 </div>
 
@@ -125,7 +129,7 @@
                 </div>
               </div>
 
-              <div class="action-footer" style="margin-top: 25px;">
+              <div class="action-footer" style="margin-top: 25px; display: flex; justify-content: center;">
                 <button class="btn-success" @click="currentStep = 3" v-if="exploitStatus === 'success' || isReviewMode">
                   {{ currentText.btnNext2 }}
                 </button>
@@ -142,6 +146,7 @@
           <div class="edu-card">
             <h3 class="edu-heading blue-text">{{ currentText.s3DefTitle }}</h3>
             <p class="edu-desc">{{ currentText.s3DefDesc }}</p>
+            
 
             <div class="neon-divider" style="margin: 30px 0; background: linear-gradient(90deg, #1e293b, #334155, #1e293b);"></div>
 
@@ -167,11 +172,6 @@
             </div>
 
             <p class="edu-desc" v-html="currentText.s3SolDesc2"></p>
-            
-            <div style="margin-top: 25px; text-align: center; border-radius: 8px; overflow: hidden; border: 1px solid #334155;">
-              
-            </div>
-
           </div>
 
           <div class="action-footer space-between">
@@ -228,7 +228,6 @@ const answers = reactive({
   postQ1: '', postQ2: '', postQ3: ''
 });
 
-// JWT Token ve User Email
 const token = localStorage.getItem('token');
 const userEmail = localStorage.getItem('userEmail');
 
@@ -265,13 +264,17 @@ const translations = {
     btnNext1: "Testi Bitir ve Simülasyona Geç",
 
     s2Title: "Adım 2: Zafiyet Simülasyonu",
+    s2Summary: "Amacımız şifreyi bilmeden, veritabanını kandırarak aşağıdaki yönetici paneline sızmak.",
     gTitle: "OPERASYON BRİFİNGİ",
-    s2Summary: "Hedefimiz yandaki yönetici (Admin) paneline yetkisiz giriş yapmak. Sistemin veritabanını kandırarak şifre bilmeden içeri sızacağız.",
-    s2Desc: "<b>Durum Analizi:</b><br>Elimizde herhangi bir yönetici şifresi yok. Ancak sistemin veritabanı sorgularında girdi doğrulama eksikliği (SQLi) olduğundan şüpheleniyoruz.<br><br><b>Arka Plandaki Tehlikeli Kod:</b><br>Sistem giriş yaparken arka planda şu soruyu soruyor:<br><code>SELECT * FROM users WHERE email='<span style=\"color:#ef4444\">[SENİN_YAZDIĞIN]</span>' AND password='...'</code><br><br><b>Saldırı Planı (Payload):</b><br>E-posta kutusuna normal bir adres yerine aşağıdaki komutu yazarak sistemi kandıracağız:<br><code class='glitch-payload' style='font-size:16px; margin: 10px 0; display:inline-block;'>' OR 1=1 --</code><br><br><b>Bu Komut Ne Yapacak?</b><br>1. <b style='color: #38bdf8;'>' (Tek Tırnak):</b> Geliştiricinin e-posta sorgusunu erken kapatır.<br>2. <b style='color: #f59e0b;'>OR 1=1:</b> 'Veya 1=1' diyerek sorguya her zaman DOĞRU (True) kabul edilecek bir matematiksel gerçeklik ekler.<br>3. <b style='color: #ef4444;'>-- (İki Tire):</b> SQL dilinde yorum satırı demektir. Sorgunun geri kalanını (şifre kontrolünü) tamamen iptal eder.<br><br><b>Sonuç:</b> Sistem şifreyi sormayı unutur ve bizi yönetici olarak içeri alır!",
+    s2Desc: "<b>Durum:</b><br>Normalde bir sistem giriş yaparken arka planda şu kuralı işletir: <br><i>'Eğer Kullanıcı Adı doğruysa <b>VE</b> Şifre doğruysa içeri al.'</i><br><br><b>Saldırı Planı:</b><br>Biz e-posta kutusuna öyle sihirli bir kelime yazacağız ki, sistem şifreyi kontrol etmeyi tamamen unutacak! Siber güvenlikte hedefe gönderilen bu zararlı metinlere <b>'Payload' (Saldırı Yükü)</b> denir.<br><br>Aşağıdaki yönetici paneline inin ve E-posta kısmına bu payload'u yazarak giriş yapın:<br><code class='glitch-payload' style='font-size:18px; margin: 15px 0; display:inline-block;'>' OR 1=1 --</code>",
+    infoTitle: "Nasıl Çalıştı?",
+    expl1: "Sistemin e-posta sorusunu erken bitirir.",
+    expl2: "Sisteme 'Veya 1=1' diyerek her zaman DOĞRU (True) olan bir kural ekler.",
+    expl3: "Sorgunun geri kalanını (Şifre kontrolünü) tamamen çöpe atar!",
     
-    simPanelTitle: "KULLANICI GİRİŞİ",
-    emailPlaceholder: "E-posta giriniz",
-    passPlaceholder: "Şifre giriniz",
+    simPanelTitle: "YÖNETİCİ GİRİŞİ",
+    emailPlaceholder: "E-posta (Payload'u buraya yazın)",
+    passPlaceholder: "Şifre (Boş bırakın veya sallayın)",
     btnHack: "Giriş Yap",
     btnNext2: "Saldırıyı Analiz Et (Eğitime Geç)",
 
@@ -305,7 +308,7 @@ const translations = {
     btnFinish: "Modülü Tamamla",
 
     msgSuccess: "SYSTEM OVERRIDE: VERİTABANI DÖKÜMÜ BAŞARILI",
-    msgFail: "Erişim Reddedildi! E-posta veya şifre hatalı.",
+    msgFail: "Erişim Reddedildi! Geçersiz E-posta veya Şifre.",
     tblEmail: "E-Posta Adresi",
     tblPass: "Şifre (Hash)",
     tblSecret: "Gizli Departman Verisi",
@@ -334,13 +337,17 @@ const translations = {
     btnNext1: "Finish Test & Go to Simulation",
 
     s2Title: "Step 2: Vulnerability Simulation",
-    s2Summary: "Our goal is to bypass the admin login panel. We will trick the database to get in without knowing the password.",
+    s2Summary: "Our goal is to bypass the admin login panel without a password by tricking the database.",
     gTitle: "MISSION BRIEFING",
-    s2Desc: "<b>Situation Analysis:</b><br>We do not have any administrator password. However, we suspect a lack of input validation (SQLi) in the database queries.<br><br><b>The Dangerous Background Code:</b><br>The system asks this in the background:<br><code>SELECT * FROM users WHERE email='<span style=\"color:#ef4444\">[YOUR_INPUT]</span>' AND password='...'</code><br><br><b>Attack Plan (Payload):</b><br>Type the following command into the Email box instead of a normal address:<br><code class='glitch-payload' style='font-size:16px; margin: 10px 0; display:inline-block;'>' OR 1=1 --</code><br><br><b>What will this do?</b><br>1. <b style='color: #38bdf8;'>' (Single Quote):</b> Closes the email query prematurely.<br>2. <b style='color: #f59e0b;'>OR 1=1:</b> Adds a mathematical truth that is always TRUE.<br>3. <b style='color: #ef4444;'>-- (Double Dash):</b> Comments out and entirely cancels the rest of the query (password check).<br><br><b>Result:</b> The system forgets to ask for the password and lets us in!",
+    s2Desc: "<b>Situation:</b><br>Normally, a system evaluates this rule: <br><i>'If Email is TRUE <b>AND</b> Password is TRUE, grant access.'</i><br><br><b>Attack Plan:</b><br>We will type a magic word into the email box so the system completely forgets to check the password! These malicious texts are called <b>'Payloads'</b>.<br><br>Go to the admin panel below and inject this payload into the Email field:<br><code class='glitch-payload' style='font-size:18px; margin: 15px 0; display:inline-block;'>' OR 1=1 --</code>",
+    infoTitle: "How does it work?",
+    expl1: "Prematurely closes the email query.",
+    expl2: "Adds a mathematical truth (Or 1=1) that is always TRUE.",
+    expl3: "Comments out and entirely cancels the rest of the query (password check).",
     
-    simPanelTitle: "USER LOGIN",
-    emailPlaceholder: "Enter email",
-    passPlaceholder: "Enter password",
+    simPanelTitle: "ADMIN LOGIN",
+    emailPlaceholder: "Email (Type payload here)",
+    passPlaceholder: "Password (Type anything)",
     btnHack: "Log In",
     btnNext2: "Analyze Attack",
 
@@ -374,7 +381,7 @@ const translations = {
     btnFinish: "Complete Module",
 
     msgSuccess: "SYSTEM OVERRIDE: DATABASE DUMP SUCCESSFUL",
-    msgFail: "Access Denied! Invalid email or password.",
+    msgFail: "Access Denied! Invalid Email or Password.",
     tblEmail: "Email Address",
     tblPass: "Password (Hash)",
     tblSecret: "Secret Dept Data",
@@ -464,7 +471,7 @@ const runExploit = async () => {
     
     const responseData = await response.json();
     
-    // Hızlandırılmış simülasyon (0.6 Saniye bekleme)
+    // Hızlandırılmış simülasyon (0.3 Saniye bekleme)
     setTimeout(() => {
       if (responseData.success) {
         leakedData.value = responseData.data;
@@ -473,7 +480,7 @@ const runExploit = async () => {
         exploitStatus.value = 'error';
         setTimeout(() => { exploitStatus.value = 'idle'; }, 3000);
       }
-    }, 600); 
+    }, 300); 
 
   } catch (error) {
     exploitStatus.value = 'error';
@@ -551,13 +558,12 @@ const finishPostTest = async () => {
 .wrong-answer { background: rgba(239, 68, 68, 0.1) !important; border-color: #ef4444 !important; color: #ef4444 !important; text-decoration: line-through; }
 
 /* =========================================================
-   YENİ SİMÜLASYON TASARIMI (ADIM 2)
+   YENİ SİMÜLASYON TASARIMI (ADIM 2) - Tek Sütun Yapısı
    ========================================================= */
-.mission-layout { display: grid; grid-template-columns: 1fr; gap: 25px; margin-top: 20px; }
-@media (min-width: 850px) { .mission-layout { grid-template-columns: 1fr 1fr; } }
+.mission-layout { display: flex; flex-direction: column; gap: 30px; margin-top: 20px; }
 
-/* Sol Panel: Rehber ve Brifing */
-.guide-panel { display: flex; flex-direction: column; gap: 20px; }
+/* Üst Panel: Rehber ve Brifing */
+.guide-panel { display: flex; flex-direction: column; gap: 20px; width: 100%;}
 .summary-box { background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981; padding: 15px 20px; border-radius: 0 8px 8px 0; font-style: italic; color: #a7f3d0;}
 .summary-box p { margin: 0; }
 
@@ -565,13 +571,22 @@ const finishPostTest = async () => {
 .brief-header { background: #1e293b; padding: 12px 20px; color: #f8fafc; font-size: 14px; font-weight: bold; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #334155;}
 .pulse-icon { width: 10px; height: 10px; background: #ef4444; border-radius: 50%; box-shadow: 0 0 10px #ef4444; animation: pulse 2s infinite; }
 @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
-.brief-body { padding: 20px; color: #cbd5e1; font-size: 14px; line-height: 1.6; }
-.brief-body p { margin-top: 0; margin-bottom: 15px; }
+.brief-body { padding: 25px; color: #cbd5e1; font-size: 15px; line-height: 1.6; }
+.brief-body p { margin-top: 0; margin-bottom: 10px; }
 
-/* Sağ Panel: Hedef Sistem */
-.app-container { display: flex; flex-direction: column; justify-content: flex-start; }
-.simulation-box { background: #ffffff; border-radius: 12px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.3); transition: all 0.5s ease; min-height: 380px; display: flex; flex-direction: column;}
-.simulation-box.system-hacked { background: #050505; border-color: #ef4444; box-shadow: 0 0 40px rgba(239, 68, 68, 0.2); }
+.info-box { background: #1e293b; padding: 20px; border-radius: 8px; border: 1px solid #334155; }
+.info-box h4 { color: #f8fafc; margin-top: 0; margin-bottom: 15px; font-size: 16px;}
+.info-box ul { padding-left: 20px; margin: 0; line-height: 1.8; color: #94a3b8; font-size: 14px;}
+.blue-text { color: #38bdf8; }
+.yellow-text { color: #f59e0b; }
+.red-text { color: #ef4444; }
+.green-text { color: #10b981; }
+.glitch-payload { background: #000; padding: 4px 10px; border-radius: 4px; border: 1px solid #ef4444; color: #ef4444; font-family: monospace; font-weight: bold;}
+
+/* Alt Panel: Hedef Sistem (Ortalanmış) */
+.app-container { display: flex; flex-direction: column; align-items: center; width: 100%;}
+.simulation-box { background: #ffffff; border-radius: 12px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.3); transition: all 0.5s ease; width: 100%; max-width: 650px;}
+.simulation-box.system-hacked { background: #050505; border-color: #ef4444; box-shadow: 0 0 40px rgba(239, 68, 68, 0.2); max-width: 850px; }
 
 .sim-header { background: #e2e8f0; padding: 10px 15px; border-bottom: 1px solid #cbd5e1; display: flex; align-items: center; transition: 0.5s;}
 .system-hacked .sim-header { background: #1e293b; border-color: #000; }
@@ -579,30 +594,30 @@ const finishPostTest = async () => {
 .dot.red { background: #ef4444; } .dot.yellow { background: #f59e0b; } .dot.green { background: #10b981; }
 
 /* Normal Login Ekranı */
-.sim-body { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;}
+.sim-body { padding: 40px; }
 .sim-body h3 { margin-top: 0; color: #0f172a; font-size: 22px; margin-bottom: 25px; text-align: center;}
-.input-group { margin-bottom: 15px; }
+.input-group { margin-bottom: 20px; }
 .input-group label { display: block; color: #475569; font-size: 13px; margin-bottom: 8px; font-weight: bold;}
-.sim-input { width: 100%; padding: 12px 15px; background: #f8fafc; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; outline: none; transition: 0.3s; font-size: 14px;}
+.sim-input { width: 100%; padding: 14px 15px; background: #f8fafc; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; outline: none; transition: 0.3s; font-size: 15px;}
 .sim-input:focus { border-color: #0284c7; box-shadow: inset 0 0 0 1px #0284c7; }
-.btn-hack-action { width: 100%; background: #0f172a; color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.3s; margin-top: 10px;}
+.btn-hack-action { width: 100%; background: #0f172a; color: white; border: none; padding: 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; margin-top: 15px;}
 .btn-hack-action:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(29, 78, 216, 0.4); }
-.error-toast { background: #fef2f2; color: #ef4444; padding: 12px; border-radius: 6px; margin-top: 15px; font-size: 13px; font-weight: bold; border: 1px solid #fca5a5; text-align: center;}
+.error-toast { background: #fef2f2; color: #ef4444; padding: 12px; border-radius: 6px; margin-top: 20px; font-size: 14px; font-weight: bold; border: 1px solid #fca5a5; text-align: center;}
 
 /* Hacking Loading Ekranı */
-.hacking-overlay { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #050505; color: #ef4444; font-family: monospace; padding: 40px; text-align: center;}
+.hacking-overlay { display: flex; flex-direction: column; justify-content: center; align-items: center; background: #050505; color: #ef4444; font-family: monospace; padding: 60px 40px; text-align: center; min-height: 250px;}
 .hack-spinner { width: 50px; height: 50px; border: 3px solid transparent; border-top-color: #ef4444; border-right-color: #ef4444; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 20px;}
 .blink-text { animation: blink 1s infinite; color: #f8fafc; margin-top: 5px;}
 @keyframes blink { 0%, 100% {opacity:1;} 50% {opacity:0.3;} }
 
-/* Veri Sızıntısı Ekranı (DB Dump - Blursuz) */
-.db-dump-screen { flex-grow: 1; padding: 25px; background: #050505; }
+/* Veritabanı Dökümü Ekranı (DB Dump - Blursuz) */
+.db-dump-screen { padding: 30px; background: #050505; }
 .dump-header { border-bottom: 1px dashed #ef4444; padding-bottom: 15px; margin-bottom: 20px; }
 .dump-header h3 { margin: 0; color: #ef4444; font-family: monospace; font-size: 18px; letter-spacing: 1px;}
 .cyber-table-wrapper { overflow-x: auto; border: 1px solid #1e293b; border-radius: 6px; }
-.cyber-table { width: 100%; border-collapse: collapse; font-family: "Consolas", monospace; font-size: 13px; text-align: left; }
-.cyber-table th { background: #111827; color: #94a3b8; padding: 10px 12px; border-bottom: 1px solid #334155; }
-.cyber-table td { padding: 10px 12px; border-bottom: 1px solid #1e293b; color: #10b981; }
+.cyber-table { width: 100%; border-collapse: collapse; font-family: "Consolas", monospace; font-size: 14px; text-align: left; }
+.cyber-table th { background: #111827; color: #94a3b8; padding: 12px 15px; border-bottom: 1px solid #334155; }
+.cyber-table td { padding: 12px 15px; border-bottom: 1px solid #1e293b; color: #10b981; }
 .cyber-table tr:last-child td { border-bottom: none;}
 .cyber-table tr:hover td { background: rgba(16, 185, 129, 0.05); }
 .td-email { color: #f8fafc !important; }
@@ -627,7 +642,7 @@ code { font-family: "Consolas", "Courier New", monospace; font-size: 14px; line-
 .code-var { color: #e5c07b; }
 
 /* Butonlar & Aksiyonlar */
-.action-footer { margin-top: 30px; display: flex; justify-content: flex-end; }
+.action-footer { margin-top: 30px; display: flex; justify-content: flex-end; width: 100%;}
 .action-footer.space-between { justify-content: space-between; }
 button { font-family: inherit; }
 .btn-primary { background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; }
