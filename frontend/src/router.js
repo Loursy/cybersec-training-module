@@ -8,6 +8,7 @@ import Ede from "./views/Ede.vue";
 import Xss from "./views/Xss.vue";
 import Rate from "./views/Rate.vue";
 import Cmd from "./views/Cmd.vue";
+import Register from "./views/Register.vue";
 
 const Module1Pre = {
   template:
@@ -22,6 +23,10 @@ const routes = [
   {
     path: "/",
     component: Login,
+  },
+  {
+    path: "/register",
+    component: Register,
   },
   {
     path: "/dashboard",
