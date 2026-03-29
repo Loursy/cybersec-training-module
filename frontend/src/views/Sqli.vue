@@ -66,7 +66,7 @@
               <div class="simulation-box" :class="{'system-hacked': exploitStatus === 'success'}">
                 <div class="sim-header">
                   <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-                  <span style="margin-left: 10px; font-family: monospace; color: #94a3b8;">admin.panel.local</span>
+                  <span style="margin-left: 10px; font-family: monospace; color: #94a3b8;">admin.globalcorp.local</span>
                 </div>
 
                 <div class="hacking-overlay" v-if="exploitStatus === 'hacking'">
@@ -106,7 +106,7 @@
                   <h3>{{ currentText.simPanelTitle }}</h3>
                   
                   <div class="input-group">
-                    <label>E-posta / Kullanıcı Adı</label>
+                    <label>E-posta</label>
                     <input type="text" v-model="simEmail" class="sim-input" :placeholder="currentText.emailPlaceholder" autocomplete="off" />
                   </div>
                   
@@ -234,7 +234,7 @@ const userEmail = localStorage.getItem('userEmail');
 
 const simEmail = ref('');
 const simPass = ref('');
-const exploitStatus = ref('idle'); // idle, hacking, success, error
+const exploitStatus = ref('idle'); 
 const leakedData = ref([]);
 
 const answerKeys = {
@@ -265,14 +265,14 @@ const translations = {
     btnNext1: "Testi Bitir ve Simülasyona Geç",
 
     s2Title: "Adım 2: Zafiyet Simülasyonu",
+    gTitle: "OPERASYON BRİFİNGİ",
     s2Summary: "Hedefimiz yandaki yönetici (Admin) paneline yetkisiz giriş yapmak. Sistemin veritabanını kandırarak şifre bilmeden içeri sızacağız.",
-    gTitle: "OPERASYON BRİFİNGİ: SQL INJECTION",
-    s2Desc: "<b>SQL Injection Nedir?</b><br>Kullanıcıdan alınan verilerin (örneğin e-posta) filtrelenmeden doğrudan veritabanı sorgusuna (SQL) dahil edilmesiyle oluşan bir zafiyettir. Geliştiricinin yazdığı kodun arasına kendi komutlarımızı sıkıştırarak sistemi manipüle edebiliriz.<br><br><b>Görev:</b> Yandaki E-posta kutusuna şu Payload'u (Saldırı Yükü) yazın:<br> <code class='glitch-payload' style='font-size:16px;'>' OR 1=1 --</code><br><br><b>Nasıl Çalışır?</b><br>• <b style='color: #38bdf8;'>' (Tek Tırnak):</b> Geliştiricinin kodunu e-posta kısmında erken kapatır.<br>• <b style='color: #f59e0b;'>OR 1=1:</b> 'Veya 1=1' diyerek, sorgu koşulunu her zaman DOĞRU (True) hale getirir.<br>• <b style='color: #ef4444;'>-- (İki Tire):</b> Sorgunun geri kalanını (Şifre kontrolünü) yorum satırı yapıp iptal eder.",
+    s2Desc: "<b>Durum Analizi:</b><br>Elimizde herhangi bir yönetici şifresi yok. Ancak sistemin veritabanı sorgularında girdi doğrulama eksikliği (SQLi) olduğundan şüpheleniyoruz.<br><br><b>Arka Plandaki Tehlikeli Kod:</b><br>Sistem giriş yaparken arka planda şu soruyu soruyor:<br><code>SELECT * FROM users WHERE email='<span style=\"color:#ef4444\">[SENİN_YAZDIĞIN]</span>' AND password='...'</code><br><br><b>Saldırı Planı (Payload):</b><br>E-posta kutusuna normal bir adres yerine aşağıdaki komutu yazarak sistemi kandıracağız:<br><code class='glitch-payload' style='font-size:16px; margin: 10px 0; display:inline-block;'>' OR 1=1 --</code><br><br><b>Bu Komut Ne Yapacak?</b><br>1. <b style='color: #38bdf8;'>' (Tek Tırnak):</b> Geliştiricinin e-posta sorgusunu erken kapatır.<br>2. <b style='color: #f59e0b;'>OR 1=1:</b> 'Veya 1=1' diyerek sorguya her zaman DOĞRU (True) kabul edilecek bir matematiksel gerçeklik ekler.<br>3. <b style='color: #ef4444;'>-- (İki Tire):</b> SQL dilinde yorum satırı demektir. Sorgunun geri kalanını (şifre kontrolünü) tamamen iptal eder.<br><br><b>Sonuç:</b> Sistem şifreyi sormayı unutur ve bizi yönetici olarak içeri alır!",
     
-    simPanelTitle: "ADMIN LOGIN",
-    emailPlaceholder: "E-posta (Payload'u buraya yazın)",
-    passPlaceholder: "Şifre (Boş bırakın veya sallayın)",
-    btnHack: "Sisteme Sız (Inject)",
+    simPanelTitle: "KULLANICI GİRİŞİ",
+    emailPlaceholder: "E-posta giriniz",
+    passPlaceholder: "Şifre giriniz",
+    btnHack: "Giriş Yap",
     btnNext2: "Saldırıyı Analiz Et (Eğitime Geç)",
 
     s3Title: "Adım 3: Zafiyet Analizi ve Çözümü",
@@ -305,7 +305,7 @@ const translations = {
     btnFinish: "Modülü Tamamla",
 
     msgSuccess: "SYSTEM OVERRIDE: VERİTABANI DÖKÜMÜ BAŞARILI",
-    msgFail: "Erişim Reddedildi! Geçersiz Payload veya Şifre.",
+    msgFail: "Erişim Reddedildi! E-posta veya şifre hatalı.",
     tblEmail: "E-Posta Adresi",
     tblPass: "Şifre (Hash)",
     tblSecret: "Gizli Departman Verisi",
@@ -335,13 +335,13 @@ const translations = {
 
     s2Title: "Step 2: Vulnerability Simulation",
     s2Summary: "Our goal is to bypass the admin login panel. We will trick the database to get in without knowing the password.",
-    gTitle: "MISSION BRIEFING: SQL INJECTION",
-    s2Desc: "<b>What is SQL Injection?</b><br>It's a vulnerability that occurs when user input is directly included in a database query (SQL) without filtering. We can manipulate the system by sneaking our own commands into the developer's code.<br><br><b>Mission:</b> Type the following Payload into the Email box:<br> <code class='glitch-payload' style='font-size:16px;'>' OR 1=1 --</code><br><br><b>How it Works:</b><br>• <b style='color: #38bdf8;'>' (Single Quote):</b> Early closure of the developer's code in the email part.<br>• <b style='color: #f59e0b;'>OR 1=1:</b> Makes the query condition always TRUE.<br>• <b style='color: #ef4444;'>-- (Double Dash):</b> Comments out and cancels the rest of the query (like password checking).",
+    gTitle: "MISSION BRIEFING",
+    s2Desc: "<b>Situation Analysis:</b><br>We do not have any administrator password. However, we suspect a lack of input validation (SQLi) in the database queries.<br><br><b>The Dangerous Background Code:</b><br>The system asks this in the background:<br><code>SELECT * FROM users WHERE email='<span style=\"color:#ef4444\">[YOUR_INPUT]</span>' AND password='...'</code><br><br><b>Attack Plan (Payload):</b><br>Type the following command into the Email box instead of a normal address:<br><code class='glitch-payload' style='font-size:16px; margin: 10px 0; display:inline-block;'>' OR 1=1 --</code><br><br><b>What will this do?</b><br>1. <b style='color: #38bdf8;'>' (Single Quote):</b> Closes the email query prematurely.<br>2. <b style='color: #f59e0b;'>OR 1=1:</b> Adds a mathematical truth that is always TRUE.<br>3. <b style='color: #ef4444;'>-- (Double Dash):</b> Comments out and entirely cancels the rest of the query (password check).<br><br><b>Result:</b> The system forgets to ask for the password and lets us in!",
     
-    simPanelTitle: "ADMIN LOGIN",
-    emailPlaceholder: "Email (Type payload here)",
-    passPlaceholder: "Password (Type anything)",
-    btnHack: "Inject Payload",
+    simPanelTitle: "USER LOGIN",
+    emailPlaceholder: "Enter email",
+    passPlaceholder: "Enter password",
+    btnHack: "Log In",
     btnNext2: "Analyze Attack",
 
     s3Title: "Step 3: Vulnerability Analysis",
@@ -374,7 +374,7 @@ const translations = {
     btnFinish: "Complete Module",
 
     msgSuccess: "SYSTEM OVERRIDE: DATABASE DUMP SUCCESSFUL",
-    msgFail: "Access Denied! Invalid Payload or Password.",
+    msgFail: "Access Denied! Invalid email or password.",
     tblEmail: "Email Address",
     tblPass: "Password (Hash)",
     tblSecret: "Secret Dept Data",
@@ -450,7 +450,7 @@ const finishPreTest = () => {
 const runExploit = async () => {
   if (!simEmail.value) return;
 
-  exploitStatus.value = 'hacking'; // Loading animasyonunu tetikle
+  exploitStatus.value = 'hacking'; 
   
   try {
     const response = await fetch(`/api/vuln/sqli/login`, {
@@ -584,9 +584,9 @@ const finishPostTest = async () => {
 .input-group { margin-bottom: 15px; }
 .input-group label { display: block; color: #475569; font-size: 13px; margin-bottom: 8px; font-weight: bold;}
 .sim-input { width: 100%; padding: 12px 15px; background: #f8fafc; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; outline: none; transition: 0.3s; font-size: 14px;}
-.sim-input:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1); }
+.sim-input:focus { border-color: #0284c7; box-shadow: inset 0 0 0 1px #0284c7; }
 .btn-hack-action { width: 100%; background: #0f172a; color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.3s; margin-top: 10px;}
-.btn-hack-action:hover { background: #ef4444; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4); }
+.btn-hack-action:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(29, 78, 216, 0.4); }
 .error-toast { background: #fef2f2; color: #ef4444; padding: 12px; border-radius: 6px; margin-top: 15px; font-size: 13px; font-weight: bold; border: 1px solid #fca5a5; text-align: center;}
 
 /* Hacking Loading Ekranı */
@@ -595,7 +595,7 @@ const finishPostTest = async () => {
 .blink-text { animation: blink 1s infinite; color: #f8fafc; margin-top: 5px;}
 @keyframes blink { 0%, 100% {opacity:1;} 50% {opacity:0.3;} }
 
-/* Veritabanı Dökümü Ekranı (DB Dump - Blursuz) */
+/* Veri Sızıntısı Ekranı (DB Dump - Blursuz) */
 .db-dump-screen { flex-grow: 1; padding: 25px; background: #050505; }
 .dump-header { border-bottom: 1px dashed #ef4444; padding-bottom: 15px; margin-bottom: 20px; }
 .dump-header h3 { margin: 0; color: #ef4444; font-family: monospace; font-size: 18px; letter-spacing: 1px;}
