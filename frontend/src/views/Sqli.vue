@@ -4,7 +4,7 @@
 
     <div class="container">
       <button class="lang-btn" @click="toggleLanguage">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         {{ currentLang === 'tr' ? 'EN' : 'TR' }}
       </button>
 
@@ -47,6 +47,10 @@
 
           <div class="mission-layout">
             <div class="guide-panel">
+              <div class="summary-box">
+                <p>{{ currentText.s2Summary }}</p>
+              </div>
+              
               <div class="mission-briefing">
                 <div class="brief-header">
                   <span class="pulse-icon"></span> 
@@ -56,26 +60,18 @@
                   <p v-html="currentText.s2Desc"></p>
                 </div>
               </div>
-
-              <div class="info-box logic-box">
-                <h4>{{ currentText.infoTitle }}</h4>
-                <ul>
-                  <li><b class="blue-text">' (Tek Tırnak):</b> <span>{{ currentText.expl1 }}</span></li>
-                  <li><b class="yellow-text">OR 1=1:</b> <span>{{ currentText.expl2 }}</span></li>
-                  <li><b class="red-text">-- (İki Tire):</b> <span>{{ currentText.expl3 }}</span></li>
-                </ul>
-              </div>
             </div>
 
             <div class="app-container">
               <div class="simulation-box" :class="{'system-hacked': exploitStatus === 'success'}">
                 <div class="sim-header">
                   <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-                  <span style="margin-left: 10px; font-family: monospace; color: #94a3b8;">admin.globalcorp.local</span>
+                  <span style="margin-left: 10px; font-family: monospace; color: #94a3b8;">portal.globalcorp.local</span>
                 </div>
 
                 <div class="hacking-overlay" v-if="exploitStatus === 'hacking'">
                   <div class="hack-spinner"></div>
+                  <p>{{ currentLang === 'tr' ? 'Veritabanı sorgusu enjekte ediliyor...' : 'Injecting database query...' }}</p>
                   <p class="blink-text">{{ currentLang === 'tr' ? 'Kimlik doğrulama atlatılıyor...' : 'Bypassing authentication...' }}</p>
                 </div>
 
@@ -110,12 +106,12 @@
                   <h3>{{ currentText.simPanelTitle }}</h3>
                   
                   <div class="input-group">
-                    <label>E-posta</label>
+                    <label>{{ currentLang === 'tr' ? 'E-posta Adresi' : 'Email Address' }}</label>
                     <input type="text" v-model="simEmail" class="sim-input" :placeholder="currentText.emailPlaceholder" autocomplete="off" />
                   </div>
                   
                   <div class="input-group">
-                    <label>Şifre</label>
+                    <label>{{ currentLang === 'tr' ? 'Şifre' : 'Password' }}</label>
                     <input type="password" v-model="simPass" class="sim-input" :placeholder="currentText.passPlaceholder" />
                   </div>
 
@@ -129,7 +125,8 @@
                 </div>
               </div>
 
-              <div class="action-footer" style="margin-top: 25px; display: flex; justify-content: center;">
+              <div class="action-footer space-between" style="margin-top: 25px;">
+                <button class="btn-secondary" @click="currentStep = 1">Önceki</button>
                 <button class="btn-success" @click="currentStep = 3" v-if="exploitStatus === 'success' || isReviewMode">
                   {{ currentText.btnNext2 }}
                 </button>
@@ -146,7 +143,6 @@
           <div class="edu-card">
             <h3 class="edu-heading blue-text">{{ currentText.s3DefTitle }}</h3>
             <p class="edu-desc">{{ currentText.s3DefDesc }}</p>
-            
 
             <div class="neon-divider" style="margin: 30px 0; background: linear-gradient(90deg, #1e293b, #334155, #1e293b);"></div>
 
@@ -172,6 +168,11 @@
             </div>
 
             <p class="edu-desc" v-html="currentText.s3SolDesc2"></p>
+            
+            <div style="margin-top: 25px; text-align: center; border-radius: 8px; overflow: hidden; border: 1px solid #334155;">
+              
+            </div>
+
           </div>
 
           <div class="action-footer space-between">
@@ -228,12 +229,13 @@ const answers = reactive({
   postQ1: '', postQ2: '', postQ3: ''
 });
 
+// JWT Token ve User Email
 const token = localStorage.getItem('token');
 const userEmail = localStorage.getItem('userEmail');
 
 const simEmail = ref('');
 const simPass = ref('');
-const exploitStatus = ref('idle'); 
+const exploitStatus = ref('idle'); // idle, hacking, success, error
 const leakedData = ref([]);
 
 const answerKeys = {
@@ -264,26 +266,22 @@ const translations = {
     btnNext1: "Testi Bitir ve Simülasyona Geç",
 
     s2Title: "Adım 2: Zafiyet Simülasyonu",
-    s2Summary: "Amacımız şifreyi bilmeden, veritabanını kandırarak aşağıdaki yönetici paneline sızmak.",
     gTitle: "OPERASYON BRİFİNGİ",
-    s2Desc: "<b>Durum:</b><br>Normalde bir sistem giriş yaparken arka planda şu kuralı işletir: <br><i>'Eğer Kullanıcı Adı doğruysa <b>VE</b> Şifre doğruysa içeri al.'</i><br><br><b>Saldırı Planı:</b><br>Biz e-posta kutusuna öyle sihirli bir kelime yazacağız ki, sistem şifreyi kontrol etmeyi tamamen unutacak! Siber güvenlikte hedefe gönderilen bu zararlı metinlere <b>'Payload' (Saldırı Yükü)</b> denir.<br><br>Aşağıdaki yönetici paneline inin ve E-posta kısmına bu payload'u yazarak giriş yapın:<br><code class='glitch-payload' style='font-size:18px; margin: 15px 0; display:inline-block;'>' OR 1=1 --</code>",
-    infoTitle: "Nasıl Çalıştı?",
-    expl1: "Sistemin e-posta sorusunu erken bitirir.",
-    expl2: "Sisteme 'Veya 1=1' diyerek her zaman DOĞRU (True) olan bir kural ekler.",
-    expl3: "Sorgunun geri kalanını (Şifre kontrolünü) tamamen çöpe atar!",
+    s2Summary: "Normal bir sisteme şifre bilmeden girmek imkansızdır. Ancak bu modülde e-posta kutusuna sıradan bir yazı yerine bir 'SQL komutu' yazarak veritabanını manipüle edeceğiz.",
+    s2Desc: "<b>Durum Analizi:</b><br>Karşımızda standart bir kullanıcı giriş paneli var ve hiçbir şifre bilmiyoruz. Geliştirici, kullanıcıdan aldığı e-posta verisini kontrol etmeden doğrudan veritabanı sorgusuna dahil etmiş. <br><br><b>Arka Plandaki Tehlikeli Kod:</b><br>Sistem giriş yaparken veritabanına şu soruyu soruyor:<br><code style='background:#000; color:#cbd5e1; padding:4px 8px; border-radius:4px; display:inline-block; font-size:12px;'>SELECT * FROM users WHERE email='<span style=\"color:#ef4444\">[SENİN_YAZDIĞIN]</span>' AND password='...'</code><br><br><b>Saldırı Planı (Payload):</b><br>Biz e-posta kutusuna sıradan bir metin yerine, veritabanının doğrudan çalıştıracağı bir <b>SQL komutu</b> yazacağız. Aşağıdaki giriş paneline inin ve E-posta kısmına bu SQL komutunu yazın:<br><code class='glitch-payload' style='font-size:16px; margin: 10px 0; display:inline-block;'>' OR 1=1 --</code><br><br><b>Bu SQL Komutu Ne Yapacak?</b><br>1. <b style='color: #38bdf8;'>' (Tek Tırnak):</b> Geliştiricinin yazdığı e-posta sorgusunu erken kapatır.<br>2. <b style='color: #f59e0b;'>OR 1=1:</b> 'Veya 1=1' diyerek sorguya her zaman DOĞRU (True) kabul edilecek bir kural ekler.<br>3. <b style='color: #ef4444;'>-- (İki Tire):</b> SQL dilinde yorum satırı demektir. Sorgunun geri kalanını (şifre sorma kısmını) tamamen çöpe atar.",
     
-    simPanelTitle: "YÖNETİCİ GİRİŞİ",
-    emailPlaceholder: "E-posta (Payload'u buraya yazın)",
+    simPanelTitle: "KULLANICI GİRİŞİ",
+    emailPlaceholder: "E-posta (SQL komutunu buraya yazın)",
     passPlaceholder: "Şifre (Boş bırakın veya sallayın)",
     btnHack: "Giriş Yap",
     btnNext2: "Saldırıyı Analiz Et (Eğitime Geç)",
 
     s3Title: "Adım 3: Zafiyet Analizi ve Çözümü",
     s3DefTitle: "SQL Injection (SQLi) Nedir?",
-    s3DefDesc: "Kötü niyetli kullanıcıların, uygulamanın veritabanına gönderdiği sorgulara müdahale etmesini sağlayan kritik bir güvenlik açığıdır. Geliştirici, kullanıcıdan aldığı veriyi filtrelemeden doğrudan SQL komutunun içine koyarsa, saldırgan kendi komutlarını çalıştırttırabilir.",
+    s3DefDesc: "Kötü niyetli kullanıcıların, uygulamanın veritabanına gönderdiği sorgulara müdahale etmesini sağlayan kritik bir güvenlik açığıdır. Geliştirici, kullanıcıdan aldığı veriyi filtrelemeden doğrudan SQL komutunun içine koyarsa, saldırgan kendi komutlarını çalıştırttırabilir. Tıpkı az önce sizin şifre kontrolünü iptal ettirdiğiniz gibi!",
     s3SolTitle: "Nasıl Çözülür? (Prepared Statements)",
     s3SolDesc1: "Açığın temel sebebi, kullanıcının girdiği metnin 'veri' olarak değil, çalıştırılabilir bir 'SQL komutu' olarak algılanmasıdır. Bunu kesin olarak çözmek için <b>Parametreli Sorgular</b> kullanmalıyız.",
-    s3SolDesc2: "Güvenli kodda görebileceğiniz gibi, dışarıdan gelen verileri SQL metnine yazmak yerine <b>? (soru işareti)</b> koyuyoruz. Veritabanı sürücüsü, bu kısımları sadece düz metin olarak işler.",
+    s3SolDesc2: "Güvenli kodda görebileceğiniz gibi, dışarıdan gelen verileri SQL metnine yazmak yerine <b>? (soru işareti)</b> koyuyoruz. Veritabanı sürücüsü, bu kısımları sadece düz metin olarak işler. Siz oraya ' OR 1=1 -- yazsanız bile sistem bunu bir komut olarak değil, sadece garip bir e-posta adresi olarak okur ve reddeder.",
     labelVuln: "Hatalı (Zafiyetli) Kod Kullanımı:",
     labelSec: "Güvenli (Doğru) Kod Kullanımı:",
     btnNext3: "Öğrendiklerini Test Et (Son-Test)",
@@ -307,8 +305,8 @@ const translations = {
     postQ3d: "D) Sadece yöneticilere yetki vererek",
     btnFinish: "Modülü Tamamla",
 
-    msgSuccess: "SYSTEM OVERRIDE: VERİTABANI DÖKÜMÜ BAŞARILI",
-    msgFail: "Erişim Reddedildi! Geçersiz E-posta veya Şifre.",
+    msgSuccess: "VERİTABANI DÖKÜMÜ BAŞARILI! Şifre kontrolü atlatıldı.",
+    msgFail: "Erişim Reddedildi! E-posta veya şifre hatalı.",
     tblEmail: "E-Posta Adresi",
     tblPass: "Şifre (Hash)",
     tblSecret: "Gizli Departman Verisi",
@@ -337,26 +335,22 @@ const translations = {
     btnNext1: "Finish Test & Go to Simulation",
 
     s2Title: "Step 2: Vulnerability Simulation",
-    s2Summary: "Our goal is to bypass the admin login panel without a password by tricking the database.",
+    s2Summary: "It is impossible to enter a normal system without knowing the password. However, in this module, we will manipulate the database by writing an 'SQL command' into the email box instead of plain text.",
     gTitle: "MISSION BRIEFING",
-    s2Desc: "<b>Situation:</b><br>Normally, a system evaluates this rule: <br><i>'If Email is TRUE <b>AND</b> Password is TRUE, grant access.'</i><br><br><b>Attack Plan:</b><br>We will type a magic word into the email box so the system completely forgets to check the password! These malicious texts are called <b>'Payloads'</b>.<br><br>Go to the admin panel below and inject this payload into the Email field:<br><code class='glitch-payload' style='font-size:18px; margin: 15px 0; display:inline-block;'>' OR 1=1 --</code>",
-    infoTitle: "How does it work?",
-    expl1: "Prematurely closes the email query.",
-    expl2: "Adds a mathematical truth (Or 1=1) that is always TRUE.",
-    expl3: "Comments out and entirely cancels the rest of the query (password check).",
+    s2Desc: "<b>Situation Analysis:</b><br>We have a standard user login panel and no passwords. The developer has directly included the email input into the database query without validation.<br><br><b>The Dangerous Background Code:</b><br>The system asks the database this question:<br><code style='background:#000; color:#cbd5e1; padding:4px 8px; border-radius:4px; display:inline-block; font-size:12px;'>SELECT * FROM users WHERE email='<span style=\"color:#ef4444\">[YOUR_INPUT]</span>' AND password='...'</code><br><br><b>Attack Plan (Payload):</b><br>Instead of a normal text, we will write an <b>SQL command</b> into the email box. Go to the login panel below and inject this SQL command:<br><code class='glitch-payload' style='font-size:16px; margin: 10px 0; display:inline-block;'>' OR 1=1 --</code><br><br><b>What will this SQL command do?</b><br>1. <b style='color: #38bdf8;'>' (Single Quote):</b> Closes the email query prematurely.<br>2. <b style='color: #f59e0b;'>OR 1=1:</b> Adds a mathematical truth that is always TRUE.<br>3. <b style='color: #ef4444;'>-- (Double Dash):</b> Comments out and entirely trashes the rest of the query (the password check).",
     
-    simPanelTitle: "ADMIN LOGIN",
-    emailPlaceholder: "Email (Type payload here)",
+    simPanelTitle: "USER LOGIN",
+    emailPlaceholder: "Email (Type SQL command here)",
     passPlaceholder: "Password (Type anything)",
     btnHack: "Log In",
     btnNext2: "Analyze Attack",
 
     s3Title: "Step 3: Vulnerability Analysis",
     s3DefTitle: "What is SQL Injection?",
-    s3DefDesc: "A critical vulnerability allowing attackers to interfere with DB queries. If inputs aren't filtered, attackers can execute their own commands.",
+    s3DefDesc: "A critical vulnerability allowing attackers to interfere with DB queries. If inputs aren't filtered, attackers can execute their own commands. Just like how you canceled the password check!",
     s3SolTitle: "How to Solve It? (Prepared Statements)",
     s3SolDesc1: "The root cause is inputs being perceived as 'executable commands'. We must use <b>Parameterized Queries</b>.",
-    s3SolDesc2: "Instead of writing data directly, we use a <b>? (question mark)</b>. The DB driver processes it only as plain text.",
+    s3SolDesc2: "Instead of writing data directly, we use a <b>? (question mark)</b>. The DB driver processes it only as plain text. Even if you type ' OR 1=1 --, the system treats it as a weird email and rejects it.",
     labelVuln: "Incorrect (Vulnerable) Code:",
     labelSec: "Secure (Correct) Code:",
     btnNext3: "Test Your Knowledge",
@@ -380,7 +374,7 @@ const translations = {
     postQ3d: "D) Applying authorization checks.",
     btnFinish: "Complete Module",
 
-    msgSuccess: "SYSTEM OVERRIDE: DATABASE DUMP SUCCESSFUL",
+    msgSuccess: "DATABASE DUMP SUCCESSFUL! Password check bypassed.",
     msgFail: "Access Denied! Invalid Email or Password.",
     tblEmail: "Email Address",
     tblPass: "Password (Hash)",
@@ -471,7 +465,7 @@ const runExploit = async () => {
     
     const responseData = await response.json();
     
-    // Hızlandırılmış simülasyon (0.3 Saniye bekleme)
+    // Çok daha hızlı simülasyon (0.3 Saniye bekleme)
     setTimeout(() => {
       if (responseData.success) {
         leakedData.value = responseData.data;
@@ -573,14 +567,6 @@ const finishPostTest = async () => {
 @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
 .brief-body { padding: 25px; color: #cbd5e1; font-size: 15px; line-height: 1.6; }
 .brief-body p { margin-top: 0; margin-bottom: 10px; }
-
-.info-box { background: #1e293b; padding: 20px; border-radius: 8px; border: 1px solid #334155; }
-.info-box h4 { color: #f8fafc; margin-top: 0; margin-bottom: 15px; font-size: 16px;}
-.info-box ul { padding-left: 20px; margin: 0; line-height: 1.8; color: #94a3b8; font-size: 14px;}
-.blue-text { color: #38bdf8; }
-.yellow-text { color: #f59e0b; }
-.red-text { color: #ef4444; }
-.green-text { color: #10b981; }
 .glitch-payload { background: #000; padding: 4px 10px; border-radius: 4px; border: 1px solid #ef4444; color: #ef4444; font-family: monospace; font-weight: bold;}
 
 /* Alt Panel: Hedef Sistem (Ortalanmış) */
