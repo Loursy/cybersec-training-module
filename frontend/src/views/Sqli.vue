@@ -4,7 +4,7 @@
 
     <div class="container">
       <button class="lang-btn" @click="toggleLanguage">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         {{ currentLang === 'tr' ? 'EN' : 'TR' }}
       </button>
 
@@ -59,15 +59,6 @@
                 <div class="brief-body">
                   <p v-html="currentText.s2Desc"></p>
                 </div>
-              </div>
-
-              <div class="info-box logic-box">
-                <h4>{{ currentText.infoTitle }}</h4>
-                <ul>
-                  <li><b class="blue-text">' (Tek Tırnak):</b> <span>{{ currentText.expl1 }}</span></li>
-                  <li><b class="yellow-text">OR 1=1:</b> <span>{{ currentText.expl2 }}</span></li>
-                  <li><b class="red-text">-- (İki Tire):</b> <span>{{ currentText.expl3 }}</span></li>
-                </ul>
               </div>
             </div>
 
@@ -133,7 +124,7 @@
                 </div>
               </div>
 
-              <div class="action-footer" style="margin-top: 25px;">
+              <div class="action-footer" style="margin-top: 25px; display: flex; justify-content: center;">
                 <button class="btn-success" @click="currentStep = 3" v-if="exploitStatus === 'success' || isReviewMode">
                   {{ currentText.btnNext2 }}
                 </button>
@@ -150,6 +141,7 @@
           <div class="edu-card">
             <h3 class="edu-heading blue-text">{{ currentText.s3DefTitle }}</h3>
             <p class="edu-desc">{{ currentText.s3DefDesc }}</p>
+            
 
             <div class="neon-divider" style="margin: 30px 0; background: linear-gradient(90deg, #1e293b, #334155, #1e293b);"></div>
 
@@ -175,11 +167,6 @@
             </div>
 
             <p class="edu-desc" v-html="currentText.s3SolDesc2"></p>
-            
-            <div style="margin-top: 25px; text-align: center; border-radius: 8px; overflow: hidden; border: 1px solid #334155;">
-              
-            </div>
-
           </div>
 
           <div class="action-footer space-between">
@@ -204,7 +191,8 @@
             </div>
           </div>
 
-          <div class="action-footer">
+          <div class="action-footer space-between">
+            <button class="btn-secondary" @click="currentStep = 3">Önceki</button>
             <button class="btn-warning" @click="finishPostTest" :disabled="isSaving">
               <span v-if="isSaving" class="spinner-small"></span>
               {{ isReviewMode ? (currentLang === 'tr' ? 'İncelemeyi Bitir ve Dön' : 'Finish Review & Return') : (isSaving ? (currentLang === 'tr' ? 'Kaydediliyor...' : 'Saving...') : currentText.btnFinish) }}
@@ -244,8 +232,9 @@ const simPass = ref('');
 const exploitStatus = ref('idle'); // idle, hacking, success, error
 const leakedData = ref([]);
 
+// YENİ CEVAP ANAHTARI
 const answerKeys = {
-  pre: { q1: "b", q2: "c", q3: "b" },
+  pre: { q1: "c", q2: "b", q3: "d" },
   post: { q1: "b", q2: "c", q3: "b" },
 };
 
@@ -254,31 +243,31 @@ const translations = {
     modTitle: "Modül 1: SQL Injection (SQLi)",
     s1Title: "Adım 1: Ön-Test (Bilgi Ölçümü)",
     s1Desc: "Aşağıdaki soruları yanıtlayarak mevcut bilgi seviyenizi ölçelim.",
+    
     preQ1Text: "Soru 1: SQL Injection (SQLi) nedir?",
-    preQ1a: "A) Veritabanı sunucuları arasındaki trafiğin şifrelenmemesinden kaynaklanan veri sızıntısıdır.",
-    preQ1b: "B) Kullanıcı girdilerinin, çalıştırılabilir SQL komutlarının bir parçası olarak yorumlanmasıdır.",
-    preQ1c: "C) Sistemi kandırmak amacıyla veritabanına sahte bilgiler enjekte etme işlemidir.",
-    preQ1d: "D) Web sunucusuna aşırı istek göndererek veritabanını erişilemez hale getirmektir.",
+    preQ1a: "A) Veritabanı içine dışarıdan bilgi enjekte etme işlemidir.",
+    preQ1b: "B) Web sunucusuna başka bir veritabanı enjekte etme işlemidir.",
+    preQ1c: "C) Sistemi kandıracak bir veritabanı sorgusuyla içeri sızma işlemidir.",
+    preQ1d: "D) Veritabanına aşırı istek göndererek veritabanını ulaşılamaz hale getirmektir.",
+    
     preQ2Text: "Soru 2: Siber güvenlikte 'Payload' terimi ne anlama gelir?",
-    preQ2a: "A) Veritabanına sızdıktan sonra elde edilen kullanıcı şifrelerinin bütünü",
-    preQ2b: "B) Sistemin güvenlik duvarını aşmak için kullanılan şifreleme algoritması",
-    preQ2c: "C) Bir zafiyeti tetiklemek için hedefe iletilen zararlı veri veya kod parçası",
-    preQ2d: "D) Sunucunun istemciye yanıt olarak gönderdiği HTTP başlıklarının tamamı",
+    preQ2a: "A) Sistemin güvenlik duvarını aşmak için kullanılan şifreleme algoritmasıdır.",
+    preQ2b: "B) Zararlı veri veya kod parçasıdır.",
+    preQ2c: "C) Sunucunun istemciye yanıt olarak gönderdiği HTTP başlıklarının tamamıdır.",
+    preQ2d: "D) Veritabanının aşırı yüklenmesi sonucu oluşan veri raporudur.",
+    
     preQ3Text: "Soru 3: SQL Injection zafiyetine neden olan en riskli hata hangisidir?",
-    preQ3a: "A) Şifrelerin veritabanına kaydedilmeden önce hashlenmemesi",
-    preQ3b: "B) Kullanıcı girdilerinin doğrudan SQL sorgu metniyle birleştirilmesi",
-    preQ3c: "C) Web sitesinde SSL sertifikası bulunmaması",
-    preQ3d: "D) Sistemin çok sayıda hatalı girişi engellememesi",
+    preQ3a: "A) Şifrelerin veritabanına kaydedilmeden önce kriptlenmemiş olması.",
+    preQ3b: "B) Web sitesinde SSL sertifikasının bulunmaması yani HTTPS yerine HTTP olması.",
+    preQ3c: "C) SQL sisteminin sitede gizlenmemiş olması.",
+    preQ3d: "D) Kullanıcı girdilerinin SQL sorgu metniyle birleşmesi.",
+    
     btnNext1: "Testi Bitir ve Simülasyona Geç",
 
     s2Title: "Adım 2: Zafiyet Simülasyonu",
+    s2Summary: "SQL Injection, kullanıcıya açık bir panele istenilen veri yerine SQL sorgusu yazılarak direkt veritabanıyla iletişime geçme işlemidir.",
     gTitle: "OPERASYON BRİFİNGİ",
-    s2Summary: "Amacımız şifreyi bilmeden, veritabanını kandırarak aşağıdaki kullanıcı giriş paneline sızmak.",
-    s2Desc: "<b>Durum Analizi:</b><br>Karşımızda standart bir giriş paneli var ve hiçbir şifre bilmiyoruz. Geliştirici, kullanıcıdan aldığı e-posta verisini kontrol etmeden doğrudan veritabanı sorgusuna dahil etmiş. <br><br><b>Arka Plandaki Tehlikeli Kod:</b><br>Sistem giriş yaparken veritabanına şu soruyu soruyor:<br><code style='background:#000; color:#cbd5e1; padding:4px 8px; border-radius:4px; display:inline-block; font-size:12px;'>SELECT * FROM users WHERE email='<span style=\"color:#ef4444\">[SENİN_YAZDIĞIN]</span>' AND password='...'</code><br><br><b>Saldırı Planı (Payload):</b><br>Biz e-posta kutusuna sıradan bir metin yerine, veritabanının doğrudan çalıştıracağı bir <b>SQL komutu</b> yazacağız. Aşağıdaki giriş paneline inin ve E-posta kısmına bu SQL komutunu yazın:<br><code class='glitch-payload' style='font-size:16px; margin: 10px 0; display:inline-block;'>' OR 1=1 --</code>",
-    infoTitle: "Peki bu payload ne işe yarayacak? (' OR 1=1 --)",
-    expl1: "Geliştiricinin arka planda yazdığı kodu biz erken kapatıyoruz. Böylece sistemin kodunun içine kendi kelimelerimizi ekleyebiliyoruz.",
-    expl2: "'Veya 1 eşittir 1' diyoruz. 1 her zaman 1'e eşit olduğu için, veritabanı 'Tamam bu kişi doğru söylüyor' diyerek bizi zorla içeri alıyor.",
-    expl3: "Veritabanına 'Bundan sonra yazan şifre kontrol kısmını tamamen görmezden gel, sil gitsin' emrini veriyor.",
+    s2Desc: "<b>Durum Analizi:</b><br>Karşımızda standart bir giriş paneli var ve hiçbir şifre bilmiyoruz. Geliştirici, kullanıcıdan aldığı e-posta verisini kontrol etmeden doğrudan veritabanı sorgusuna dahil etmiş.<br><br><b>Saldırı Planı:</b><br>Biz e-posta kutusuna sıradan bir metin yerine, veritabanının doğrudan çalıştıracağı özel bir kod parçası yazacağız. Siber güvenlikte, hedef sistemi manipüle etmek veya zararlı bir işlemi tetiklemek için gönderilen bu tür verilere <b>'Payload' (Saldırı Yükü)</b> denir.<br><br>Aşağıdaki giriş paneline inin ve E-posta kısmına şu Payload'u yazın:<br><code class='glitch-payload' style='font-size:16px; margin: 10px 0; display:inline-block;'>' OR 1=1 --</code><br><br><b>Bu Payload Ne Yapacak?</b><br>1. <b style='color: #38bdf8;'>' (Tek Tırnak):</b> Geliştiricinin arka planda yazdığı e-posta sorgusunu erken kapatır.<br>2. <b style='color: #f59e0b;'>OR 1=1:</b> 'Veya 1=1' diyerek sorguya her zaman DOĞRU (True) kabul edilecek bir kural ekler.<br>3. <b style='color: #ef4444;'>-- (İki Tire):</b> SQL dilinde yorum satırı demektir. Sorgunun geri kalanını (şifre sorma kısmını) tamamen çöpe atar.",
     
     simPanelTitle: "KULLANICI GİRİŞİ",
     emailPlaceholder: "E-posta (SQL komutunu buraya yazın)",
@@ -288,10 +277,10 @@ const translations = {
 
     s3Title: "Adım 3: Zafiyet Analizi ve Çözümü",
     s3DefTitle: "SQL Injection (SQLi) Nedir?",
-    s3DefDesc: "Kötü niyetli kullanıcıların, uygulamanın veritabanına gönderdiği sorgulara müdahale etmesini sağlayan kritik bir güvenlik açığıdır. Geliştirici, kullanıcıdan aldığı veriyi filtrelemeden doğrudan SQL komutunun içine koyarsa, saldırgan kendi komutlarını çalıştırttırabilir.",
+    s3DefDesc: "Kötü niyetli kullanıcıların, uygulamanın veritabanına gönderdiği sorgulara müdahale etmesini sağlayan kritik bir güvenlik açığıdır. Geliştirici, kullanıcıdan aldığı veriyi filtrelemeden doğrudan SQL komutunun içine koyarsa, saldırgan kendi komutlarını çalıştırttırabilir. Tıpkı az önce sizin şifre kontrolünü iptal ettirdiğiniz gibi!",
     s3SolTitle: "Nasıl Çözülür? (Prepared Statements)",
     s3SolDesc1: "Açığın temel sebebi, kullanıcının girdiği metnin 'veri' olarak değil, çalıştırılabilir bir 'SQL komutu' olarak algılanmasıdır. Bunu kesin olarak çözmek için <b>Parametreli Sorgular</b> kullanmalıyız.",
-    s3SolDesc2: "Güvenli kodda görebileceğiniz gibi, dışarıdan gelen verileri SQL metnine yazmak yerine <b>? (soru işareti)</b> koyuyoruz. Veritabanı sürücüsü, bu kısımları sadece düz metin olarak işler.",
+    s3SolDesc2: "Güvenli kodda görebileceğiniz gibi, dışarıdan gelen verileri SQL metnine yazmak yerine <b>? (soru işareti)</b> koyuyoruz. Veritabanı sürücüsü, bu kısımları sadece düz metin olarak işler. Siz oraya ' OR 1=1 -- yazsanız bile sistem bunu bir komut olarak değil, sadece garip bir e-posta adresi olarak okur ve reddeder.",
     labelVuln: "Hatalı (Zafiyetli) Kod Kullanımı:",
     labelSec: "Güvenli (Doğru) Kod Kullanımı:",
     btnNext3: "Öğrendiklerini Test Et (Son-Test)",
@@ -315,8 +304,8 @@ const translations = {
     postQ3d: "D) Sadece yöneticilere yetki vererek",
     btnFinish: "Modülü Tamamla",
 
-    msgSuccess: "SYSTEM OVERRIDE: VERİTABANI DÖKÜMÜ BAŞARILI",
-    msgFail: "Erişim Reddedildi! Geçersiz E-posta veya Şifre.",
+    msgSuccess: "VERİTABANI DÖKÜMÜ BAŞARILI! Şifre kontrolü atlatıldı.",
+    msgFail: "Erişim Reddedildi! E-posta veya şifre hatalı.",
     tblEmail: "E-Posta Adresi",
     tblPass: "Şifre (Hash)",
     tblSecret: "Gizli Departman Verisi",
@@ -327,31 +316,31 @@ const translations = {
     modTitle: "Module 1: SQL Injection (SQLi)",
     s1Title: "Step 1: Pre-Test (Knowledge Assessment)",
     s1Desc: "Let's measure your current knowledge level.",
+    
     preQ1Text: "Question 1: What is SQL Injection (SQLi)?",
-    preQ1a: "A) A data leak caused by unencrypted traffic.",
-    preQ1b: "B) A vulnerability allowing user inputs to be interpreted as executable SQL commands.",
-    preQ1c: "C) Injecting fake information to deceive the system.",
-    preQ1d: "D) Making the database inaccessible via DDoS.",
-    preQ2Text: "Question 2: What does 'Payload' mean?",
-    preQ2a: "A) User passwords obtained after infiltrating.",
-    preQ2b: "B) Encryption algorithm used to bypass firewalls.",
-    preQ2c: "C) Malicious data delivered to trigger a vulnerability.",
-    preQ2d: "D) HTTP headers sent by the server.",
-    preQ3Text: "Question 3: Riskiest programming error for SQLi?",
-    preQ3a: "A) Not hashing passwords.",
-    preQ3b: "B) Directly concatenating user inputs with SQL text.",
-    preQ3c: "C) Lacking an SSL certificate.",
-    preQ3d: "D) Not blocking multiple failed logins.",
+    preQ1a: "A) The process of injecting external information into the database.",
+    preQ1b: "B) The process of injecting another database into the web server.",
+    preQ1c: "C) The process of infiltrating by tricking the system with a database query.",
+    preQ1d: "D) Making the database inaccessible by sending excessive requests to it.",
+    
+    preQ2Text: "Question 2: What does the term 'Payload' mean in cybersecurity?",
+    preQ2a: "A) The encryption algorithm used to bypass the system's firewall.",
+    preQ2b: "B) A piece of malicious data or code.",
+    preQ2c: "C) The entirety of HTTP headers sent by the server in response to the client.",
+    preQ2d: "D) The data report generated as a result of database overload.",
+    
+    preQ3Text: "Question 3: What is the riskiest programming error that causes an SQL Injection vulnerability?",
+    preQ3a: "A) Passwords not being encrypted before being saved to the database.",
+    preQ3b: "B) Lack of an SSL certificate on the website, i.e., HTTP instead of HTTPS.",
+    preQ3c: "C) The SQL system not being hidden on the site.",
+    preQ3d: "D) User inputs concatenating with the SQL query text.",
+    
     btnNext1: "Finish Test & Go to Simulation",
 
     s2Title: "Step 2: Vulnerability Simulation",
-    s2Summary: "Our goal is to bypass the login panel without a password by tricking the database.",
+    s2Summary: "SQL Injection is the process of communicating directly with the database by entering an SQL query instead of the requested data into a user-accessible panel.",
     gTitle: "MISSION BRIEFING",
-    s2Desc: "<b>Situation Analysis:</b><br>We have a standard user login panel and no passwords. The developer has directly included the email input into the database query without validation.<br><br><b>The Dangerous Background Code:</b><br>The system asks the database this question:<br><code style='background:#000; color:#cbd5e1; padding:4px 8px; border-radius:4px; display:inline-block; font-size:12px;'>SELECT * FROM users WHERE email='<span style=\"color:#ef4444\">[YOUR_INPUT]</span>' AND password='...'</code><br><br><b>Attack Plan (Payload):</b><br>Instead of a normal text, we will write an <b>SQL command</b> into the email box. Go to the login panel below and inject this SQL command:<br><code class='glitch-payload' style='font-size:16px; margin: 10px 0; display:inline-block;'>' OR 1=1 --</code>",
-    infoTitle: "What will this payload do? (' OR 1=1 --)",
-    expl1: "Prematurely closes the developer's background code.",
-    expl2: "'Or 1=1' makes the condition always TRUE.",
-    expl3: "Comments out and entirely cancels the rest of the query (password check).",
+    s2Desc: "<b>Situation Analysis:</b><br>We face a standard user login panel and don't know any passwords. The developer included the email input directly into the database query without validation.<br><br><b>Attack Plan:</b><br>Instead of normal text, we will enter a specific piece of code into the email box that the database will execute directly. In cybersecurity, data sent to manipulate a target system or trigger a malicious action is called a <b>'Payload'</b>.<br><br>Scroll down to the login panel and inject this Payload into the Email field:<br><code class='glitch-payload' style='font-size:16px; margin: 10px 0; display:inline-block;'>' OR 1=1 --</code><br><br><b>What will this Payload do?</b><br>1. <b style='color: #38bdf8;'>' (Single Quote):</b> Prematurely closes the developer's background email query.<br>2. <b style='color: #f59e0b;'>OR 1=1:</b> Adds a mathematical truth (Or 1=1) that makes the query condition always TRUE.<br>3. <b style='color: #ef4444;'>-- (Double Dash):</b> Means a comment line in SQL. It entirely trashes the rest of the query (the password check).",
     
     simPanelTitle: "USER LOGIN",
     emailPlaceholder: "Email (Type SQL command here)",
@@ -361,10 +350,10 @@ const translations = {
 
     s3Title: "Step 3: Vulnerability Analysis",
     s3DefTitle: "What is SQL Injection?",
-    s3DefDesc: "A critical vulnerability allowing attackers to interfere with DB queries. If inputs aren't filtered, attackers can execute their own commands.",
+    s3DefDesc: "A critical vulnerability allowing attackers to interfere with DB queries. If inputs aren't filtered, attackers can execute their own commands. Just like how you canceled the password check!",
     s3SolTitle: "How to Solve It? (Prepared Statements)",
     s3SolDesc1: "The root cause is inputs being perceived as 'executable commands'. We must use <b>Parameterized Queries</b>.",
-    s3SolDesc2: "Instead of writing data directly, we use a <b>? (question mark)</b>. The DB driver processes it only as plain text.",
+    s3SolDesc2: "Instead of writing data directly, we use a <b>? (question mark)</b>. The DB driver processes it only as plain text. Even if you type ' OR 1=1 --, the system treats it as a weird email and rejects it.",
     labelVuln: "Incorrect (Vulnerable) Code:",
     labelSec: "Secure (Correct) Code:",
     btnNext3: "Test Your Knowledge",
@@ -388,7 +377,7 @@ const translations = {
     postQ3d: "D) Applying authorization checks.",
     btnFinish: "Complete Module",
 
-    msgSuccess: "SYSTEM OVERRIDE: DATABASE DUMP SUCCESSFUL",
+    msgSuccess: "DATABASE DUMP SUCCESSFUL! Password check bypassed.",
     msgFail: "Access Denied! Invalid Email or Password.",
     tblEmail: "Email Address",
     tblPass: "Password (Hash)",
@@ -583,14 +572,6 @@ const finishPostTest = async () => {
 .brief-body p { margin-top: 0; margin-bottom: 10px; }
 .glitch-payload { background: #000; padding: 4px 10px; border-radius: 4px; border: 1px solid #ef4444; color: #ef4444; font-family: monospace; font-weight: bold;}
 
-.info-box { background: #1e293b; padding: 20px; border-radius: 8px; border: 1px solid #334155; }
-.info-box h4 { color: #f8fafc; margin-top: 0; margin-bottom: 15px; font-size: 16px;}
-.info-box ul { padding-left: 20px; margin: 0; line-height: 1.8; color: #94a3b8; font-size: 14px;}
-.blue-text { color: #38bdf8; }
-.yellow-text { color: #f59e0b; }
-.red-text { color: #ef4444; }
-.green-text { color: #10b981; }
-
 /* Alt Panel: Hedef Sistem (Ortalanmış) */
 .app-container { display: flex; flex-direction: column; align-items: center; width: 100%;}
 .simulation-box { background: #ffffff; border-radius: 12px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.3); transition: all 0.5s ease; width: 100%; max-width: 650px;}
@@ -608,7 +589,7 @@ const finishPostTest = async () => {
 .input-group label { display: block; color: #475569; font-size: 13px; margin-bottom: 8px; font-weight: bold;}
 .sim-input { width: 100%; padding: 14px 15px; background: #f8fafc; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; outline: none; transition: 0.3s; font-size: 15px;}
 .sim-input:focus { border-color: #0284c7; box-shadow: inset 0 0 0 1px #0284c7; }
-.btn-hack-action { width: 100%; background: #0f172a; color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; margin-top: 15px;}
+.btn-hack-action { width: 100%; background: #0f172a; color: white; border: none; padding: 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; margin-top: 15px;}
 .btn-hack-action:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(29, 78, 216, 0.4); }
 .error-toast { background: #fef2f2; color: #ef4444; padding: 12px; border-radius: 6px; margin-top: 20px; font-size: 14px; font-weight: bold; border: 1px solid #fca5a5; text-align: center;}
 
