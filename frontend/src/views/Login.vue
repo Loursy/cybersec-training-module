@@ -15,11 +15,17 @@
       <div class="auth-header">
         <div class="logo-circle" :class="showPassword ? 'glow-red' : 'glow-blue'">
           <svg v-if="!showPassword" class="icon-transition" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-          <svg v-else class="icon-transition" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="15" cy="12" r="1"></circle><path d="M8 20v2h8v-2"></path><path d="M12.5 17l-.5-1-.5 1h1z"></path><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"></path></svg>
+          <svg v-else class="icon-transition" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 14h20"></path>
+            <path d="M5.5 14v-3.5a6.5 6.5 0 0 1 13 0V14"></path>
+            <circle cx="8" cy="19" r="2"></circle>
+            <circle cx="16" cy="19" r="2"></circle>
+            <line x1="10" y1="19" x2="14" y2="19"></line>
+          </svg>
         </div>
         <h2>{{ currentText.title }}</h2>
         <p :class="showPassword ? 'text-red' : 'text-blue-gray'">
-          {{ showPassword ? currentText.descRisk : currentText.desc }}
+          {{ currentText.desc }}
         </p>
       </div>
 
@@ -84,7 +90,6 @@ const translations = {
   tr: {
     title: "Sisteme Giriş",
     desc: "Eğitim platformuna erişmek için kimliğinizi doğrulayın.",
-    descRisk: "DİKKAT: Şifreniz şu anda açık metin olarak görünüyor!",
     emailLbl: "E-posta Adresi",
     passwordLbl: "Şifre",
     rememberMe: "Beni Hatırla",
@@ -101,7 +106,6 @@ const translations = {
   en: {
     title: "Sign In",
     desc: "Verify your identity to access the training platform.",
-    descRisk: "WARNING: Your password is currently visible in plain text!",
     emailLbl: "Email Address",
     passwordLbl: "Password",
     rememberMe: "Remember Me",
