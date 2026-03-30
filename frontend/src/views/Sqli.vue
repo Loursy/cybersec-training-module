@@ -60,6 +60,15 @@
                   <p v-html="currentText.s2Desc"></p>
                 </div>
               </div>
+
+              <div class="info-box logic-box">
+                <h4>{{ currentText.infoTitle }}</h4>
+                <ul>
+                  <li><b class="blue-text">' (Tek Tırnak):</b> <span>{{ currentText.expl1 }}</span></li>
+                  <li><b class="yellow-text">OR 1=1:</b> <span>{{ currentText.expl2 }}</span></li>
+                  <li><b class="red-text">-- (İki Tire):</b> <span>{{ currentText.expl3 }}</span></li>
+                </ul>
+              </div>
             </div>
 
             <div class="app-container">
@@ -173,7 +182,8 @@
 
           </div>
 
-          <div class="action-footer">
+          <div class="action-footer space-between">
+            <button class="btn-secondary" @click="currentStep = 2">Önceki</button>
             <button class="btn-primary" @click="currentStep = 4">{{ currentText.btnNext3 }}</button>
           </div>
         </div>
@@ -263,25 +273,25 @@ const translations = {
 
     s2Title: "Adım 2: Zafiyet Simülasyonu",
     gTitle: "OPERASYON BRİFİNGİ",
-    s2Summary: "Amacımız şifreyi bilmeden, veritabanını kandırarak aşağıdaki yönetici paneline sızmak.",
-    s2Desc: "<b>Durum Analizi:</b><br>Normalde bir sistem giriş yaparken arka planda şu kuralı işletir: <br><i>'Eğer Kullanıcı Adı doğruysa <b>VE</b> Şifre doğruysa içeri al.'</i><br><br><b>Saldırı Planı:</b><br>Biz e-posta kutusuna öyle sihirli bir kelime yazacağız ki, sistem şifreyi kontrol etmeyi tamamen unutacak! Siber güvenlikte hedefe gönderilen bu zararlı metinlere <b>'Payload' (Saldırı Yükü)</b> denir.<br><br>Aşağıdaki panelde E-posta kısmına bu payload'u yazarak giriş yapın:<br><code class='glitch-payload' style='font-size:18px; margin: 15px 0; display:inline-block;'>' OR 1=1 --</code>",
-    infoTitle: "Nasıl Çalıştı?",
-    expl1: "Sistemin e-posta sorusunu erken bitirir.",
-    expl2: "Sisteme 'Veya 1=1' diyerek her zaman DOĞRU (True) olan bir kural ekler.",
-    expl3: "Sorgunun geri kalanını (Şifre kontrolünü) tamamen çöpe atar!",
+    s2Summary: "Amacımız şifreyi bilmeden, veritabanını kandırarak aşağıdaki kullanıcı giriş paneline sızmak.",
+    s2Desc: "<b>Durum Analizi:</b><br>Karşımızda standart bir giriş paneli var ve hiçbir şifre bilmiyoruz. Geliştirici, kullanıcıdan aldığı e-posta verisini kontrol etmeden doğrudan veritabanı sorgusuna dahil etmiş. <br><br><b>Arka Plandaki Tehlikeli Kod:</b><br>Sistem giriş yaparken veritabanına şu soruyu soruyor:<br><code style='background:#000; color:#cbd5e1; padding:4px 8px; border-radius:4px; display:inline-block; font-size:12px;'>SELECT * FROM users WHERE email='<span style=\"color:#ef4444\">[SENİN_YAZDIĞIN]</span>' AND password='...'</code><br><br><b>Saldırı Planı (Payload):</b><br>Biz e-posta kutusuna sıradan bir metin yerine, veritabanının doğrudan çalıştıracağı bir <b>SQL komutu</b> yazacağız. Aşağıdaki giriş paneline inin ve E-posta kısmına bu SQL komutunu yazın:<br><code class='glitch-payload' style='font-size:16px; margin: 10px 0; display:inline-block;'>' OR 1=1 --</code>",
+    infoTitle: "Peki bu payload ne işe yarayacak? (' OR 1=1 --)",
+    expl1: "Geliştiricinin arka planda yazdığı kodu biz erken kapatıyoruz. Böylece sistemin kodunun içine kendi kelimelerimizi ekleyebiliyoruz.",
+    expl2: "'Veya 1 eşittir 1' diyoruz. 1 her zaman 1'e eşit olduğu için, veritabanı 'Tamam bu kişi doğru söylüyor' diyerek bizi zorla içeri alıyor.",
+    expl3: "Veritabanına 'Bundan sonra yazan şifre kontrol kısmını tamamen görmezden gel, sil gitsin' emrini veriyor.",
     
-    simPanelTitle: "YÖNETİCİ GİRİŞİ",
-    emailPlaceholder: "E-posta (Payload'u buraya yazın)",
+    simPanelTitle: "KULLANICI GİRİŞİ",
+    emailPlaceholder: "E-posta (SQL komutunu buraya yazın)",
     passPlaceholder: "Şifre (Boş bırakın veya sallayın)",
     btnHack: "Giriş Yap",
     btnNext2: "Saldırıyı Analiz Et (Eğitime Geç)",
 
     s3Title: "Adım 3: Zafiyet Analizi ve Çözümü",
     s3DefTitle: "SQL Injection (SQLi) Nedir?",
-    s3DefDesc: "Kötü niyetli kullanıcıların, uygulamanın veritabanına gönderdiği sorgulara müdahale etmesini sağlayan kritik bir güvenlik açığıdır. Geliştirici, kullanıcıdan aldığı veriyi filtrelemeden doğrudan SQL komutunun içine koyarsa, saldırgan kendi komutlarını çalıştırttırabilir. Tıpkı az önce sizin şifre kontrolünü iptal ettirdiğiniz gibi!",
+    s3DefDesc: "Kötü niyetli kullanıcıların, uygulamanın veritabanına gönderdiği sorgulara müdahale etmesini sağlayan kritik bir güvenlik açığıdır. Geliştirici, kullanıcıdan aldığı veriyi filtrelemeden doğrudan SQL komutunun içine koyarsa, saldırgan kendi komutlarını çalıştırttırabilir.",
     s3SolTitle: "Nasıl Çözülür? (Prepared Statements)",
     s3SolDesc1: "Açığın temel sebebi, kullanıcının girdiği metnin 'veri' olarak değil, çalıştırılabilir bir 'SQL komutu' olarak algılanmasıdır. Bunu kesin olarak çözmek için <b>Parametreli Sorgular</b> kullanmalıyız.",
-    s3SolDesc2: "Güvenli kodda görebileceğiniz gibi, dışarıdan gelen verileri SQL metnine yazmak yerine <b>? (soru işareti)</b> koyuyoruz. Veritabanı sürücüsü, bu kısımları sadece düz metin olarak işler. Siz oraya ' OR 1=1 -- yazsanız bile sistem bunu bir komut olarak değil, sadece garip bir e-posta adresi olarak okur ve reddeder.",
+    s3SolDesc2: "Güvenli kodda görebileceğiniz gibi, dışarıdan gelen verileri SQL metnine yazmak yerine <b>? (soru işareti)</b> koyuyoruz. Veritabanı sürücüsü, bu kısımları sadece düz metin olarak işler.",
     labelVuln: "Hatalı (Zafiyetli) Kod Kullanımı:",
     labelSec: "Güvenli (Doğru) Kod Kullanımı:",
     btnNext3: "Öğrendiklerini Test Et (Son-Test)",
@@ -335,26 +345,26 @@ const translations = {
     btnNext1: "Finish Test & Go to Simulation",
 
     s2Title: "Step 2: Vulnerability Simulation",
-    s2Summary: "Our goal is to bypass the admin login panel. We will trick the database to get in without knowing the password.",
+    s2Summary: "Our goal is to bypass the login panel without a password by tricking the database.",
     gTitle: "MISSION BRIEFING",
-    s2Desc: "<b>Situation Analysis:</b><br>Normally, a system evaluates this rule: <br><i>'If Email is TRUE <b>AND</b> Password is TRUE, grant access.'</i><br><br><b>Attack Plan:</b><br>We will type a magic word into the email box so the system completely forgets to check the password! These malicious texts are called <b>'Payloads'</b>.<br><br>Go to the admin panel below and inject this payload into the Email field:<br><code class='glitch-payload' style='font-size:18px; margin: 15px 0; display:inline-block;'>' OR 1=1 --</code>",
-    infoTitle: "How does it work?",
-    expl1: "Prematurely closes the email query.",
-    expl2: "Adds a mathematical truth (Or 1=1) that is always TRUE.",
+    s2Desc: "<b>Situation Analysis:</b><br>We have a standard user login panel and no passwords. The developer has directly included the email input into the database query without validation.<br><br><b>The Dangerous Background Code:</b><br>The system asks the database this question:<br><code style='background:#000; color:#cbd5e1; padding:4px 8px; border-radius:4px; display:inline-block; font-size:12px;'>SELECT * FROM users WHERE email='<span style=\"color:#ef4444\">[YOUR_INPUT]</span>' AND password='...'</code><br><br><b>Attack Plan (Payload):</b><br>Instead of a normal text, we will write an <b>SQL command</b> into the email box. Go to the login panel below and inject this SQL command:<br><code class='glitch-payload' style='font-size:16px; margin: 10px 0; display:inline-block;'>' OR 1=1 --</code>",
+    infoTitle: "What will this payload do? (' OR 1=1 --)",
+    expl1: "Prematurely closes the developer's background code.",
+    expl2: "'Or 1=1' makes the condition always TRUE.",
     expl3: "Comments out and entirely cancels the rest of the query (password check).",
     
     simPanelTitle: "USER LOGIN",
-    emailPlaceholder: "Email (Type payload here)",
+    emailPlaceholder: "Email (Type SQL command here)",
     passPlaceholder: "Password (Type anything)",
     btnHack: "Log In",
     btnNext2: "Analyze Attack",
 
     s3Title: "Step 3: Vulnerability Analysis",
     s3DefTitle: "What is SQL Injection?",
-    s3DefDesc: "A critical vulnerability allowing attackers to interfere with DB queries. If inputs aren't filtered, attackers can execute their own commands. Just like how you canceled the password check!",
+    s3DefDesc: "A critical vulnerability allowing attackers to interfere with DB queries. If inputs aren't filtered, attackers can execute their own commands.",
     s3SolTitle: "How to Solve It? (Prepared Statements)",
     s3SolDesc1: "The root cause is inputs being perceived as 'executable commands'. We must use <b>Parameterized Queries</b>.",
-    s3SolDesc2: "Instead of writing data directly, we use a <b>? (question mark)</b>. The DB driver processes it only as plain text. Even if you type ' OR 1=1 --, the system treats it as a weird email and rejects it.",
+    s3SolDesc2: "Instead of writing data directly, we use a <b>? (question mark)</b>. The DB driver processes it only as plain text.",
     labelVuln: "Incorrect (Vulnerable) Code:",
     labelSec: "Secure (Correct) Code:",
     btnNext3: "Test Your Knowledge",
@@ -572,6 +582,14 @@ const finishPostTest = async () => {
 .brief-body { padding: 25px; color: #cbd5e1; font-size: 15px; line-height: 1.6; }
 .brief-body p { margin-top: 0; margin-bottom: 10px; }
 .glitch-payload { background: #000; padding: 4px 10px; border-radius: 4px; border: 1px solid #ef4444; color: #ef4444; font-family: monospace; font-weight: bold;}
+
+.info-box { background: #1e293b; padding: 20px; border-radius: 8px; border: 1px solid #334155; }
+.info-box h4 { color: #f8fafc; margin-top: 0; margin-bottom: 15px; font-size: 16px;}
+.info-box ul { padding-left: 20px; margin: 0; line-height: 1.8; color: #94a3b8; font-size: 14px;}
+.blue-text { color: #38bdf8; }
+.yellow-text { color: #f59e0b; }
+.red-text { color: #ef4444; }
+.green-text { color: #10b981; }
 
 /* Alt Panel: Hedef Sistem (Ortalanmış) */
 .app-container { display: flex; flex-direction: column; align-items: center; width: 100%;}
