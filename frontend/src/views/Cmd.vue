@@ -1,65 +1,54 @@
 <template>
   <div class="module-wrapper">
+    <div class="dot-grid"></div>
+
     <div class="container">
       <button class="lang-btn" @click="toggleLanguage">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         {{ currentLang === 'tr' ? 'EN' : 'TR' }}
       </button>
 
-      <div v-if="isLoading" style="text-align: center; padding: 50px 0;">
+      <div v-if="isLoading" class="loading-screen">
         <span class="spinner"></span>
-        <p style="color: #00e5ff; margin-top: 20px;">{{ currentLang === 'tr' ? 'Veriler Çekiliyor...' : 'Fetching Data...' }}</p>
+        <p>{{ currentLang === 'tr' ? 'Sunucu ile iletişim kuruluyor...' : 'Communicating with server...' }}</p>
       </div>
 
-      <div v-else>
-        <h1 id="mod-title">{{ currentText.modTitle }}</h1>
-        <hr style="border-color: #1e293b; margin-bottom: 30px" />
+      <div v-else class="module-content fade-in">
+        <h1 class="mod-title">{{ currentText.modTitle }}</h1>
+        <div class="neon-divider"></div>
 
-        <div v-if="currentStep === 1" class="step active-step">
-          <h2 v-if="isReviewMode" style="color: #10b981;">{{ currentLang === 'tr' ? '🔍 İnceleme Modu: Ön-Test Analizi' : '🔍 Review Mode: Pre-Test Analysis' }}</h2>
-          <h2 v-else>{{ currentText.preTitle }}</h2>
+        <div v-if="currentStep === 1" class="step">
+          <h2 class="step-title" :class="{ 'review-mode-title': isReviewMode }">
+            {{ isReviewMode ? (currentLang === 'tr' ? '🔍 İnceleme Modu: Ön-Test Analizi' : '🔍 Review Mode: Pre-Test Analysis') : currentText.preTitle }}
+          </h2>
+          <p class="step-desc" v-if="!isReviewMode">{{ currentText.s1Desc }}</p>
 
-          <div class="question">
-            <p><b v-html="currentText.qPre1"></b></p>
+          <div class="question" v-for="(q, index) in [1, 2, 3]" :key="'pre'+index">
+            <p><b v-html="currentText[`qPre${q}`]"></b></p>
             <div class="options">
-              <label :class="getLabelClass('pre', 'q1', 'a')"><input type="radio" v-model="answers.preQ1" value="a" :disabled="isReviewMode" /> <span>{{ currentText.optPre1_1 }}</span></label>
-              <label :class="getLabelClass('pre', 'q1', 'b')"><input type="radio" v-model="answers.preQ1" value="b" :disabled="isReviewMode" /> <span>{{ currentText.optPre1_2 }}</span></label>
-              <label :class="getLabelClass('pre', 'q1', 'c')"><input type="radio" v-model="answers.preQ1" value="c" :disabled="isReviewMode" /> <span>{{ currentText.optPre1_3 }}</span></label>
+              <label v-for="opt in ['a', 'b', 'c', 'd']" :key="opt" :class="getLabelClass('pre', `q${q}`, opt)">
+                <input type="radio" v-model="answers[`preQ${q}`]" :value="opt" :disabled="isReviewMode" /> 
+                <span>{{ currentText[`optPre${q}_${opt === 'a' ? 1 : opt === 'b' ? 2 : opt === 'c' ? 3 : 4}`] }}</span>
+              </label>
             </div>
           </div>
 
-          <div class="question">
-            <p><b v-html="currentText.qPre2"></b></p>
-            <div class="options">
-              <label :class="getLabelClass('pre', 'q2', 'a')"><input type="radio" v-model="answers.preQ2" value="a" :disabled="isReviewMode" /> <span>{{ currentText.optPre2_1 }}</span></label>
-              <label :class="getLabelClass('pre', 'q2', 'b')"><input type="radio" v-model="answers.preQ2" value="b" :disabled="isReviewMode" /> <span>{{ currentText.optPre2_2 }}</span></label>
-              <label :class="getLabelClass('pre', 'q2', 'c')"><input type="radio" v-model="answers.preQ2" value="c" :disabled="isReviewMode" /> <span>{{ currentText.optPre2_3 }}</span></label>
-            </div>
-          </div>
-
-          <div class="question">
-            <p><b v-html="currentText.qPre3"></b></p>
-            <div class="options">
-              <label :class="getLabelClass('pre', 'q3', 'a')"><input type="radio" v-model="answers.preQ3" value="a" :disabled="isReviewMode" /> <span>{{ currentText.optPre3_1 }}</span></label>
-              <label :class="getLabelClass('pre', 'q3', 'b')"><input type="radio" v-model="answers.preQ3" value="b" :disabled="isReviewMode" /> <span>{{ currentText.optPre3_2 }}</span></label>
-              <label :class="getLabelClass('pre', 'q3', 'c')"><input type="radio" v-model="answers.preQ3" value="c" :disabled="isReviewMode" /> <span>{{ currentText.optPre3_3 }}</span></label>
-            </div>
-          </div>
-
-          <div style="display: flex; justify-content: flex-end;">
-            <button class="action-btn" @click="finishPreTest" style="width: auto;">
+          <div class="action-footer" style="justify-content: flex-end;">
+            <button class="btn-primary" @click="finishPreTest">
               {{ isReviewMode ? (currentLang === 'tr' ? 'Sonraki Aşama (Simülasyon)' : 'Next Step (Simulation)') : currentText.btnPre }}
             </button>
           </div>
         </div>
 
-        <div v-else-if="currentStep === 2" class="step active-step">
-          <h2 v-if="isReviewMode" style="color: #10b981;">{{ currentLang === 'tr' ? '🔍 İnceleme Modu: Simülasyon' : '🔍 Review Mode: Simulation' }}</h2>
-          <h2 v-else style="margin-bottom: 5px">{{ currentText.simTitle }}</h2>
+        <div v-else-if="currentStep === 2" class="step">
+          <h2 class="step-title" :class="{ 'review-mode-title': isReviewMode }">
+            {{ isReviewMode ? (currentLang === 'tr' ? '🔍 İnceleme Modu: Simülasyon' : '🔍 Review Mode: Simulation') : currentText.simTitle }}
+          </h2>
           
           <div class="mission-layout">
             <div class="guide-panel">
-              <h3 style="margin-top: 0; color: #f8fafc">{{ currentText.gTitle }}</h3>
-              <p style="font-size: 13.5px; margin-bottom: 20px; color: #cbd5e1" v-html="currentText.gDesc"></p>
+              <h3 class="guide-title">{{ currentText.gTitle }}</h3>
+              <p class="guide-desc" v-html="currentText.gDesc"></p>
 
               <div class="guide-step" :class="{ 'current': currentMission === 1, 'done': currentMission > 1 }">
                 <b>{{ currentText.gs1T }}</b>
@@ -77,62 +66,68 @@
               </div>
             </div>
 
-            <div class="terminal-container">
-              <div class="terminal-box" @click="focusTerminal">
-                <div class="terminal-header">
-                  <span>bash --login --session_id=8271</span>
-                  <span style="color: #10b981">● ONLINE</span>
+            <div class="app-container">
+              <div class="terminal-container">
+                <div class="terminal-box" @click="focusTerminal">
+                  <div class="terminal-header">
+                    <span>bash --login --session_id=8271</span>
+                    <span style="color: #10b981">● ONLINE</span>
+                  </div>
+                  <div class="terminal-body" ref="terminalBody">
+                    
+                    <div style="color: #94a3b8; margin-bottom:10px;">
+                      BT-Terminal v1.0.4 - {{ currentLang === 'tr' ? 'Hoş geldiniz.' : 'Welcome.' }}<br>
+                      {{ currentLang === 'tr' ? 'Sistem hazır. Lütfen ping komutunu girin:' : 'System ready. Please enter the ping command:' }}
+                    </div>
+
+                    <div v-for="(line, index) in terminalLines" :key="index" :class="line.type">
+                      <span v-if="line.type === 'cmd'" class="prompt">user@bt-server:~$</span> 
+                      <span v-html="line.text"></span>
+                    </div>
+
+                    <div class="terminal-input-line" v-show="!isExecuting && !isReviewMode && currentMission <= 3">
+                      <span class="prompt">user@bt-server:~$</span>
+                      <input 
+                        type="text" 
+                        id="real-input" 
+                        ref="terminalInputRef"
+                        v-model="terminalInput" 
+                        @keyup.enter="executeCommand" 
+                        autocomplete="off" 
+                        spellcheck="false" 
+                        :disabled="isExecuting"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div class="terminal-body" ref="terminalBody">
-                  
-                  <div style="color: #94a3b8; margin-bottom:10px;">
-                    BT-Terminal v1.0.4 - {{ currentLang === 'tr' ? 'Hoş geldiniz.' : 'Welcome.' }}<br>
-                    {{ currentLang === 'tr' ? 'Sistem hazır. Lütfen ping komutunu girin:' : 'System ready. Please enter the ping command:' }}
-                  </div>
 
-                  <div v-for="(line, index) in terminalLines" :key="index" :class="line.type">
-                    <span v-if="line.type === 'cmd'" class="prompt">user@bt-server:~$</span> 
-                    <span v-html="line.text"></span>
-                  </div>
-
-                  <div class="terminal-input-line" v-show="!isExecuting && !isReviewMode && currentMission <= 3">
-                    <span class="prompt">user@bt-server:~$</span>
-                    <input 
-                      type="text" 
-                      id="real-input" 
-                      ref="terminalInputRef"
-                      v-model="terminalInput" 
-                      @keyup.enter="executeCommand" 
-                      autocomplete="off" 
-                      spellcheck="false" 
-                      :disabled="isExecuting"
-                    />
-                  </div>
+                <div class="action-footer" style="justify-content: flex-end;">
+                  <button v-if="currentMission > 3 || isReviewMode" class="btn-success fade-in" @click="currentStep = 3">
+                    {{ currentText.btnToTrn }}
+                  </button>
                 </div>
               </div>
-
-              <div style="display: flex; justify-content: flex-end;">
-                <button v-if="currentMission > 3 || isReviewMode" class="action-btn" style="background: #10b981; margin-top: 15px; width:auto;" @click="currentStep = 3">
-                  {{ currentText.btnToTrn }}
-                </button>
-              </div>
-
             </div>
           </div>
         </div>
 
-        <div v-else-if="currentStep === 3" class="step active-step">
-          <h2 v-if="isReviewMode" style="color: #10b981;">{{ currentLang === 'tr' ? '🔍 İnceleme Modu: Eğitim Materyali' : '🔍 Review Mode: Training Material' }}</h2>
-          <h2 v-else>{{ currentText.trnTitle }}</h2>
+        <div v-else-if="currentStep === 3" class="step">
+          <h2 class="step-title" :class="{ 'review-mode-title': isReviewMode }">
+            {{ isReviewMode ? (currentLang === 'tr' ? '🔍 İnceleme Modu: Eğitim Materyali' : '🔍 Review Mode: Training Material') : currentText.trnTitle }}
+          </h2>
           
           <div class="edu-card">
-            <p style="font-size: 15.5px; line-height: 1.6; color: #cbd5e1">{{ currentText.trnDesc }}</p>
+            <p class="edu-desc-txt">{{ currentText.trnDesc }}</p>
+            
+            <div style="margin-top: 20px; margin-bottom: 30px; text-align: center;">
+               
+            </div>
 
             <div class="flow-step">
-              <div class="flow-num" style="background: #00e5ff; color: #0b1120">1</div>
+              <div class="flow-num step-blue">1</div>
               <div>
-                <b style="color: #00e5ff; font-size: 16px">{{ currentText.trnH1 }}</b>
-                <p style="margin-top: 5px; font-size: 14px; color: #cbd5e1; line-height: 1.6;" v-html="currentText.trnP1"></p>
+                <b class="step-title-text blue-text">{{ currentText.trnH1 }}</b>
+                <p class="step-desc-text" v-html="currentText.trnP1"></p>
                 <div class="code-block">
                   <span style="color: #f59e0b">let</span> command = <span style="color: #a7f3d0">"ping "</span> + user_input;<br>
                   execute_system(command);
@@ -141,70 +136,61 @@
             </div>
 
             <div class="flow-step">
-              <div class="flow-num" style="background: #f59e0b; color: #0b1120">2</div>
+              <div class="flow-num step-yellow">2</div>
               <div>
-                <b style="color: #f59e0b; font-size: 16px">{{ currentText.trnH2 }}</b>
-                <p style="margin-top: 5px; font-size: 14px; color: #cbd5e1; line-height: 1.6;" v-html="currentText.trnP2"></p>
+                <b class="step-title-text yellow-text">{{ currentText.trnH2 }}</b>
+                <p class="step-desc-text" v-html="currentText.trnP2"></p>
               </div>
             </div>
 
             <div class="flow-step">
-              <div class="flow-num" style="background: #ef4444; color: #fff">3</div>
+              <div class="flow-num step-red">3</div>
               <div>
-                <b style="color: #ef4444; font-size: 16px">{{ currentText.trnH3 }}</b>
-                <p style="margin-top: 5px; font-size: 14px; color: #cbd5e1; line-height: 1.6;" v-html="currentText.trnP3"></p>
+                <b class="step-title-text red-text">{{ currentText.trnH3 }}</b>
+                <p class="step-desc-text" v-html="currentText.trnP3"></p>
               </div>
             </div>
             
-            <div style="background: rgba(16, 185, 129, 0.05); padding: 20px; border-radius: 8px; border: 1px solid #10b981; margin-top: 35px;">
-              <b style="color: #10b981; font-size: 16px; display: block; margin-bottom: 10px;">{{ currentText.trnH4 }}</b>
-              <p style="margin: 0; font-size: 14.5px; line-height: 1.7; color: #cbd5e1;" v-html="currentText.trnP4"></p>
+            <div class="solution-box">
+              <b class="solution-title-text">{{ currentText.trnH4 }}</b>
+              <p class="solution-info" v-html="currentText.trnP4"></p>
+              <div style="margin-top: 25px; text-align: center;">
+                 
+              </div>
             </div>
           </div>
 
-          <div style="display: flex; justify-content: flex-end; margin-top: 25px;">
-            <button class="action-btn" style="width:auto;" @click="currentStep = 4">{{ currentText.btnToPost }}</button>
+          <div class="action-footer space-between">
+            <button class="btn-secondary" @click="currentStep = 2">Önceki</button>
+            <button class="btn-primary" @click="currentStep = 4">{{ currentText.btnToPost }}</button>
           </div>
         </div>
 
-        <div v-else-if="currentStep === 4" class="step active-step">
-          <h2 v-if="isReviewMode" style="color: #10b981;">{{ currentLang === 'tr' ? '🔍 İnceleme Modu: Son-Test Analizi' : '🔍 Review Mode: Post-Test Analysis' }}</h2>
-          <h2 v-else>{{ currentText.postTitle }}</h2>
+        <div v-else-if="currentStep === 4" class="step">
+          <h2 class="step-title" :class="{ 'review-mode-title': isReviewMode }">
+            {{ isReviewMode ? (currentLang === 'tr' ? '🔍 İnceleme Modu: Son-Test Analizi' : '🔍 Review Mode: Post-Test Analysis') : currentText.postTitle }}
+          </h2>
+          <p class="step-desc" v-if="!isReviewMode">{{ currentText.s4Desc }}</p>
 
-          <div class="question">
-            <p><b v-html="currentText.qPost1"></b></p>
+          <div class="question" v-for="(q, index) in [1, 2, 3]" :key="'post'+index">
+            <p><b v-html="currentText[`qPost${q}`]"></b></p>
             <div class="options">
-              <label :class="getLabelClass('post', 'q1', 'a')"><input type="radio" v-model="answers.postQ1" value="a" :disabled="isReviewMode" /> <span>{{ currentText.optPost1_1 }}</span></label>
-              <label :class="getLabelClass('post', 'q1', 'b')"><input type="radio" v-model="answers.postQ1" value="b" :disabled="isReviewMode" /> <span>{{ currentText.optPost1_2 }}</span></label>
-              <label :class="getLabelClass('post', 'q1', 'c')"><input type="radio" v-model="answers.postQ1" value="c" :disabled="isReviewMode" /> <span>{{ currentText.optPost1_3 }}</span></label>
+              <label v-for="opt in ['a', 'b', 'c', 'd']" :key="opt" :class="getLabelClass('post', `q${q}`, opt)">
+                <input type="radio" v-model="answers[`postQ${q}`]" :value="opt" :disabled="isReviewMode" /> 
+                <span>{{ currentText[`optPost${q}_${opt === 'a' ? 1 : opt === 'b' ? 2 : opt === 'c' ? 3 : 4}`] }}</span>
+              </label>
             </div>
           </div>
 
-          <div class="question">
-            <p><b v-html="currentText.qPost2"></b></p>
-            <div class="options">
-              <label :class="getLabelClass('post', 'q2', 'a')"><input type="radio" v-model="answers.postQ2" value="a" :disabled="isReviewMode" /> <span>{{ currentText.optPost2_1 }}</span></label>
-              <label :class="getLabelClass('post', 'q2', 'b')"><input type="radio" v-model="answers.postQ2" value="b" :disabled="isReviewMode" /> <span>{{ currentText.optPost2_2 }}</span></label>
-              <label :class="getLabelClass('post', 'q2', 'c')"><input type="radio" v-model="answers.postQ2" value="c" :disabled="isReviewMode" /> <span>{{ currentText.optPost2_3 }}</span></label>
-            </div>
-          </div>
-
-          <div class="question">
-            <p><b v-html="currentText.qPost3"></b></p>
-            <div class="options">
-              <label :class="getLabelClass('post', 'q3', 'a')"><input type="radio" v-model="answers.postQ3" value="a" :disabled="isReviewMode" /> <span>{{ currentText.optPost3_1 }}</span></label>
-              <label :class="getLabelClass('post', 'q3', 'b')"><input type="radio" v-model="answers.postQ3" value="b" :disabled="isReviewMode" /> <span>{{ currentText.optPost3_2 }}</span></label>
-              <label :class="getLabelClass('post', 'q3', 'c')"><input type="radio" v-model="answers.postQ3" value="c" :disabled="isReviewMode" /> <span>{{ currentText.optPost3_3 }}</span></label>
-            </div>
-          </div>
-
-          <div style="display: flex; justify-content: flex-end; margin-top: 25px;">
-            <button class="action-btn" @click="finishPostTest" :disabled="isSaving" style="background: #10b981; width:auto;">
-              <span v-if="isSaving" class="spinner" style="display:inline-block; vertical-align:middle; margin-right:8px; width: 16px; height: 16px; border-width: 2px;"></span>
+          <div class="action-footer space-between">
+            <button class="btn-secondary" @click="currentStep = 3">Önceki</button>
+            <button class="btn-warning" @click="finishPostTest" :disabled="isSaving">
+              <span v-if="isSaving" class="spinner-small"></span>
               {{ isReviewMode ? (currentLang === 'tr' ? 'İncelemeyi Bitir ve Dön' : 'Finish Review & Return') : (isSaving ? (currentLang === 'tr' ? 'Kaydediliyor...' : 'Saving...') : currentText.btnPost) }}
             </button>
           </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -241,7 +227,7 @@ const terminalLines = ref([]); // { type: 'cmd'|'output'|'analysis'|'error', tex
 const isExecuting = ref(false);
 
 const answerKeys = {
-  pre: { q1: "b", q2: "b", q3: "a" },
+  pre: { q1: "b", q2: "b", q3: "d" },
   post: { q1: "b", q2: "b", q3: "b" },
 };
 
@@ -251,18 +237,27 @@ const translations = {
     alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nKarnenize yönlendiriliyorsunuz...`,
     modTitle: "Modül 6: OS Command Injection",
     preTitle: "Ön-Test",
+    s1Desc: "Aşağıdaki soruları yanıtlayarak mevcut bilgi seviyenizi ölçelim.",
+    s4Desc: "Bu modülde öğrendiklerinizi pekiştirelim.",
+    
     qPre1: "1. OS Command Injection zafiyetinin temel çalışma mantığı aşağıdakilerden hangisidir?",
-    optPre1_1: "A) İstemci tarafında çalışan zararlı betiklerin (script) sunucu bellek alanını taşırarak sistemi durdurması.",
-    optPre1_2: "B) Kullanıcıdan alınan denetimsiz verilerin, arka plandaki işletim sistemi kabuğunda (shell) çalıştırılması.",
-    optPre1_3: "C) Web uygulamasının dosya dizin yollarının manipüle edilerek yetkisiz sistem konfigürasyonlarının okunması.",
+    optPre1_1: "A) İstemci tarafındaki zararlı betiklerin, Kernel Panic yaratarak sunucu bellek alanını taşırması.",
+    optPre1_2: "B) Kullanıcıdan alınan denetimsiz verilerin, arka plandaki işletim sisteminde çalıştırılması.",
+    optPre1_3: "C) Web uygulamasının Rootkit yapılandırmalarını manipüle ederek yetkisiz sistem Daemon'larını okuması.",
+    optPre1_4: "D) Ağ katmanındaki Syscall (Sistem Çağrısı) tablolarının değiştirilerek port yönlendirmesi yapılması.",
+    
     qPre2: "2. Bir web uygulamasının arka planında çalışan sistem fonksiyonları (örn: ping aracı) neden güvenlik riski oluşturabilir?",
     optPre2_1: "A) Bu fonksiyonların aşırı ağ isteği üreterek sunucunun işlemci kapasitesini tüketebilmesi.",
     optPre2_2: "B) Geliştiricinin bu fonksiyonları çağırırken girdi doğrulamasını atlaması ve terminal yetkilerinin kötüye kullanılabilmesi.",
     optPre2_3: "C) Ağ protokollerinin web portları üzerinden yönlendirilmesinin güvenlik duvarını ihlal etmesi.",
-    qPre3: "3. Linux/Unix sistemlerde komutları peş peşe çalıştırmak için hangi karakterler kullanılır?",
-    optPre3_1: "A) Noktalı virgül ( ; ), Veya ( | ), Ve ( && )",
-    optPre3_2: "B) Yüzde ( % ) ve Yıldız ( * )",
-    optPre3_3: "C) Sadece Tire ( - )",
+    optPre2_4: "D) İşletim sisteminin gönderilen ICMP paketlerini otomatik olarak veritabanı sorgusuna dönüştürmesi.",
+    
+    qPre3: "3. Linux/Unix sistemlerde ilk komutun hemen ardından ikinci bir komutu aynı satırda zincirleme çalıştırmak için aşağıdaki karakterlerden hangisi kullanılır?",
+    optPre3_1: "A) >",
+    optPre3_2: "B) #",
+    optPre3_3: "C) $",
+    optPre3_4: "D) ;",
+    
     btnPre: "Simülasyona Başla",
 
     simTitle: "Adım 2: Simülasyon",
@@ -296,18 +291,25 @@ const translations = {
     btnToPost: "Tüm Detayları Anladım -> Son Teste Geç",
 
     postTitle: "Son-Test",
+    
     qPost1: "1. Simülasyonda komut yazarken kullandığımız noktalı virgülün ( ; ) asıl işlevi neydi?",
     optPost1_1: "A) Ping işleminin başarısız olması durumunda sistemin otomatik olarak alternatif bir komuta geçmesi.",
     optPost1_2: "B) Önceki komutu sonlandırıp sonrasındaki metni çalıştırılması gereken yeni bir sistem emri sayması.",
     optPost1_3: "C) Sunucunun 'ls' komutunu ping hedefinin bir ağ uzantısı veya port numarası olarak tanımlaması.",
+    optPost1_4: "D) Komut satırına sızdırılan veriyi Base64 formatına çevirerek IDS sistemlerini atlatması.",
+    
     qPost2: "2. OS Command Injection zafiyetine karşı en etkili ve kalıcı savunma yöntemi aşağıdakilerden hangisidir?",
     optPost2_1: "A) Girdilerin içerisinde bulunan 'cat, ls, rm' gibi tehlikeli kelimeleri kara liste (blocklist) ile engellemek.",
     optPost2_2: "B) Terminal komutları yerine yerleşik API'ler kullanmak ve girdileri beyaz liste (allowlist) ile doğrulamak.",
     optPost2_3: "C) Sunucuya gelen tüm şüpheli istekleri tespit etmek için ağ tabanlı bir güvenlik duvarı (WAF) kurmak.",
+    optPost2_4: "D) Sunucu işlemcisini yormamak için gelen yetkisiz ping paketlerini drop (düşürme) modunda reddetmek.",
+    
     qPost3: "3. OS Command Injection zafiyetinin temel çalışma mantığı aşağıdakilerden hangisidir?",
-    optPost3_1: "A) İstemci tarafında çalışan zararlı betiklerin (script) sunucu bellek alanını taşırarak sistemi durdurması.",
-    optPost3_2: "B) Kullanıcıdan alınan denetimsiz verilerin, arka plandaki işletim sistemi kabuğunda (shell) çalıştırılması.",
-    optPost3_3: "C) Web uygulamasının dosya dizin yollarının manipüle edilerek yetkisiz sistem konfigürasyonlarının okunması.",
+    optPost3_1: "A) İstemci tarafındaki zararlı betiklerin, Kernel Panic yaratarak sunucu bellek alanını taşırması.",
+    optPost3_2: "B) Kullanıcıdan alınan denetimsiz verilerin, arka plandaki işletim sistemi kabuğunda çalıştırılması.",
+    optPost3_3: "C) Web uygulamasının Rootkit yapılandırmalarını manipüle ederek yetkisiz sistem Daemon'larını okuması.",
+    optPost3_4: "D) Ağ katmanındaki Syscall (Sistem Çağrısı) tablolarının değiştirilerek port yönlendirmesi yapılması.",
+    
     btnPost: "Eğitimi Bitir",
   },
   en: {
@@ -315,18 +317,27 @@ const translations = {
     alertResult: (pre, post) => `Congratulations!\nPre-Test: ${pre}%\nPost-Test: ${post}%\n\nRedirecting to stats...`,
     modTitle: "Module 6: OS Command Injection",
     preTitle: "Pre-Test",
+    s1Desc: "Let's measure your current knowledge level.",
+    s4Desc: "Let's reinforce what you learned.",
+    
     qPre1: "1. What is the fundamental mechanism of an OS Command Injection vulnerability?",
-    optPre1_1: "A) Overflowing the server's memory space by executing malicious client-side scripts to halt the system.",
-    optPre1_2: "B) Directly executing unchecked user inputs within the underlying operating system's command shell.",
-    optPre1_3: "C) Manipulating the web application's file directory paths to unauthorizedly read system configurations.",
+    optPre1_1: "A) Overloading the server memory space by creating a Kernel Panic using malicious client-side scripts.",
+    optPre1_2: "B) Directly executing unchecked user inputs within the underlying operating system.",
+    optPre1_3: "C) Manipulating the web application's Rootkit configurations to read unauthorized system Daemons.",
+    optPre1_4: "D) Modifying Syscall tables at the network layer to perform unauthorized port forwarding.",
+    
     qPre2: "2. Why can background system functions (e.g., a ping tool) in a web application pose a potential security risk?",
-    optPre2_1: "A) Because these functions can generate excessive network requests, exhausting server capacity.",
-    optPre2_2: "B) Because developers might skip input validation, allowing terminal privileges to be abused.",
-    optPre2_3: "C) Because routing network protocols via web ports violates the server's existing firewall policies.",
-    qPre3: "3. Which characters are used to execute commands sequentially in Linux/Unix systems?",
-    optPre3_1: "A) Semicolon ( ; ), OR ( | ), AND ( && )",
-    optPre3_2: "B) Percent ( % ) and Asterisk ( * )",
-    optPre3_3: "C) Only the Dash ( - )",
+    optPre2_1: "A) Because these functions can generate excessive network requests, exhausting server processor capacity.",
+    optPre2_2: "B) Because developers might skip input validation when calling these functions, allowing terminal privileges to be abused.",
+    optPre2_3: "C) Because routing network protocols via web ports violates the server's firewall rules.",
+    optPre2_4: "D) Because the operating system automatically converts sent ICMP packets into database queries.",
+    
+    qPre3: "3. Which of the following single characters is used in Linux/Unix systems to chain and execute a second command on the same line immediately after the first one?",
+    optPre3_1: "A) >",
+    optPre3_2: "B) #",
+    optPre3_3: "C) $",
+    optPre3_4: "D) ;",
+    
     btnPre: "Start Simulation",
 
     simTitle: "Step 2: Simulation",
@@ -356,22 +367,29 @@ const translations = {
     trnH3: "Crossing the Boundaries (Full Authority)",
     trnP3: "Right after successfully completing the <code class='highlight'>ping 127.0.0.1</code> process, the system executed the <code class='highlight'>cat /etc/passwd</code> command you secretly injected, treating it as its own local command. Thus, a simple network tool turned into a database theft.",
     trnH4: "🛡️ Ultimate Solution: Allowlist Validation",
-    trnP4: "To prevent this vulnerability, a \"Blocklist\" (banning the semicolon or the word 'cat') doesn't work; hackers will always find another character to chain commands.<br><br><b>The only correct method is to use an \"Allowlist\":</b> The system must check if the incoming data consists ONLY of numbers and dots (0-9 and .). If it contains letters or special characters, it must immediately reject the process.",
+    trnP4: "To prevent this vulnerability, a \"Blocklist\" (banning the semicolon or the word 'cat') doesn't work; hackers will always find another character to chain commands (e.g. <code style='color:#10b981;'>&&</code> or <code style='color:#10b981;'>|</code>).<br><br><b>The only correct method is to use an \"Allowlist\":</b> The system must check if the incoming data consists ONLY of numbers and dots (0-9 and .). If it contains letters or special characters, it must immediately reject the process.",
     btnToPost: "I Understood the Details -> Go to Post-Test",
 
     postTitle: "Post-Test",
+    
     qPost1: "1. What was the main function of the semicolon ( ; ) we used while typing the command in the simulation?",
     optPost1_1: "A) Making the system automatically switch to an alternative command if the ping process fails.",
     optPost1_2: "B) Terminating the previous command and treating the following text as a new system order to be executed.",
     optPost1_3: "C) Defining the 'ls' command as a network extension or port number of the ping target for the server.",
+    optPost1_4: "D) Bypassing IDS systems by converting the injected command line data into Base64 format.",
+    
     qPost2: "2. Which of the following is the most effective and permanent defense method against OS Command Injection vulnerabilities?",
     optPost2_1: "A) Blocking dangerous words found in the inputs like 'cat, ls, rm' using a blocklist.",
     optPost2_2: "B) Using built-in APIs instead of terminal commands and validating inputs with an allowlist.",
     optPost2_3: "C) Installing a network-based firewall (WAF) to detect all suspicious requests arriving at the server.",
+    optPost2_4: "D) Rejecting incoming unauthorized ping packets in drop mode to prevent exhausting the server processor.",
+    
     qPost3: "3. What is the fundamental mechanism of an OS Command Injection vulnerability?",
-    optPost3_1: "A) Overflowing the server's memory space by executing malicious client-side scripts to halt the system.",
+    optPost3_1: "A) Overloading the server memory space by creating a Kernel Panic using malicious client-side scripts.",
     optPost3_2: "B) Directly executing unchecked user inputs within the underlying operating system's command shell.",
-    optPost3_3: "C) Manipulating the web application's file directory paths to unauthorizedly read system configurations.",
+    optPost3_3: "C) Manipulating the web application's Rootkit configurations to read unauthorized system Daemons.",
+    optPost3_4: "D) Modifying Syscall tables at the network layer to perform unauthorized port forwarding.",
+    
     btnPost: "Finish Training",
   }
 };
@@ -399,11 +417,10 @@ watch(answers, (newAnswers) => {
 }, { deep: true });
 
 onMounted(async () => {
-  if (!userEmail || !token) return router.push('/'); // Token yoksa doğrudan Login'e atıyoruz
+  if (!userEmail || !token) return router.push('/');
 
   if (isReviewMode.value) {
     try {
-      // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
       const response = await fetch(`/api/get-user-stats/${userEmail}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -444,7 +461,6 @@ const scrollToBottom = () => {
   }
 };
 
-// Harf Harf Yazma (Typewriter) Efekti
 const typeLines = async (linesArray, cssClass) => {
   for (let line of linesArray) {
     if (line.trim() === '') continue;
@@ -490,7 +506,6 @@ const executeCommand = async () => {
   let backendIp = cmd.replace(/^ping\s+/i, "");
   
   try {
-    // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
     const response = await fetch("/api/vuln/cmd/ping", {
       method: "POST",
       headers: { 
@@ -504,7 +519,24 @@ const executeCommand = async () => {
     const outputLines = res.output.split("\n");
     
     await typeLines(outputLines, 'output');
-    await processMission(cmd, res.isHacked);
+    
+    if (currentMission.value === 1 && !res.isHacked) {
+      await typeLines([currentText.value.pAnalysis], 'analysis');
+      currentMission.value = 2;
+      await typeLines(["", currentText.value.nextMsg], 'output');
+    } 
+    else if (currentMission.value === 2 && res.isHacked && cmd.includes("ls")) {
+      await typeLines([currentText.value.lAnalysis], 'analysis');
+      currentMission.value = 3;
+      await typeLines(["", currentText.value.nextMsg], 'output');
+    } 
+    else if (currentMission.value === 3 && res.isHacked && cmd.includes("cat /etc/passwd")) {
+      await typeLines([currentText.value.cAnalysis], 'analysis');
+      currentMission.value = 4; 
+    } 
+    else {
+      await typeLines([currentText.value.wrongCmd], 'error');
+    }
 
   } catch (error) {
     await typeLines(["Connection failed. Ensure backend is running and you have authorization."], 'error');
@@ -512,26 +544,6 @@ const executeCommand = async () => {
 
   isExecuting.value = false;
   focusTerminal();
-};
-
-const processMission = async (cmd, isHacked) => {
-  if (currentMission.value === 1 && !isHacked) {
-    await typeLines([currentText.value.pAnalysis], 'analysis');
-    currentMission.value = 2;
-    await typeLines(["", currentText.value.nextMsg], 'output');
-  } 
-  else if (currentMission.value === 2 && isHacked && cmd.includes("ls")) {
-    await typeLines([currentText.value.lAnalysis], 'analysis');
-    currentMission.value = 3;
-    await typeLines(["", currentText.value.nextMsg], 'output');
-  } 
-  else if (currentMission.value === 3 && isHacked && cmd.includes("cat")) {
-    await typeLines([currentText.value.cAnalysis], 'analysis');
-    currentMission.value = 4; 
-  } 
-  else {
-    await typeLines([currentText.value.wrongCmd], 'error');
-  }
 };
 
 const finishPostTest = async () => {
@@ -553,7 +565,6 @@ const finishPostTest = async () => {
   postScore = Math.round(postScore);
   
   try {
-    // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
     await fetch(`/api/save-score`, {
       method: "POST",
       headers: { 
@@ -574,56 +585,99 @@ const finishPostTest = async () => {
 </script>
 
 <style scoped>
-.correct-answer { background: rgba(16, 185, 129, 0.15) !important; border-color: #10b981 !important; color: #10b981 !important; }
-.wrong-answer { background: rgba(239, 68, 68, 0.15) !important; border-color: #ef4444 !important; color: #ef4444 !important; }
+.module-wrapper { background-color: #0b0f19; color: #cbd5e1; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 40px 20px; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; position: relative; overflow: hidden; }
+.dot-grid { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: radial-gradient(rgba(148, 163, 184, 0.15) 1px, transparent 1px); background-size: 24px 24px; z-index: 0; pointer-events: none; }
+.container { width: 100%; max-width: 1000px; margin: 0 auto; background: #0f172a; padding: 40px 50px; border-radius: 16px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5); border: 1px solid #1e293b; border-top: 4px solid #00e5ff; position: relative; z-index: 1; }
 
-.module-wrapper { background-color: #0b1120; color: #94a3b8; min-height: 100vh; padding: 20px; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center;}
-.container { width: 100%; max-width: 1050px; background: #0f172a; padding: 30px; border-radius: 12px; border: 1px solid #1e293b; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); border-top: 3px solid #00e5ff; position: relative;}
-h1, h2, h3 { color: #f8fafc; }
-.lang-btn { position: absolute; top: 20px; right: 20px; background: transparent; color: #00e5ff; border: 1px solid #00e5ff; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-.lang-btn:hover { background: rgba(0, 229, 255, 0.15); box-shadow: 0 0 10px rgba(0, 229, 255, 0.3); }
-.step { animation: fadeIn 0.5s; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.lang-btn { position: absolute; top: 25px; right: 25px; background: rgba(15, 23, 42, 0.8); color: #94a3b8; border: 1px solid #334155; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; }
+.lang-btn:hover { background: #1e293b; color: #f8fafc; border-color: #475569; }
 
-.question { background: #1e293b; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #0284c7; }
-.options label { display: block; margin: 10px 0; cursor: pointer; color: #e2e8f0; padding: 10px; border-radius: 6px; transition: 0.3s; line-height: 1.5; border: 1px solid transparent;}
-.options label:hover:not(.correct-answer):not(.wrong-answer) { background: #334155; }
+/* Başlık ve Metinler */
+.mod-title { color: #f8fafc; font-size: 32px; font-weight: 700; margin-bottom: 20px; }
+.neon-divider { height: 1px; background: linear-gradient(90deg, #00e5ff, transparent); margin-bottom: 35px; }
+.step-title { color: #f8fafc; font-size: 24px; border-left: 4px solid #00e5ff; padding-left: 15px; margin-bottom: 25px; }
+.step-desc { font-size: 15px; color: #94a3b8; margin-bottom: 25px;}
+.review-mode-title { color: #10b981; border-left-color: #10b981; }
+
+/* Sorular */
+.question { background: #1e293b; padding: 25px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
+.question p { margin-top: 0; font-size: 16px; color: #f8fafc; margin-bottom: 15px; line-height: 1.5; }
+.options label { display: block; margin: 10px 0; cursor: pointer; color: #94a3b8; transition: all 0.2s; padding: 12px 15px; border-radius: 8px; border: 1px solid #334155; background: #0b1120; }
+.options label:hover:not(.correct-answer):not(.wrong-answer) { border-color: #00e5ff; background: rgba(0, 229, 255, 0.05); color: #f8fafc; }
+.options label input { margin-right: 10px; accent-color: #00e5ff; }
 .options label input:disabled { cursor: not-allowed; }
 
-button.action-btn { background: linear-gradient(135deg, #0284c7, #2563eb); color: white; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
-button.action-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
-button.action-btn:disabled { opacity: 0.7; cursor: wait; }
+.correct-answer { background: rgba(16, 185, 129, 0.1) !important; border-color: #10b981 !important; color: #10b981 !important; font-weight: bold; }
+.wrong-answer { background: rgba(239, 68, 68, 0.1) !important; border-color: #ef4444 !important; color: #ef4444 !important; text-decoration: line-through; }
 
-/* GÖREV REHBERİ */
-.mission-layout { display: grid; grid-template-columns: 420px 1fr; gap: 25px; margin-top: 20px; }
-.guide-panel { background: rgba(30, 41, 59, 0.4); padding: 25px; border-radius: 8px; border: 1px solid #334155; display: flex; flex-direction: column; }
-.guide-step { padding: 15px; border-radius: 6px; margin-bottom: 12px; transition: 0.3s; opacity: 0.4; }
+/* GÖREV REHBERİ (Adım 2) */
+.mission-layout { display: grid; grid-template-columns: 350px 1fr; gap: 25px; margin-top: 20px; }
+.guide-panel { background: rgba(30, 41, 59, 0.4); padding: 25px; border-radius: 12px; border: 1px solid #334155; display: flex; flex-direction: column; }
+.guide-title { margin-top: 0; color: #f8fafc; font-size: 18px; margin-bottom: 10px; }
+.guide-desc { font-size: 13.5px; color: #94a3b8; line-height: 1.6; margin-bottom: 20px; }
+.guide-step { padding: 15px; border-radius: 8px; margin-bottom: 12px; transition: 0.3s; opacity: 0.4; border: 1px solid transparent; }
 .guide-step.current { opacity: 1; background: rgba(0, 229, 255, 0.05); border: 1px solid #00e5ff; box-shadow: inset 0 0 15px rgba(0, 229, 255, 0.05); }
 .guide-step.done { opacity: 0.5; border-left: 4px solid #10b981; }
-.guide-step b { display: block; color: #00e5ff; margin-bottom: 8px; font-size: 15px; }
-.guide-step p { margin: 0; font-size: 13.5px; line-height: 1.6; }
-code.highlight { background: #000; color: #f59e0b; padding: 3px 6px; border-radius: 4px; font-family: monospace; font-size: 13px; }
+.guide-step b { display: block; color: #00e5ff; margin-bottom: 5px; font-size: 14px; }
+.guide-step p { margin: 0; font-size: 12.5px; line-height: 1.5; color: #cbd5e1; }
+code.highlight { background: #000; color: #f59e0b; padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 12px; border: 1px solid #334155;}
 
 /* TERMINAL */
+.app-container { display: flex; flex-direction: column; gap: 15px; position: relative; }
 .terminal-container { display: flex; flex-direction: column; gap: 15px; }
-.terminal-box { background: #050505; border-radius: 8px; border: 1px solid #334155; overflow: hidden; height: 550px; display: flex; flex-direction: column; cursor: text; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-.terminal-header { background: #1e293b; color: #cbd5e1; padding: 10px 15px; font-size: 12px; display: flex; justify-content: space-between; border-bottom: 1px solid #000; font-family: monospace; }
-.terminal-body { padding: 15px; flex-grow: 1; overflow-y: auto; color: #22c55e; font-family: "Consolas", "Courier New", monospace; font-size: 14.5px; line-height: 1.5; }
+.terminal-box { background: #050505; border-radius: 12px; border: 1px solid #334155; overflow: hidden; height: 500px; display: flex; flex-direction: column; cursor: text; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+.terminal-header { background: #1e293b; color: #cbd5e1; padding: 12px 20px; font-size: 13px; display: flex; justify-content: space-between; border-bottom: 1px solid #000; font-family: monospace; }
+.terminal-body { padding: 20px; flex-grow: 1; overflow-y: auto; color: #22c55e; font-family: "Consolas", "Courier New", monospace; font-size: 14px; line-height: 1.5; }
 
 .prompt { color: #10b981; font-weight: bold; margin-right: 8px; }
 .output { color: #a7f3d0; margin-bottom: 2px; white-space: pre-wrap; }
-.analysis { background: rgba(245, 158, 11, 0.1); color: #fcd34d; border-left: 4px solid #f59e0b; margin: 15px 0; padding: 10px 15px; font-style: italic; font-size: 13.5px; display: block; border-radius: 0 4px 4px 0; }
-.error { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-left: 4px solid #ef4444; margin: 15px 0; padding: 10px 15px; font-style: italic; font-size: 13.5px; display: block; border-radius: 0 4px 4px 0; }
+.analysis { background: rgba(245, 158, 11, 0.1); color: #fcd34d; border-left: 4px solid #f59e0b; margin: 15px 0; padding: 12px 15px; font-style: italic; font-size: 13px; display: block; border-radius: 0 4px 4px 0; }
+.error { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-left: 4px solid #ef4444; margin: 15px 0; padding: 12px 15px; font-style: italic; font-size: 13px; display: block; border-radius: 0 4px 4px 0; }
 
 .terminal-input-line { display: flex; align-items: center; margin-top: 10px; }
 #real-input { background: transparent; border: none; color: #22c55e; font-family: inherit; font-size: inherit; outline: none; flex-grow: 1; caret-color: #22c55e; }
 
 /* EĞİTİM TASARIMI */
 .edu-card { background: #1e293b; border-radius: 12px; padding: 30px; border-left: 6px solid #00e5ff; }
+.edu-desc-txt { font-size: 15px; line-height: 1.6; color: #cbd5e1; margin-top: 0; margin-bottom: 25px; }
 .flow-step { display: flex; gap: 15px; margin-top: 20px; align-items: flex-start; }
-.flow-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 16px; }
-.code-block { background: #000; color: #f8fafc; padding: 15px; border-radius: 6px; font-family: monospace; margin: 10px 0; border: 1px solid #334155; font-size: 13.5px;}
+.flow-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 15px; color: #fff;}
+.step-blue { background: #00e5ff; color: #000; }
+.step-yellow { background: #f59e0b; color: #000;}
+.step-red { background: #ef4444; }
+.step-title-text { font-size: 16px; display: block; margin-bottom: 5px; }
+.blue-text { color: #00e5ff; }
+.yellow-text { color: #f59e0b; }
+.red-text { color: #ef4444; }
+.step-desc-text { margin: 0; font-size: 14px; color: #94a3b8; line-height: 1.6; }
+.code-block { background: #000; color: #f8fafc; padding: 15px; border-radius: 6px; font-family: monospace; margin: 15px 0 0 0; border: 1px solid #334155; font-size: 13.5px;}
 
-.spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid rgba(0, 229, 255, 0.1); border-radius: 50%; border-top-color: #00e5ff; animation: spin 1s ease-in-out infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.solution-box { background: rgba(16, 185, 129, 0.05); padding: 20px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3); margin-top: 35px; border-left: 4px solid #10b981; }
+.solution-title-text { color: #10b981; font-size: 16px; display: block; margin-bottom: 10px; }
+.solution-info { margin: 0; font-size: 14.5px; line-height: 1.7; color: #cbd5e1; }
+
+/* Butonlar & Aksiyonlar */
+.action-footer { margin-top: 30px; display: flex; }
+.action-footer.space-between { justify-content: space-between; }
+button { font-family: inherit; }
+.btn-primary { background: #0284c7; color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+.btn-primary:hover { background: #0369a1; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(2, 132, 199, 0.4); }
+.btn-secondary { background: #334155; color: #f8fafc; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+.btn-secondary:hover { background: #475569; }
+.btn-success { background: #10b981; color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; width: auto;}
+.btn-success:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4); }
+.btn-warning { background: #00e5ff; color: #0f172a; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; }
+.btn-warning:hover:not(:disabled) { background: #0891b2; color: #fff; transform: translateY(-2px); }
+.btn-warning:disabled { opacity: 0.7; cursor: not-allowed; }
+
+/* Animasyonlar ve Yükleyiciler */
+.fade-in { animation: fadeIn 0.5s ease-out forwards; }
+.fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+.loading-screen { text-align: center; padding: 80px 0; }
+.spinner { display: inline-block; border: 4px solid rgba(0, 229, 255, 0.2); border-top-color: #00e5ff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+.spinner-small { display: inline-block; border: 3px solid rgba(15, 23, 42, 0.3); border-top-color: #0f172a; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; margin-right: 10px; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
 </style>

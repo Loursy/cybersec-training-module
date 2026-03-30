@@ -52,8 +52,6 @@ const db = new sqlite3.Database("./training.db", (err) => {
       },
     );
 
-    // ZAFİYETLİ TABLO 2: Broken Access Control (BAC) modülü için
-    // ZAFİYETLİ TABLO 2: Broken Access Control (BAC) modülü için
     db.run(
       `CREATE TABLE IF NOT EXISTS dummy_profiles (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -68,7 +66,7 @@ const db = new sqlite3.Database("./training.db", (err) => {
         db.get("SELECT COUNT(*) AS count FROM dummy_profiles", (err, row) => {
           if (row.count === 0) {
             db.run(
-              "INSERT INTO dummy_profiles (name, role, department, email, phone, secret_message) VALUES ('Burak Kaya', 'CEO', 'Yönetim Kurulu', 'burak.k@sirket.com', '+90 555 100 0001', 'GİZLİ KARAR: Şirketin satılma planları başladı. Hedef 2027.')",
+              "INSERT INTO dummy_profiles (name, role, department, email, phone, secret_message) VALUES ('Ahmet Yılmaz', 'CEO', 'Yönetim Kurulu', 'burak.k@sirket.com', '+90 555 100 0001', 'GİZLİ KARAR: Şirketin satılma planları başladı. Hedef 2027.')",
             );
             db.run(
               "INSERT INTO dummy_profiles (name, role, department, email, phone, secret_message) VALUES ('Atakan', 'YBS Uzmanı', 'Bilişim Teknolojileri', 'atakan@sirket.com', '+90 555 200 0002', 'Sistem güncelleme notu: Sunucu şifreleri yarın sıfırlanacak.')",

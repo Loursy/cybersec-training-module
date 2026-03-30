@@ -4,6 +4,7 @@
 
     <div class="container">
       <button class="lang-btn" @click="toggleLanguage">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         {{ currentLang === 'tr' ? 'EN' : 'TR' }}
       </button>
 
@@ -24,14 +25,14 @@
           <div class="question" v-for="(q, index) in [1, 2, 3]" :key="'pre'+index">
             <p><b v-html="currentText[`qPre${q}`]"></b></p>
             <div class="options">
-              <label v-for="opt in ['a', 'b', 'c']" :key="opt" :class="getLabelClass('pre', `q${q}`, opt)">
+              <label v-for="opt in ['a', 'b', 'c', 'd']" :key="opt" :class="getLabelClass('pre', `q${q}`, opt)">
                 <input type="radio" v-model="answers[`preQ${q}`]" :value="opt" :disabled="isReviewMode" /> 
-                <span>{{ currentText[`optPre${q}_${opt === 'a' ? 1 : opt === 'b' ? 2 : 3}`] }}</span>
+                <span>{{ currentText[`optPre${q}_${opt === 'a' ? 1 : opt === 'b' ? 2 : opt === 'c' ? 3 : 4}`] }}</span>
               </label>
             </div>
           </div>
 
-          <div class="action-footer">
+          <div class="action-footer" style="justify-content: flex-end;">
             <button class="btn-primary" @click="finishPreTest">
               {{ isReviewMode ? (currentLang === 'tr' ? 'Sonraki Aşama (Simülasyon)' : 'Next Step (Simulation)') : currentText.btnPre }}
             </button>
@@ -77,7 +78,7 @@
                   <p class="crypto-desc" v-html="currentText.authDesc"></p>
 
                   <div class="pin-box">
-                    <input type="text" class="pin-input" maxlength="1" v-model="pin1" ref="refP1" @input="moveFocus($event, 'refP2', null)" />
+                    <input type="text" class="pin-input" maxlength="1" v-model="pin1" ref="refP1" @input="moveFocus($event, 'refP2', null)" @keydown.delete="handleDelete($event, null)" />
                     <input type="text" class="pin-input" maxlength="1" v-model="pin2" ref="refP2" @input="moveFocus($event, 'refP3', 'refP1')" @keydown.delete="handleDelete($event, 'refP1')" />
                     <input type="text" class="pin-input" maxlength="1" v-model="pin3" ref="refP3" @input="moveFocus($event, 'refP4', 'refP2')" @keydown.delete="handleDelete($event, 'refP2')" />
                     <input type="text" class="pin-input" maxlength="1" v-model="pin4" ref="refP4" @input="moveFocus($event, null, 'refP3')" @keydown.delete="handleDelete($event, 'refP3')" @keyup.enter="verifyPin" />
@@ -94,17 +95,17 @@
 
               <div class="bruteforce-window fade-in" v-if="activeWindow === 'hacker'">
                 <div class="bf-header">
-                  <span>[x] HYDRA BRUTE-FORCER v4.2</span>
+                  <span>[x] HYDRA BRUTE-FORCER v9.4</span>
                   <span class="bf-target-txt">{{ currentText.bfTarget }}</span>
-                </div>
-                <div class="bf-cmd-line">
-                  <span>root@kali:~#</span>
-                  <input type="text" v-model="hackerCmd" :placeholder="currentText.inputCmd" @keyup.enter="checkHackerCmd" :disabled="isAttacking || isCracked" autocomplete="off" />
-                  <button v-if="!isAttacking && !isCracked" class="btn-attack" @click="checkHackerCmd">{{ currentText.btnAttack }}</button>
-                  <button v-if="isCracked" class="btn-attack btn-success-override" @click="backToTarget">{{ currentText.btnBackTarget }}</button>
                 </div>
                 <div class="bf-terminal" ref="terminalContainer">
                   <div v-html="terminalLogs"></div>
+                </div>
+                <div class="bf-cmd-line">
+                  <span class="prompt-user">root@kali:</span><span class="prompt-dir">~#</span>
+                  <input type="text" v-model="hackerCmd" :placeholder="currentText.inputCmd" @keyup.enter="checkHackerCmd" :disabled="isAttacking || isCracked" autocomplete="off" spellcheck="false" />
+                  <button v-if="!isAttacking && !isCracked" class="btn-attack" @click="checkHackerCmd">{{ currentText.btnAttack }}</button>
+                  <button v-if="isCracked" class="btn-attack btn-success-override fade-in" @click="backToTarget">{{ currentText.btnBackTarget }}</button>
                 </div>
               </div>
 
@@ -118,7 +119,7 @@
                 </div>
               </div>
 
-              <div class="action-footer">
+              <div class="action-footer" style="justify-content: center;">
                 <button v-if="activeWindow === 'vault' || isReviewMode" class="btn-success fade-in" @click="currentStep = 3">
                   {{ currentText.btnToTrn }}
                 </button>
@@ -135,6 +136,10 @@
           
           <div class="edu-card logic-box">
             <p class="edu-desc">{{ currentText.trnDesc }}</p>
+            
+            <div style="margin-top: 20px; margin-bottom: 30px; text-align: center;">
+               
+            </div>
 
             <div class="flow-step">
               <div class="flow-num step-red">1</div>
@@ -149,23 +154,27 @@
               <div>
                 <b class="step-title-text yellow-text">{{ currentText.trnH2 }}</b>
                 <p class="step-desc-text" v-html="currentText.trnP2"></p>
-                <div style="margin-top: 15px; text-align: center;">
-                  
-                </div>
+              </div>
+            </div>
+
+            <div class="flow-step">
+              <div class="flow-num step-blue">3</div>
+              <div>
+                <b class="step-title-text blue-text">{{ currentText.trnH4 }}</b>
+                <p class="step-desc-text" v-html="currentText.trnP4"></p>
               </div>
             </div>
 
             <div class="solution-box">
               <b class="solution-title">{{ currentText.trnH3 }}</b>
               <p class="solution-desc" v-html="currentText.trnP3"></p>
-              <div style="margin-top: 15px; text-align: center;">
+              <div style="margin-top: 25px; text-align: center;">
                  
               </div>
             </div>
           </div>
 
-          <div class="action-footer space-between">
-            <button class="btn-secondary" @click="currentStep = 2">Önceki</button>
+          <div class="action-footer" style="justify-content: flex-end;">
             <button class="btn-primary" @click="currentStep = 4">{{ currentText.btnToPost }}</button>
           </div>
         </div>
@@ -178,21 +187,21 @@
           <div class="question" v-for="(q, index) in [1, 2, 3]" :key="'post'+index">
             <p><b v-html="currentText[`qPost${q}`]"></b></p>
             <div class="options">
-              <label v-for="opt in ['a', 'b', 'c']" :key="opt" :class="getLabelClass('post', `q${q}`, opt)">
+              <label v-for="opt in ['a', 'b', 'c', 'd']" :key="opt" :class="getLabelClass('post', `q${q}`, opt)">
                 <input type="radio" v-model="answers[`postQ${q}`]" :value="opt" :disabled="isReviewMode" /> 
-                <span>{{ currentText[`optPost${q}_${opt === 'a' ? 1 : opt === 'b' ? 2 : 3}`] }}</span>
+                <span>{{ currentText[`optPost${q}_${opt === 'a' ? 1 : opt === 'b' ? 2 : opt === 'c' ? 3 : 4}`] }}</span>
               </label>
             </div>
           </div>
 
-          <div class="action-footer space-between">
-            <button class="btn-secondary" @click="currentStep = 3">Önceki</button>
+          <div class="action-footer" style="justify-content: flex-end;">
             <button class="btn-warning" @click="finishPostTest" :disabled="isSaving">
               <span v-if="isSaving" class="spinner-small"></span>
               {{ isReviewMode ? (currentLang === 'tr' ? 'İncelemeyi Bitir ve Dön' : 'Finish Review & Return') : (isSaving ? (currentLang === 'tr' ? 'Kaydediliyor...' : 'Saving...') : currentText.btnPost) }}
             </button>
           </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -247,18 +256,25 @@ const translations = {
     alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nKarnenize yönlendiriliyorsunuz...`,
     modTitle: "Modül 5: Rate Limiting (Hız Sınırlandırma)",
     preTitle: "Ön-Test",
-    qPre1: '1. "Rate Limiting" (Hız Sınırlandırma) mekanizmasının temel güvenlik işlevi aşağıdakilerden hangisidir?',
-    optPre1_1: "A) Sunucuya yüklenen medya dosyalarını otomatik optimize etmek.",
+    
+    qPre1: "1. 'Rate Limiting' mekanizmasının temel güvenlik işlevi aşağıdakilerden hangisidir?",
+    optPre1_1: "A) Sunucunun çökmemesi adına çok hızlı veri trafiğini filtrelemek veya yavaşlatmak.",
     optPre1_2: "B) Belirli bir zaman diliminde aynı IP veya kullanıcıdan gelen maksimum istek sayısını kısıtlamak.",
-    optPre1_3: "C) Ağ trafiğini şifreleyerek aradaki saldırganların paketleri okumasını engellemek.",
-    qPre2: "2. Bir sistemde Rate Limiting mekanizmasının BULUNMAMASI durumunda, aşağıdaki saldırılardan hangisi en kolay gerçekleştirilir?",
-    optPre2_1: "A) Otomatik araçlar kullanarak binlerce şifre kombinasyonunun denendiği Brute-Force saldırıları.",
-    optPre2_2: "B) Veritabanına zararlı sorgular gönderilerek yapılan SQL Injection saldırıları.",
-    optPre2_3: "C) Kullanıcı tarayıcılarında zararlı kod çalıştırılan XSS saldırıları.",
-    qPre3: "3. Özellikle 4 veya 6 haneli SMS (OTP) onay ekranlarında neden hız sınırlandırması kritik bir zorunluluktur?",
-    optPre3_1: "A) Sınırlandırma olmazsa SMS sağlayıcı servisler kullanıcının telefonunu virüslü işaretler.",
-    optPre3_2: "B) SMS kodları sunucunun işlemci gücünü çok yorar.",
-    optPre3_3: "C) İhtimal havuzu çok küçüktür (Örn: 10.000 ihtimal) ve sınırsız deneme hakkı kodu anında kırdırır.",
+    optPre1_3: "C) Sunucuya gelen paketlerin boyutunu limitlemek.",
+    optPre1_4: "D) Ağ katmanındaki yetkisiz port taramalarını tespit edip engellemek.",
+    
+    qPre2: "2. Bir sistemde Rate Limiting mekanizmasının BULUNMAMASI durumunda, aşağıdakilerden hangisi gerçekleşir?",
+    optPre2_1: "A) Sistem, Brute-Force saldırılarına açık hale gelir.",
+    optPre2_2: "B) Büyük boyutlu paketlerin girişi engellenemez.",
+    optPre2_3: "C) Kullanıcı oturumları (session) otomatik olarak başkası tarafından ele geçirilebilir.",
+    optPre2_4: "D) Veritabanı şifreleme algoritmaları çözülebilir hale gelir.",
+    
+    qPre3: "3. Özellikle 4 veya 6 haneli doğrulama ekranlarında hız sınırlandırması neden kritik bir zorunluluktur?",
+    optPre3_1: "A) Sınırlandırma eksikliği, sistemin bellek sızıntısı (memory leak) yaşamasına neden olur.",
+    optPre3_2: "B) Çoklu isteklerin, rastgele sayı üretecini (RNG) manipüle edilebilir duruma getirmesi.",
+    optPre3_3: "C) İhtimal havuzunun dar olması sebebiyle, sınırsız deneme imkanının şifre uzayını hızla tüketmesi.",
+    optPre3_4: "D) Doğrulama sunucularının eşzamanlı bağlantılarda asimetrik şifrelemeyi desteklememesi.",
+    
     btnPre: "Simülasyona Başla",
 
     simTitle: "Adım 2: Zafiyet Sömürüsü (Brute-Force)",
@@ -273,17 +289,17 @@ const translations = {
     gs4T: "4. Kripto Kasasına Sız",
     gs4D: "Terminal saniyeler içinde binlerce istek atacak. Bulduğu yeşil renkli doğru PIN kodunu aklında tut. <b>\"Hedefe Dön\"</b> butonuna basıp kodu manuel girerek cüzdanı ele geçir!",
 
-    authDesc: "Giriş yapmak için telefonunuza gelen <b>4 haneli SMS kodunu</b> giriniz.",
+    authDesc: "Giriş yapmak için telefonunuza gelen <b>4 haneli onay kodunu</b> giriniz.",
     btnVerify: "Doğrula ve Giriş Yap",
     msgWarnMan: "Hatalı Kod! Sistemde sınırlandırma YOK. Sonsuz deneme yapabilirsiniz.",
     msgWarnShort: "Lütfen 4 haneli bir kod girin.",
     btnOpenTool: "Hacker Aracını Aç",
 
     bfTarget: "Hedef: api.novacrypto.com",
-    inputCmd: "Saldırı komutunu buraya yapıştırın ve Enter'a basın...",
+    inputCmd: "hydra -l admin ...",
     btnAttack: "Çalıştır",
     btnBackTarget: "Hedefe Dön & Kodu Gir",
-    bfTermReady: "Sistem hazır. Brute-Force işlemini başlatmak için geçerli bir Hydra komutu bekleniyor...<br>",
+    bfTermReady: "Hydra v9.4 (c) 2023 by van Hauser/THC<br>[INFO] Starting Brute-Force environment...<br><br>",
     cmdError: "Hatalı komut! Lütfen görev rehberindeki 'hydra' komutunu tam olarak kopyalayıp yapıştırın.",
 
     vaultTitle: "🔓 ERİŞİM ONAYLANDI",
@@ -297,24 +313,34 @@ const translations = {
     trnH1: "Sınırların Olmaması (Lack of Rate Limiting)",
     trnP1: "Yazılımcı, girilen kodun doğruluğunu kontrol eden bir API yazdı ama bir kullanıcının o API'ye 1 saniyede kaç kere istek atabileceğini kontrol etmedi.",
     trnH2: "Kaba Kuvvetin Gücü (Brute-Force)",
-    trnP2: "Otomatik bir script API'ye saldırdı. 0000'dan başlayarak her milisaniyede yeni kod denedi. Sistem yorulmadı, engellemedi ve sadece 'Yanlış' döndü. Ta ki <b>HTTP 200 OK</b> kodunu görene kadar.",
+    trnP2: "Otomatik bir script API'ye saldırdı. 0000'dan başlayarak her milisaniyede yeni kod denedi. Sistem yorulmadı, engellemedi ve sadece 'Yanlış' döndü. Ta ki doğru kodu görene kadar.",
+    
+    trnH4: "Peki O Siyah Ekrana Ne Yazdık?",
+    trnP4: "Terminale yazdığımız <code class='code-yellow'>hydra -l admin -P pins.txt api.novacrypto.com/verify</code> komutu aslında araca verdiğimiz çok basit bir talimattı:<br><br>• <b>hydra:</b> Siber güvenlikte kullanılan meşhur şifre deneme aracının adı.<br>• <b>-l admin:</b> Hedefimizdeki kullanıcının adı (login).<br>• <b>-P pins.txt:</b> İçinde 0000'dan 9999'a kadar tüm ihtimallerin olduğu bir metin dosyası.<br>• <b>api.novacrypto...:</b> Saldıracağımız kapının adresi.<br><br>Kısacası araca dedik ki: <i>'Al bu 10 bin ihtimali, doğru olanı bulana kadar o adreste teker teker dene!'</i>",
+
     trnH3: "🛡️ Kesin Çözüm: Rate Limiting ve Account Lockout",
-    trnP3: "Brute-Force saldırılarını durdurmanın en kesin yolu API seviyesinde kısıtlamaktır.<br><br><b>1. Rate Limiting:</b> Bir IP adresi 1 dakikada sadece 5 istek yapabilir. Fazlasında sistem <b>HTTP 429 (Too Many Requests)</b> hatası vermelidir.<br><b>2. Account Lockout:</b> Arka arkaya 3 hatalı SMS kodundan sonra giriş işlemi 15 dakikalığına tamamen dondurulmalıdır.",
+    trnP3: "Brute-Force saldırılarını durdurmanın en kesin yolu API seviyesinde kısıtlamaktır.<br><br><b>1. Rate Limiting:</b> Bir IP adresi 1 dakikada sadece 5 istek yapabilir. Fazlasında sistem <b>HTTP 429 (Too Many Requests)</b> hatası vermelidir.<br><b>2. Account Lockout:</b> Arka arkaya 3 hatalı koddan sonra giriş işlemi 15 dakikalığına tamamen dondurulmalıdır.",
     btnToPost: "Tüm Detayları Anladım -> Son Teste Geç",
 
     postTitle: "Son-Test",
-    qPost1: "1. Rate Limiting koruması uygulandığında, sınırı aşan saldırganlara hangi HTTP kodu döndürülmelidir?",
-    optPost1_1: "A) HTTP 500 (Internal Server Error)",
-    optPost1_2: "B) HTTP 429 (Too Many Requests)",
-    optPost1_3: "C) HTTP 404 (Not Found)",
-    qPost2: "2. 'Rate Limiting' mekanizmasının temel güvenlik işlevi aşağıdakilerden hangisidir?",
-    optPost2_1: "A) Sunucuya yüklenen yüksek boyutlu medya dosyalarını sıkıştırmak.",
-    optPost2_2: "B) Belirli bir zaman diliminde aynı IP'den gelen istek sayısını kısıtlamak.",
-    optPost2_3: "C) Ağ trafiğini şifreleyerek paketlerin okunmasını engellemek.",
-    qPost3: "3. Simülasyonda karşılaştığımız, otomatik olarak doğru şifreyi bulmayı hedefleyen saldırının adı nedir?",
-    optPost3_1: "A) Phishing (Oltalama) Saldırısı",
-    optPost3_2: "B) Path Traversal Saldırısı",
-    optPost3_3: "C) Brute-Force (Kaba Kuvvet) Saldırısı",
+    qPost1: "1. Simülasyonda 'NovaCrypto' borsasının 4 haneli onay ekranını aşmak için kullandığımız 'Hydra' aracı hangi saldırı türünü gerçekleştirmiştir?",
+    optPost1_1: "A) SQL Injection (SQLi)",
+    optPost1_2: "B) Brute-Force (Kaba Kuvvet)",
+    optPost1_3: "C) Cross-Site Scripting (XSS)",
+    optPost1_4: "D) Man-in-the-Middle (MitM)",
+    
+    qPost2: "2. 4 haneli bir PIN kodunun (10.000 ihtimal) saniyeler içinde kırılabilmesinin ardındaki temel güvenlik zafiyeti neydi?",
+    optPost2_1: "A) PIN kodunun çok kısa olması sebebiyle şifreleme algoritmalarının yetersiz kalması.",
+    optPost2_2: "B) API'nin, bir IP adresinden gelen ardışık hatalı denemeleri saymayarak sınırsız isteğe izin vermesi.",
+    optPost2_3: "C) SMS doğrulama kodlarının ağ üzerinde düz metin (plaintext) olarak iletilmesi.",
+    optPost2_4: "D) Sistemin hatalı girişlerde HTTP 404 (Not Found) hatası döndürmemesi.",
+    
+    qPost3: "3. Bu zafiyeti gidermek için 'Rate Limiting' uygulayan bir sunucu, sınırı aşan saldırgana hangi HTTP yanıt kodunu döndürmelidir?",
+    optPost3_1: "A) HTTP 200 (OK)",
+    optPost3_2: "B) HTTP 403 (Forbidden)",
+    optPost3_3: "C) HTTP 429 (Too Many Requests)",
+    optPost3_4: "D) HTTP 500 (Internal Server Error)",
+    
     btnPost: "Eğitimi Bitir",
   },
   en: {
@@ -322,23 +348,30 @@ const translations = {
     alertResult: (pre, post) => `Congratulations!\nPre-Test: ${pre}%\nPost-Test: ${post}%\n\nRedirecting to stats...`,
     modTitle: "Module 5: Rate Limiting",
     preTitle: "Pre-Test",
-    qPre1: '1. What is the primary security function of a "Rate Limiting" mechanism?',
-    optPre1_1: "A) Automatically compressing media files uploaded to the server.",
-    optPre1_2: "B) Restricting the maximum number of requests coming from the same IP within a timeframe.",
-    optPre1_3: "C) Encrypting network traffic to prevent Man-in-the-Middle attackers.",
-    qPre2: "2. Which of the following attacks is most easily executed when a system LACKS Rate Limiting?",
-    optPre2_1: "A) Brute-Force attacks where automated tools test thousands of passwords.",
-    optPre2_2: "B) SQL Injection attacks.",
-    optPre2_3: "C) XSS attacks where malicious codes are executed in browsers.",
-    qPre3: "3. Why is rate limiting a critical necessity, especially on 4-digit SMS (OTP) screens?",
-    optPre3_1: "A) Without limits, SMS providers flag the user's phone as infected.",
-    optPre3_2: "B) SMS codes exhaust the server's CPU power.",
-    optPre3_3: "C) The pool of possibilities is small (e.g., 10,000) and unlimited tries break the code instantly.",
+    
+    qPre1: "1. What is the primary security function of a 'Rate Limiting' mechanism?",
+    optPre1_1: "A) To filter or slow down very fast data traffic to prevent the server from crashing.",
+    optPre1_2: "B) To restrict the maximum number of requests coming from the same IP or user within a specific timeframe.",
+    optPre1_3: "C) To limit the size of incoming packets to the server.",
+    optPre1_4: "D) To detect and block unauthorized port scans at the network layer.",
+    
+    qPre2: "2. If a system LACKS a Rate Limiting mechanism, which of the following occurs?",
+    optPre2_1: "A) It becomes vulnerable to Brute-Force attacks.",
+    optPre2_2: "B) It fails to block the entry of large-sized packets.",
+    optPre2_3: "C) User sessions can be automatically hijacked by others.",
+    optPre2_4: "D) Database encryption algorithms become solvable.",
+    
+    qPre3: "3. Why is rate limiting a critical necessity on 4 or 6-digit verification screens?",
+    optPre3_1: "A) The lack of limitation causes the system to experience memory leaks.",
+    optPre3_2: "B) Multiple requests make the random number generator (RNG) susceptible to manipulation.",
+    optPre3_3: "C) Due to the narrow probability pool, unlimited trial opportunities rapidly exhaust the password space.",
+    optPre3_4: "D) Verification servers do not support asymmetric encryption during concurrent connections.",
+    
     btnPre: "Start Simulation",
 
     simTitle: "Step 2: Exploit Simulation",
     gTitle: "📋 Operation File",
-    gDesc: "Target: <b>Nova Crypto Exchange</b>. We found the victim's password but hit a 4-digit SMS OTP screen (2FA). There are 10,000 possibilities. Find the right code!",
+    gDesc: "Target: <b>Nova Crypto Exchange</b>. We found the victim's password but hit a 4-digit verification screen (2FA). There are 10,000 possibilities. Find the right code!",
     gs1T: "1. Recon: Test the Limits",
     gs1D: "First, manually test the system. Enter a random 4-digit code (e.g., 1234) and click Verify. Does the system block us saying 'Too many failed attempts'?",
     gs2T: "2. Arming (Hacker Tool)",
@@ -348,17 +381,17 @@ const translations = {
     gs4T: "4. Breach the Crypto Vault",
     gs4D: "The terminal will blast thousands of requests. Memorize the green correct PIN code. Click <b>\"Return to Target\"</b> and enter that code manually to hijack the wallet!",
 
-    authDesc: "Please enter the <b>4-digit SMS code</b> sent to your phone.",
+    authDesc: "Please enter the <b>4-digit verification code</b> sent to your phone.",
     btnVerify: "Verify and Log In",
     msgWarnMan: "Invalid Code! NO rate limit detected. You can try infinitely.",
     msgWarnShort: "Please enter a 4-digit code.",
     btnOpenTool: "Open Hacker Tool",
 
     bfTarget: "Target: api.novacrypto.com",
-    inputCmd: "Paste the attack command here and press Enter...",
+    inputCmd: "hydra -l admin ...",
     btnAttack: "Execute",
     btnBackTarget: "Return to Target & Enter Code",
-    bfTermReady: "System ready. Waiting for a valid Hydra command to start Brute-Force...<br>",
+    bfTermReady: "Hydra v9.4 (c) 2023 by van Hauser/THC<br>[INFO] Starting Brute-Force environment...<br><br>",
     cmdError: "Invalid command! Please copy the exact 'hydra' command from the guide.",
 
     vaultTitle: "🔓 ACCESS GRANTED",
@@ -372,24 +405,34 @@ const translations = {
     trnH1: "Lack of Rate Limiting",
     trnP1: "The developer wrote an API that checks the code, but failed to check how many requests a user can send to that API in 1 second.",
     trnH2: "The Power of Brute-Force",
-    trnP2: "An automated script attacked the API, trying a new code every millisecond. The system didn't block it, until it saw the <b>HTTP 200 OK</b> code.",
+    trnP2: "An automated script attacked the API, trying a new code every millisecond. The system didn't block it, until it saw the correct code.",
+    
+    trnH4: "What Exactly Did We Type in the Terminal?",
+    trnP4: "The command <code class='code-yellow'>hydra -l admin -P pins.txt api.novacrypto.com/verify</code> was actually a very simple instruction given to the tool:<br><br>• <b>hydra:</b> The name of a famous password-cracking tool used in cybersecurity.<br>• <b>-l admin:</b> The username of our target (login).<br>• <b>-P pins.txt:</b> A text file (wordlist) containing all possibilities from 0000 to 9999.<br>• <b>api.novacrypto...:</b> The address of the door we are attacking.<br><br>In short, we told the tool: <i>'Take these 10,000 possibilities and try them one by one at that address until you find the right one!'</i>",
+
     trnH3: "🛡️ Ultimate Solution: Rate Limiting and Account Lockout",
     trnP3: "The definitive way to stop Brute-Force is API-level restriction.<br><br><b>1. Rate Limiting:</b> Return an <b>HTTP 429 (Too Many Requests)</b> error if limits are exceeded.<br><b>2. Account Lockout:</b> After 3 invalid codes, freeze the login process for 15 minutes.",
     btnToPost: "I Understood the Details -> Go to Post-Test",
 
     postTitle: "Post-Test",
-    qPost1: "1. When Rate Limiting protection is applied, which HTTP status code should be returned to attackers exceeding the limit?",
-    optPost1_1: "A) HTTP 500 (Internal Server Error)",
-    optPost1_2: "B) HTTP 429 (Too Many Requests)",
-    optPost1_3: "C) HTTP 404 (Not Found)",
-    qPost2: "2. What is the primary security function of a 'Rate Limiting' mechanism?",
-    optPost2_1: "A) Automatically compressing uploaded large media files.",
-    optPost2_2: "B) Restricting the maximum number of requests coming from the same IP.",
-    optPost2_3: "C) Encrypting network traffic.",
-    qPost3: "3. What is the literature name for the automated attack aiming to find the password by exploiting the lack of Rate Limiting?",
-    optPost3_1: "A) Phishing Attack",
-    optPost3_2: "B) Path Traversal Attack",
-    optPost3_3: "C) Brute-Force Attack",
+    qPost1: "1. What type of attack did we perform using the 'Hydra' tool to bypass NovaCrypto's 4-digit SMS verification screen in the simulation?",
+    optPost1_1: "A) SQL Injection (SQLi)",
+    optPost1_2: "B) Brute-Force",
+    optPost1_3: "C) Cross-Site Scripting (XSS)",
+    optPost1_4: "D) Man-in-the-Middle (MitM)",
+    
+    qPost2: "2. What was the fundamental security flaw that allowed a 4-digit PIN (10,000 possibilities) to be cracked in seconds?",
+    optPost2_1: "A) The encryption algorithms being insufficient due to the PIN being too short.",
+    optPost2_2: "B) The API allowing unlimited requests without tracking consecutive failed attempts from an IP.",
+    optPost2_3: "C) SMS verification codes being transmitted as plaintext over the network.",
+    optPost2_4: "D) The system failing to return an HTTP 404 (Not Found) error on incorrect entries.",
+    
+    qPost3: "3. To mitigate this vulnerability, which HTTP status code should a server implementing 'Rate Limiting' return to an attacker exceeding the limit?",
+    optPost3_1: "A) HTTP 200 (OK)",
+    optPost3_2: "B) HTTP 403 (Forbidden)",
+    optPost3_3: "C) HTTP 429 (Too Many Requests)",
+    optPost3_4: "D) HTTP 500 (Internal Server Error)",
+    
     btnPost: "Finish Training",
   }
 };
@@ -421,7 +464,6 @@ onMounted(async () => {
 
   if (isReviewMode.value) {
     try {
-      // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
       const response = await fetch(`/api/get-user-stats/${userEmail}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -459,7 +501,7 @@ const moveFocus = (e, nextId, prevId) => {
 };
 
 const handleDelete = (e, prevId) => {
-  if (e.target.value === '' && prevId) {
+  if (e.key === 'Backspace' && e.target.value === '' && prevId) {
     if(prevId === 'refP1') refP1.value.focus();
     else if(prevId === 'refP2') refP2.value.focus();
     else if(prevId === 'refP3') refP3.value.focus();
@@ -499,12 +541,18 @@ const checkHackerCmd = () => {
   }
 };
 
+// YENİLENMİŞ GERÇEKÇİ HYDRA TERMİNAL SİMÜLASYONU
 const startAttack = () => {
   if (isAttacking.value) return;
   isAttacking.value = true;
-  terminalLogs.value = "";
   
-  let currentGuess = 8350; 
+  // Terminal Başlangıç Logları
+  terminalLogs.value = `Hydra (https://github.com/vanhauser-thc/thc-hydra) starting...<br>`;
+  terminalLogs.value += `[WARNING] Many servers use rate limiting or lockout. Testing...<br>`;
+  terminalLogs.value += `[DATA] max 16 tasks per 1 server, overall 16 tasks, 10000 login tries (l:1/p:10000), ~625 tries per task<br>`;
+  terminalLogs.value += `[DATA] attacking api.novacrypto.com:443/verify<br><br>`;
+  
+  let currentGuess = 8400; // Simülasyonu hızlandırmak için hedefe (8427) yakın başlattık
   const targetInt = parseInt(targetPin);
 
   const attackInterval = setInterval(() => {
@@ -512,8 +560,11 @@ const startAttack = () => {
 
     if (currentGuess === targetInt) {
       clearInterval(attackInterval);
-      terminalLogs.value += `<div class="log-req">POST /api/verify {"otp": "${pinStr}"}</div>`;
-      terminalLogs.value += `<div class="log-success">[HTTP 200 OK] PIN FOUND: ${pinStr}</div><br>`;
+      // Başarılı deneme logu (Gerçekçi Hydra formatı)
+      terminalLogs.value += `[443][https-post-form] host: api.novacrypto.com   login: admin   password: ${pinStr}<br>`;
+      terminalLogs.value += `<span style="color:#22c55e; font-weight:bold; font-size:14px;">[443][https-post-form] host: api.novacrypto.com   login: admin   password: ${pinStr}  [SUCCESS]</span><br><br>`;
+      terminalLogs.value += `1 of 1 target successfully completed, 1 valid password found<br>`;
+      terminalLogs.value += `Hydra (https://github.com/vanhauser-thc/thc-hydra) finished.<br>`;
       
       scrollToBottom();
       
@@ -523,12 +574,12 @@ const startAttack = () => {
         currentMission.value = 4;
       }, 1000);
     } else {
-      terminalLogs.value += `<div class="log-req">POST /api/verify {"otp": "${pinStr}"}</div>`;
-      terminalLogs.value += `<div class="log-res">[HTTP 401] Unauthorized</div>`;
+      // Başarısız deneme logu (Gerçekçi Hydra formatı)
+      terminalLogs.value += `<span style="color:#cbd5e1;">[443][https-post-form] host: api.novacrypto.com   login: admin   password: ${pinStr}</span><br>`;
       scrollToBottom();
       currentGuess++;
     }
-  }, 30); 
+  }, 40); // 40 milisaniyede bir atıyor (Çok hızlı Matrix hissiyatı)
 };
 
 const scrollToBottom = () => {
@@ -563,7 +614,6 @@ const finishPostTest = async () => {
   postScore = Math.round(postScore);
   
   try {
-    // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
     await fetch(`/api/save-score`, {
       method: "POST",
       headers: { 
@@ -644,21 +694,18 @@ code.highlight { background: #000; color: #f59e0b; padding: 3px 6px; border-radi
 .btn-hacker-tool { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; max-width: 300px; transition: 0.3s; margin-top: 30px; text-transform: uppercase; letter-spacing: 2px; font-family: "Consolas", monospace; box-shadow: 0 0 10px rgba(239, 68, 68, 0.1); }
 .btn-hacker-tool:hover { background: rgba(239, 68, 68, 0.15); box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); transform: translateY(-2px); }
 
-/* 2. HACKER ARACI (Hydra) */
-.bruteforce-window { background: #050505; border-radius: 12px; border: 1px solid #ef4444; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(239, 68, 68, 0.25); }
-.bf-header { background: #450a0a; padding: 12px 20px; color: #fca5a5; font-weight: bold; display: flex; justify-content: space-between; font-family: monospace; font-size: 13px;}
-.bf-cmd-line { padding: 15px 20px; background: #171717; border-bottom: 1px solid #450a0a; display: flex; gap: 10px; align-items: center; }
-.bf-cmd-line span { color: #10b981; font-weight: bold; font-family: monospace; font-size: 14px; }
-.bf-cmd-line input { flex-grow: 1; background: transparent; border: none; color: #f8fafc; font-family: monospace; font-size: 14px; outline: none; caret-color: #ef4444; }
-.btn-attack { background: #ef4444; color: white; border: none; padding: 8px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; transition: 0.2s;}
-.btn-attack:hover { background: #dc2626; }
-.btn-success-override { background: #0284c7; }
-.btn-success-override:hover { background: #0369a1; }
-
-.bf-terminal { padding: 20px; height: 280px; overflow-y: auto; color: #94a3b8; font-family: "Consolas", monospace; font-size: 13px; line-height: 1.6; }
-:deep(.log-req) { color: #fca5a5; }
-:deep(.log-res) { color: #ef4444; }
-:deep(.log-success) { color: #10b981; font-weight: bold; font-size: 15px; background: rgba(16, 185, 129, 0.1); padding: 5px 10px; border-radius: 4px; margin-top: 10px; display: inline-block; border-left: 3px solid #10b981;}
+/* 2. YENİLENMİŞ HACKER ARACI (Hydra) */
+.bruteforce-window { background: #000000; border-radius: 12px; border: 1px solid #334155; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0, 0, 0, 0.5); }
+.bf-header { background: #1e293b; padding: 8px 15px; color: #94a3b8; font-weight: bold; display: flex; justify-content: space-between; font-family: "Consolas", monospace; font-size: 12px; border-bottom: 1px solid #334155;}
+.bf-terminal { padding: 15px; height: 250px; overflow-y: auto; color: #cbd5e1; font-family: "Consolas", monospace; font-size: 12px; line-height: 1.4; background: #000000; }
+.bf-cmd-line { padding: 10px 15px; background: #050505; border-top: 1px solid #334155; display: flex; gap: 8px; align-items: center; }
+.prompt-user { color: #ef4444; font-weight: bold; font-family: "Consolas", monospace; font-size: 13px; }
+.prompt-dir { color: #3b82f6; font-weight: bold; font-family: "Consolas", monospace; font-size: 13px; margin-right: 5px;}
+.bf-cmd-line input { flex-grow: 1; background: transparent; border: none; color: #f8fafc; font-family: "Consolas", monospace; font-size: 13px; outline: none; caret-color: #f8fafc; }
+.btn-attack { background: #1e293b; color: white; border: 1px solid #475569; padding: 6px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 11px; transition: 0.2s;}
+.btn-attack:hover { background: #334155; border-color: #64748b;}
+.btn-success-override { background: #10b981; border-color: #059669; color: #000; }
+.btn-success-override:hover { background: #059669; color: #fff;}
 
 /* 3. KASA (Başarı) */
 .vault-panel { background: #0f172a; padding: 50px 30px; border-radius: 12px; color: white; text-align: center; border: 2px solid #10b981; box-shadow: 0 0 40px rgba(16, 185, 129, 0.2);}
@@ -677,25 +724,26 @@ code.highlight { background: #000; color: #f59e0b; padding: 3px 6px; border-radi
 .flow-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 14px; color: #0f172a; }
 .step-red { background: #ef4444; color: #fff; }
 .step-yellow { background: #fbbf24; }
+.step-blue { background: #38bdf8; color: #fff; }
 .step-title-text { font-size: 16px; display: block; margin-bottom: 5px; }
 .red-text { color: #ef4444; }
 .yellow-text { color: #fbbf24; }
+.blue-text { color: #38bdf8; }
 .step-desc-text { margin: 0; font-size: 14px; color: #94a3b8; line-height: 1.6; }
+.code-yellow { color: #f59e0b; background: #000; padding: 2px 4px; border-radius: 4px; font-family: monospace;}
 .solution-box { background: rgba(16, 185, 129, 0.05); padding: 20px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3); margin-top: 35px; border-left: 4px solid #10b981; }
 .solution-title { color: #10b981; font-size: 16px; display: block; margin-bottom: 10px; }
 .solution-desc { margin: 0; font-size: 14px; line-height: 1.7; color: #cbd5e1; }
 
 /* Butonlar & Aksiyonlar */
-.action-footer { margin-top: 30px; display: flex; justify-content: flex-end; }
-.action-footer.space-between { justify-content: space-between; }
-button { font-family: inherit; }
+.action-footer { margin-top: 30px; display: flex; }
 .btn-primary { background: #f59e0b; color: #0f172a; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; }
 .btn-primary:hover { background: #d97706; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4); }
 .btn-secondary { background: #334155; color: #f8fafc; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
 .btn-secondary:hover { background: #475569; }
 .btn-success { background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; width: auto;}
 .btn-success:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4); }
-.btn-warning { background: #f59e0b; color: #0f172a; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; }
+.btn-warning { background: #f59e0b; color: #0f172a; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; }
 .btn-warning:hover:not(:disabled) { background: #d97706; transform: translateY(-2px); }
 .btn-warning:disabled { opacity: 0.7; cursor: not-allowed; }
 

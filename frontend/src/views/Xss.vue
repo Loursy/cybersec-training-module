@@ -4,7 +4,7 @@
 
     <div class="container">
       <button class="lang-btn" @click="toggleLanguage">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         {{ currentLang === 'tr' ? 'EN' : 'TR' }}
       </button>
 
@@ -25,9 +25,9 @@
           <div class="question" v-for="(q, index) in [1, 2, 3]" :key="'pre'+index">
             <p><b v-html="currentText[`qPre${q}`]"></b></p>
             <div class="options">
-              <label v-for="opt in ['a', 'b', 'c']" :key="opt" :class="getLabelClass('pre', `q${q}`, opt)">
+              <label v-for="opt in ['a', 'b', 'c', 'd']" :key="opt" :class="getLabelClass('pre', `q${q}`, opt)">
                 <input type="radio" v-model="answers[`preQ${q}`]" :value="opt" :disabled="isReviewMode" /> 
-                <span>{{ currentText[`optPre${q}_${opt === 'a' ? 1 : opt === 'b' ? 2 : 3}`] }}</span>
+                <span>{{ currentText[`optPre${q}_${opt === 'a' ? 1 : opt === 'b' ? 2 : opt === 'c' ? 3 : 4}`] }}</span>
               </label>
             </div>
           </div>
@@ -162,29 +162,29 @@
                 </div>
               </div>
 
-              <div class="admin-panel fade-in" v-if="activeWindow === 'admin'">
+              <div class="admin-panel admin-panel-success fade-in" v-if="activeWindow === 'admin'">
                 <div class="admin-panel-header">
                   <span class="blinking-dot"></span> {{ currentText.adminTitle }}
                 </div>
                 <div class="admin-panel-body">
-                  <p class="admin-desc">{{ currentText.adminDesc }}</p>
+                  <p class="admin-desc-txt">{{ currentText.adminDesc }}</p>
                   
                   <div class="admin-grid">
                     <div class="admin-card">
-                      <h4>💳 {{ currentText.adminData1 }}</h4>
+                      <h4 style="color: #f8fafc; margin-top: 0; margin-bottom: 10px;">💳 {{ currentText.adminData1 }}</h4>
                       <code>4312-XXXX-XXXX-9912 (L: $50K)</code>
                       <code>5500-XXXX-XXXX-1102 (L: $15K)</code>
                       <code>4111-XXXX-XXXX-8822 (L: $90K)</code>
                     </div>
                     <div class="admin-card">
-                      <h4>📂 {{ currentText.adminData2 }}</h4>
+                      <h4 style="color: #f8fafc; margin-top: 0; margin-bottom: 10px;">📂 {{ currentText.adminData2 }}</h4>
                       <code>DB_USER: root_master</code>
                       <code>DB_PASS: P@ssw0rd2026!</code>
                       <code>API_KEY: ak_live_99x82z</code>
                     </div>
                   </div>
                   
-                  <div class="hacker-watermark">ACCESS GRANTED // SYSTEM COMPROMISED</div>
+                  <div class="hacker-watermark" style="text-align: center; margin-top: 20px; font-family: monospace; color: #ef4444; font-weight: bold; letter-spacing: 2px;">ACCESS GRANTED // SYSTEM COMPROMISED</div>
                 </div>
               </div>
 
@@ -205,33 +205,30 @@
           
           <div class="edu-card logic-box">
             <p class="edu-desc-txt">{{ currentText.trnDesc }}</p>
+            
+            <div style="margin-top: 20px; margin-bottom: 30px; text-align: center;">
+              
+            </div>
 
             <div class="flow-step">
               <div class="flow-num step-red">1</div>
               <div>
-                <b class="step-title-text red-text">{{ currentText.trnH1 }}</b>
-                <p class="step-desc-text" v-html="currentText.trnP1"></p>
+                <b class="step-heading red-text">{{ currentText.trnH1 }}</b>
+                <p class="step-info" v-html="currentText.trnP1"></p>
               </div>
             </div>
 
             <div class="flow-step">
               <div class="flow-num step-yellow">2</div>
               <div>
-                <b class="step-title-text yellow-text">{{ currentText.trnH2 }}</b>
-                <p class="step-desc-text" v-html="currentText.trnP2"></p>
+                <b class="step-heading yellow-text">{{ currentText.trnH2 }}</b>
+                <p class="step-info" v-html="currentText.trnP2"></p>
               </div>
-            </div>
-
-            <div style="margin: 25px 0; text-align: center;">
-               
             </div>
 
             <div class="solution-box">
-              <b class="solution-title">{{ currentText.trnH3 }}</b>
-              <p class="solution-desc" v-html="currentText.trnP3"></p>
-              <div style="margin-top: 20px; text-align: center;">
-                 
-              </div>
+              <b class="solution-title-text">{{ currentText.trnH3 }}</b>
+              <p class="solution-info" v-html="currentText.trnP3"></p>
             </div>
           </div>
 
@@ -249,9 +246,9 @@
           <div class="question" v-for="(q, index) in [1, 2, 3]" :key="'post'+index">
             <p><b v-html="currentText[`qPost${q}`]"></b></p>
             <div class="options">
-              <label v-for="opt in ['a', 'b', 'c']" :key="opt" :class="getLabelClass('post', `q${q}`, opt)">
+              <label v-for="opt in ['a', 'b', 'c', 'd']" :key="opt" :class="getLabelClass('post', `q${q}`, opt)">
                 <input type="radio" v-model="answers[`postQ${q}`]" :value="opt" :disabled="isReviewMode" /> 
-                <span>{{ currentText[`optPost${q}_${opt === 'a' ? 1 : opt === 'b' ? 2 : 3}`] }}</span>
+                <span>{{ currentText[`optPost${q}_${opt === 'a' ? 1 : opt === 'b' ? 2 : opt === 'c' ? 3 : 4}`] }}</span>
               </label>
             </div>
           </div>
@@ -305,7 +302,7 @@ const cookieInput = ref('');
 const adminCookie = "ADM-99482-SECRET";
 
 const answerKeys = {
-  pre: { q1: "b", q2: "c", q3: "a" },
+  pre: { q1: "b", q2: "c", q3: "b" },
   post: { q1: "b", q2: "c", q3: "a" },
 };
 
@@ -315,18 +312,25 @@ const translations = {
     alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nKarnenize yönlendiriliyorsunuz...`,
     modTitle: "Modül 4: Cross-Site Scripting (XSS)",
     preTitle: "Ön-Test",
-    qPre1: "1. Cross-Site Scripting (XSS) zafiyetinin temel çalışma mantığı aşağıdakilerden hangisidir?",
-    optPre1_1: "A) Kullanıcı girdilerinin işletim sistemi terminaline aktarılarak sunucunun ele geçirilmesi.",
-    optPre1_2: "B) Zararlı JavaScript kodlarının, diğer kullanıcıların tarayıcılarında çalışacak şekilde sisteme enjekte edilmesi.",
-    optPre1_3: "C) Ağ trafiğinin arasına girilerek sunucu ve istemci arasındaki iletişim paketlerinin değiştirilmesi.",
-    qPre2: "2. 'Reflected (Yansıyan)' ve 'Stored (Kalıcı)' XSS arasındaki en temel fark nedir?",
-    optPre2_1: "A) Reflected XSS sadece yönetici hesaplarını hedeflerken, Stored XSS standart hesapları hedefler.",
-    optPre2_2: "B) Reflected XSS veritabanını silerken, Stored XSS yalnızca arayüzü bozar.",
-    optPre2_3: "C) Reflected XSS bağlantı tıklandığında anlık çalışır, Stored XSS ise veritabanına kaydedilip sürekli tetiklenir.",
-    qPre3: "3. XSS zafiyetinin başarıyla sömürülmesi durumunda saldırganın ulaşabileceği en yaygın ve kritik sonuç nedir?",
-    optPre3_1: "A) Kurbanın oturum çerezlerinin (Session Cookies) çalınması ve hesabının yetkisiz ele geçirilmesi.",
-    optPre3_2: "B) Sunucudaki tabloların şifrelenerek fidye talebinde bulunulması.",
-    optPre3_3: "C) Sistemin aşırı yüklenmesi sonucu geçici olarak hizmet dışı (DDoS) kalması.",
+    
+    qPre1: "1. Cross-Site Scripting (XSS) zafiyeti nedir?",
+    optPre1_1: "A) Sunucu veritabanına yetkisiz erişim sağlanarak verilerin silinmesidir.",
+    optPre1_2: "B) Zararlı JavaScript kodlarının, hedef uygulamanın diğer kullanıcılarının tarayıcısında çalıştırılmasıdır.",
+    optPre1_3: "C) Ağ trafiğinin araya girilerek (Man-in-the-Middle) dinlenmesi işlemidir.",
+    optPre1_4: "D) İki farklı sitenin ağ trafiğinin dışarıdan çaprazlanması sonucu oluşan zafiyettir.",
+    
+    qPre2: "2. 'Stored (Kalıcı) XSS'in en tehlikeli özelliği nedir?",
+    optPre2_1: "A) Sadece sistem yöneticilerini (admin) hedef alması.",
+    optPre2_2: "B) Sadece oltaya düşüp özel olarak hazırlanmış zararlı linke tıklayan kişileri etkilemesi.",
+    optPre2_3: "C) Zararlı kodun veritabanına kaydedilip o sayfayı gezen HERKESİ otomatik olarak etkilemesi.",
+    optPre2_4: "D) Kurbanın bilgisayarına otomatik olarak zararlı bir .exe dosyası indirmesi.",
+    
+    qPre3: "3. XSS saldırılarını önlemek için alınması gereken EN TEMEL önlem hangisidir?",
+    optPre3_1: "A) Kullanıcıların sisteme sadece HTTPS (SSL) üzerinden bağlanmasını zorunlu kılmak.",
+    optPre3_2: "B) Kullanıcıdan alınan verileri ekrana basmadan önce HTML karakterlerinden arındırmak (Encoding/Escaping).",
+    optPre3_3: "C) Veritabanındaki tüm tabloları güçlü bir şifreleme algoritması ile korumak.",
+    optPre3_4: "D) Kullanıcıdan gelen tüm form verilerini Base64 formatına çevirerek veritabanına kaydetmek.",
+    
     btnPre: "Simülasyona Başla",
 
     simTitle: "Adım 2: Zafiyet Sömürüsü",
@@ -370,28 +374,39 @@ const translations = {
 
     btnToTrn: "GÖREVLER BAŞARILI - ANALİZE GEÇ",
     trnTitle: "Adım 3: Teknik Analiz - Sistem Nasıl Çöktü?",
-    trnDesc: "Arama çubuğuna yazdığın basit bir metin, nasıl oldu da bir kod parçası gibi çalıştırılıp sistemi ele geçirdi? İşte Front-end geliştiricisinin yaptığı ölümcül hatalar:",
-    trnH1: "Ölümcül Hata: innerHTML Kullanımı",
-    trnP1: "Geliştirici, URL'deki arama terimini alıp web sayfasına yazdırırken tehlikeli olan <code class='code-red'>innerHTML</code> fonksiyonunu kullandı. Bu fonksiyon, gelen metnin içindeki her şeyi saf HTML komutu olarak kabul eder.",
-    trnH2: "Oltalama ve Tarayıcının Kandırılması",
-    trnP2: "Admin senin gönderdiğin (kendi şirketinin) zararlı linkine tıkladığında, tarayıcısı sayfayı açarken URL'deki <code class='code-red'>&lt;img src=\"x\" onerror=\"...\"&gt;</code> kodunu da DOM'a bastı. Tarayıcı bunu gerçek resim sandı. Bulamayınca <code class='code-red'>onerror</code> olayını tetikledi ve kodu çalıştırıp çerezi senin sunucuna fırlattı.",
-    trnH3: "🛡️ Kesin Çözüm: Output Encoding ve HttpOnly Çerezler",
-    trnP3: "XSS'i önlemenin tek yolu, kullanıcıdan alınan metinleri ekrana basmadan önce <b>Kodlamaktır (Output Encoding)</b>. Yani <code class='code-green'>&lt;</code> işaretini <code class='code-green'>&amp;lt;</code> formatına çevirmektir. Modern JS'de <code class='code-red'>innerHTML</code> yerine <code class='code-green'>textContent</code> kullanılmalıdır.<br><br>Ayrıca oturum çerezleri oluşturulurken mutlaka <code class='code-green'>HttpOnly</code> bayrağı eklenmelidir. Bu bayrak, çerezlerin JavaScript tarafından okunmasını tamamen engeller!",
+    trnDesc: "Cross-Site Scripting (XSS), bir web sitesinin arama kutusu veya yorum alanı gibi yerlerine normal bir metin yerine, tarayıcıyı kandıracak 'zararlı bir kod' yazılmasıdır.",
+    
+    trnH1: "1. O Kutuya Ne Yazdık?",
+    trnP1: "Arama kutusuna yazdığımız <code class='code-red'>&lt;img src=\"x\" onerror=\"steal()\"&gt;</code> kodu aslında masum bir resim ekleme komutudur. Ancak içinde kurnazca bir tuzak barındırır: <b>onerror</b>. Bu komut tarayıcıya <i>'Eğer x adında bir resim bulamazsan, panik yap ve şu JavaScript fonksiyonunu çalıştır'</i> der. Tarayıcı resmi bulamayınca tam da istediğimiz gibi o zararlı kodu çalıştırır.",
+    
+    trnH2: "2. Tarayıcının Kandırılması (İhanet)",
+    trnP2: "Yönetici senin gönderdiğin o zehirli linke tıkladığında, tarayıcısı sayfayı açarken bu kodu ekrana basar. Tarayıcı bu kodun 'kötü niyetli birinden' mi yoksa 'kendi güvendiği web sitesinden' mi geldiğini ayırt edemez. Kodu kendi sitesinin bir parçası sanıp çalıştırır ve yöneticinin dijital kimliğini (Çerezini) gizlice sana gönderir.",
+    
+    trnH3: "🛡️ Kesin Çözüm: Kodlama ve Koruma",
+    trnP3: "XSS'i önlemenin kuralı şudur: Kullanıcıdan gelen hiçbir veriye <b>GÜVENME!</b> Gelen metinler ekrana basılmadan önce tehlikeli karakterler (&lt;, &gt;) zararsız metinlere çevrilmelidir (Output Encoding). Ayrıca, kullanıcının dijital kimliğini taşıyan çerezlere mutlaka <b>HttpOnly</b> kilidi takılarak, bu çerezlerin JavaScript kodları tarafından okunması tamamen engellenmelidir.",
+    
     btnToPost: "Tüm Detayları Anladım -> Son Teste Geç",
 
     postTitle: "Son-Test",
+    
     qPost1: "1. Simülasyonda admin'e gönderdiğimiz <code>&lt;img src=\"x\" onerror=\"...\"&gt;</code> payload'u JavaScript'i nasıl tetiklemektedir?",
     optPost1_1: "A) Zararlı JavaScript kodu 'src' özelliği içerisine gizlenerek güvenlik duvarını atlatır.",
     optPost1_2: "B) Tarayıcı geçersiz bir resim yüklemeye çalışıp hata aldığında 'onerror' içindeki JS kodunu çalıştırır.",
     optPost1_3: "C) HTML5 uyumlu olmayan etiketler veritabanına kaydedilirken otomatik olarak JavaScript'e dönüştürülür.",
+    optPost1_4: "D) Görsel dosyaları sunucuda doğrudan çalıştırılabilir betiklere dönüştürüldüğü için.",
+    
     qPost2: "2. XSS zafiyetini kod seviyesinde önlemek için en etkili Front-end yöntemi aşağıdakilerden hangisidir?",
     optPost2_1: "A) Kullanıcıdan alınan verileri şifrelemek (Encryption) ve tarayıcıda bu şekilde saklamak.",
     optPost2_2: "B) Sadece yönetici yetkisine sahip kullanıcıların HTML formatında veri girmesine izin vermek.",
     optPost2_3: "C) Verileri DOM'a eklerken 'innerHTML' yerine güvenli olan 'textContent' metodunu kullanmak.",
+    optPost2_4: "D) Tüm HTML etiketlerini veritabanı aşamasında Base64 kodlamasıyla geri döndürülemez şekilde hashlemek.",
+    
     qPost3: "3. XSS saldırganının tarayıcıdaki çerezleri okuyarak hesabı çalmasını engelleyen güvenlik mekanizması nedir?",
     optPost3_1: "A) Çerezlere 'HttpOnly' bayrağı (flag) ekleyerek JavaScript erişimine kapatmak.",
     optPost3_2: "B) Çerezleri veritabanında 'SHA-256' algoritması ile hashlemek.",
     optPost3_3: "C) Kullanıcı her giriş yaptığında çerezin süresini (Expiration Date) uzatmak.",
+    optPost3_4: "D) Sunucu yapılandırmasında HTTPS protokolü yerine HTTP kullanarak veri transferlerini karmaşıklaştırmak.",
+    
     btnPost: "Eğitimi Bitir",
   },
   en: {
@@ -399,18 +414,25 @@ const translations = {
     alertResult: (pre, post) => `Congratulations!\nPre-Test: ${pre}%\nPost-Test: ${post}%\n\nRedirecting to stats...`,
     modTitle: "Module 4: Cross-Site Scripting (XSS)",
     preTitle: "Pre-Test",
-    qPre1: "1. What is the fundamental mechanism of a Cross-Site Scripting (XSS) vulnerability?",
-    optPre1_1: "A) Transferring user inputs to the operating system terminal to take over the server.",
+    
+    qPre1: "1. What is a Cross-Site Scripting (XSS) vulnerability?",
+    optPre1_1: "A) Unauthorized access to the server database to delete data.",
     optPre1_2: "B) Injecting malicious JavaScript codes into the system to be executed in other users' browsers.",
-    optPre1_3: "C) Intercepting network traffic to modify communication packets between server and client.",
-    qPre2: "2. What is the primary difference between 'Reflected' and 'Stored' XSS?",
-    optPre2_1: "A) Reflected XSS targets only admin accounts, while Stored XSS targets standard user accounts.",
-    optPre2_2: "B) Reflected XSS deletes the background database, while Stored XSS only corrupts the web interface.",
-    optPre2_3: "C) Reflected executes instantly when a link is clicked, Stored is saved in DB and triggers repeatedly.",
-    qPre3: "3. What is the most common and critical outcome if an XSS vulnerability is successfully exploited?",
-    optPre3_1: "A) Stealing the victim's Session Cookies and unauthorizedly taking over their account.",
-    optPre3_2: "B) Encrypting database tables on the server to demand a Ransomware payment.",
-    optPre3_3: "C) Causing a temporary Denial of Service (DDoS) by overloading the system.",
+    optPre1_3: "C) Intercepting network traffic (Man-in-the-Middle) to listen to communications.",
+    optPre1_4: "D) A vulnerability resulting from externally cross-referencing the network traffic of two different sites.",
+    
+    qPre2: "2. What is the most dangerous characteristic of 'Stored' XSS?",
+    optPre2_1: "A) It only targets system administrators.",
+    optPre2_2: "B) It only affects users who specifically click on a crafted malicious link.",
+    optPre2_3: "C) The malicious code is saved to the database and automatically affects EVERYONE who visits that page.",
+    optPre2_4: "D) It automatically downloads a malicious .exe file to the victim's computer.",
+    
+    qPre3: "3. What is the MOST FUNDAMENTAL measure to prevent XSS attacks?",
+    optPre3_1: "A) Forcing users to connect to the system only via HTTPS (SSL).",
+    optPre3_2: "B) Stripping HTML characters (Encoding/Escaping) from user-supplied data before rendering it.",
+    optPre3_3: "C) Protecting all tables in the database with a strong encryption algorithm.",
+    optPre3_4: "D) Converting all form data from the user into Base64 format before saving it to the database.",
+    
     btnPre: "Start Simulation",
 
     simTitle: "Step 2: Exploit Simulation",
@@ -454,28 +476,39 @@ const translations = {
 
     btnToTrn: "MISSIONS SUCCESSFUL - GO TO ANALYSIS",
     trnTitle: "Step 3: Technical Analysis - How the System Crashed?",
-    trnDesc: "How did a simple text typed into a search bar act like a piece of code and hijack the system? Here are the fatal flaws:",
-    trnH1: "Fatal Flaw: Using innerHTML",
-    trnP1: "When rendering the search term from the URL to the web page, the developer used the dangerous <code class='code-red'>innerHTML</code> function. This function interprets everything inside the incoming text as raw HTML commands.",
-    trnH2: "Phishing and Fooling the Browser",
-    trnP2: "When the Admin clicked your malicious link, their browser embedded the <code class='code-red'>&lt;img src=\"x\" onerror=\"...\"&gt;</code> code into the DOM. The browser saw this as a real image. Since it couldn't find image 'x', it triggered the <code class='code-red'>onerror</code> event, executed the code, and hurled the cookie to your server.",
-    trnH3: "🛡️ Ultimate Solution: Output Encoding and HttpOnly",
-    trnP3: "The only way to prevent XSS is to <b>Encode</b> user inputs before rendering them. In modern JS, <code class='code-green'>textContent</code> should be used instead of <code class='code-red'>innerHTML</code>.<br><br>Furthermore, when creating session cookies, the <code class='code-green'>HttpOnly</code> flag must be added. This flag completely blocks JavaScript from reading the cookies!",
+    trnDesc: "Cross-Site Scripting (XSS) is a vulnerability where, instead of normal text, a 'malicious code' designed to trick the browser is entered into places like search boxes or comment sections.",
+    
+    trnH1: "1. What Exactly Did We Write?",
+    trnP1: "The code <code class='code-red'>&lt;img src=\"x\" onerror=\"steal()\"&gt;</code> we typed into the search box is actually an innocent HTML code to insert an image. However, it contains a cunning trap: <b>onerror</b>. This tells the browser, <i>'If you can't find an image named x, panic and execute this JavaScript function!'</i>. When the browser fails to find the image, it executes our malicious JavaScript code just as we intended.",
+    
+    trnH2: "2. Fooling the Browser (Betrayal)",
+    trnP2: "When the Admin clicks the poisoned link you sent, their browser renders this code on the screen. The browser cannot tell if this code came from a 'malicious attacker' or the 'trusted website' itself. It assumes the code is part of the website, executes it, and silently sends the Admin's digital identity (Cookie) to you.",
+    
+    trnH3: "🛡️ Ultimate Solution: Encoding and Protection",
+    trnP3: "The golden rule to prevent XSS is: <b>NEVER TRUST</b> user input! Before displaying incoming text on the screen, dangerous characters (&lt;, &gt;) must be converted into harmless text (Output Encoding). Furthermore, a lock called <b>HttpOnly</b> must be attached to cookies, completely preventing JavaScript from accessing these sensitive digital identities.",
+    
     btnToPost: "I Understood the Details -> Go to Post-Test",
 
     postTitle: "Post-Test",
+    
     qPost1: "1. How does the <code>&lt;img src=\"x\" onerror=\"...\"&gt;</code> payload sent to the admin trigger JavaScript?",
     optPost1_1: "A) The malicious JS code is hidden within the 'src' attribute to bypass the firewall.",
     optPost1_2: "B) When the browser tries to load an invalid image and fails, it executes the JS code inside 'onerror'.",
     optPost1_3: "C) Non-HTML5 compliant tags are automatically converted to JavaScript when saved to the database.",
+    optPost1_4: "D) Because image files are directly converted into executable scripts on the server.",
+    
     qPost2: "2. Which of the following is the most effective Front-end method to prevent XSS vulnerabilities?",
     optPost2_1: "A) Encrypting the data received from the user and storing it that way in the browser.",
     optPost2_2: "B) Allowing only users with administrator privileges to input data in HTML format.",
     optPost2_3: "C) Using the secure 'textContent' method instead of 'innerHTML' when appending data to the DOM.",
+    optPost2_4: "D) Irreversibly hashing all HTML tags with Base64 encoding at the database level.",
+    
     qPost3: "3. What is the security mechanism that prevents an XSS attacker from reading session cookies (Session Hijacking)?",
     optPost3_1: "A) Adding the 'HttpOnly' flag to cookies to close them off to JavaScript access.",
     optPost3_2: "B) Irreversibly hashing the cookies in the database using the 'SHA-256' algorithm.",
     optPost3_3: "C) Extending the cookie's Expiration Date every time the user logs in.",
+    optPost3_4: "D) Obfuscating data transfers by using the HTTP protocol instead of HTTPS in server configuration.",
+    
     btnPost: "Finish Training",
   }
 };
@@ -643,6 +676,10 @@ const finishPostTest = async () => {
 .options label { display: block; margin: 10px 0; cursor: pointer; color: #94a3b8; transition: all 0.2s; padding: 12px 15px; border-radius: 8px; border: 1px solid #334155; background: #0b1120; }
 .options label:hover:not(.correct-answer):not(.wrong-answer) { border-color: #00e5ff; background: rgba(0, 229, 255, 0.05); color: #f8fafc; }
 
+/* İnceleme Modu Renkleri */
+.correct-answer { background: rgba(16, 185, 129, 0.1) !important; border-color: #10b981 !important; color: #10b981 !important; font-weight: bold; }
+.wrong-answer { background: rgba(239, 68, 68, 0.1) !important; border-color: #ef4444 !important; color: #ef4444 !important; text-decoration: line-through; }
+
 /* Simülasyon Düzeni */
 .mission-layout { display: grid; grid-template-columns: 350px 1fr; gap: 25px; margin-top: 20px; }
 .guide-panel { background: rgba(30, 41, 59, 0.4); padding: 25px; border-radius: 12px; border: 1px solid #334155; display: flex; flex-direction: column; }
@@ -688,21 +725,28 @@ code.highlight { background: #000; color: #f59e0b; padding: 2px 5px; border-radi
 .mail-link { display: inline-block; background: #2563eb; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; margin: 15px 0; font-weight: bold; cursor: pointer; border: none; font-family:monospace; font-size:12px; }
 .mail-link:hover { background: #1d4ed8; }
 
-/* 3. HACKER & DEVTOOLS */
+/* 3. HACKER & DEVTOOLS (DÜZELTİLEN KISIM) */
 .exploit-window { display: flex; flex-direction: column; gap: 15px; animation: fadeIn 0.5s; }
 .hacker-terminal { background: #050505; border-radius: 12px; border: 1px solid #334155; overflow: hidden; height: 180px; display: flex; flex-direction: column; }
 .term-header { background: #1e293b; padding: 8px 15px; font-size: 11px; color: #f59e0b; font-weight: bold; border-bottom: 1px solid #000; display: flex; justify-content: space-between; }
 .term-body { padding: 15px; flex-grow: 1; overflow-y: auto; color: #22c55e; font-family: "Consolas", monospace; font-size: 13px; line-height: 1.5; }
 
-.devtools-window { background: #1e293b; border-radius: 12px; border: 1px solid #475569; overflow: hidden; margin-top: 15px; animation: fadeIn 0.5s; }
-.dev-header { background: #0f172a; padding: 10px 15px; color: #cbd5e1; font-size: 13px; font-family: monospace; border-bottom: 1px solid #334155; display: flex; gap: 15px; }
-.dev-tab { color: #94a3b8; cursor: pointer; }
-.dev-tab.active { color: #00e5ff; border-bottom: 2px solid #00e5ff; padding-bottom: 5px;}
-.dev-body { padding: 20px; }
-.dev-table { width: 100%; color: #cbd5e1; font-size: 12px; text-align: left; }
-.dev-input { width: 100%; background: transparent; border: 1px solid #00e5ff; color: #00e5ff; padding: 8px; outline: none; font-family: monospace; border-radius:4px;}
-.btn-inject { background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; padding: 12px; border-radius: 6px; width: 100%; font-weight: bold; margin-top: 15px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 15px rgba(16,185,129,0.3);}
-.btn-inject:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(16,185,129,0.6); }
+.devtools-window { background: #1e293b; border-radius: 12px; border: 1px solid #475569; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.4); animation: fadeIn 0.5s; }
+.dev-header { background: #0f172a; padding: 12px 20px; color: #cbd5e1; font-size: 13px; font-family: monospace; border-bottom: 1px solid #334155; display: flex; gap: 20px; }
+.dev-tab { color: #64748b; cursor: pointer; transition: 0.2s; }
+.dev-tab:hover { color: #94a3b8; }
+.dev-tab.active { color: #00e5ff; border-bottom: 2px solid #00e5ff; padding-bottom: 5px; font-weight: bold; }
+.dev-body { padding: 20px; background: #0b1120; }
+
+.dev-table { width: 100%; color: #cbd5e1; font-size: 13px; text-align: left; border-collapse: collapse; margin-top: 10px; }
+.dev-table th { padding: 10px 12px; border-bottom: 2px solid #334155; color: #94a3b8; font-weight: normal; }
+.dev-table td { padding: 12px; border-bottom: 1px solid #1e293b; vertical-align: middle; }
+
+.dev-input { width: 100%; background: rgba(0, 229, 255, 0.05); border: 1px solid #00e5ff; color: #00e5ff; padding: 10px; outline: none; font-family: monospace; border-radius: 6px; box-sizing: border-box; box-shadow: inset 0 0 10px rgba(0, 229, 255, 0.1); }
+.dev-input:focus { background: rgba(0, 229, 255, 0.15); }
+
+.btn-inject { background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; padding: 12px; border-radius: 6px; width: 100%; font-weight: bold; margin-top: 20px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 5px 15px rgba(16,185,129,0.3); transition: 0.3s; }
+.btn-inject:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,0.5); }
 
 /* Admin Panel */
 .admin-panel-success { background: #050505; padding: 30px; border-radius: 12px; border: 2px solid #ef4444; box-shadow: 0 0 30px rgba(239, 68, 68, 0.2); animation: fadeIn 1s;}

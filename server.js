@@ -307,10 +307,18 @@ app.post("/api/vuln/cmd/ping", authenticateToken, (req, res) => {
   if (ip.includes(";") || ip.includes("&&") || ip.includes("|")) {
     let output = `PING ${ip.split(/[;&|]/)[0].trim()} (192.168.1.1): 56 data bytes\n64 bytes from 192.168.1.1: icmp_seq=0 ttl=64 time=0.042 ms\n\n`;
 
-    if (ip.toLowerCase().includes("cat")) {
+    // 1. SIKI KONTROL: Sadece TAM OLARAK "cat /etc/passwd" yazılırsa şifreleri ver!
+    if (ip.toLowerCase().includes("cat /etc/passwd")) {
       output += `root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\nadmin:x:1000:1000:Admin,,,:/home/admin:/bin/bash\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin`;
       return res.json({ success: true, isHacked: true, output: output });
     }
+    // 2. GERÇEKÇİ HATA: Eğer "cat" yazıp yanlış bir dosya adı (passqd vb.) girerse Linux hatası ver!
+    else if (ip.toLowerCase().includes("cat ")) {
+      const fakeFile = ip.split("cat")[1].trim();
+      output += `cat: ${fakeFile}: No such file or directory`;
+      return res.json({ success: true, isHacked: false, output: output });
+    }
+
     if (ip.toLowerCase().includes("ls")) {
       output += `index.html\nserver.js\ndatabase.sqlite\npackage.json\nsecret_keys.txt`;
       return res.json({ success: true, isHacked: true, output: output });
@@ -321,7 +329,7 @@ app.post("/api/vuln/cmd/ping", authenticateToken, (req, res) => {
     }
 
     output += `sh: command not found`;
-    return res.json({ success: true, isHacked: true, output: output });
+    return res.json({ success: true, isHacked: false, output: output });
   }
 
   const normalOutput = `PING ${ip} (${ip}): 56 data bytes\n64 bytes from ${ip}: icmp_seq=0 ttl=64 time=0.045 ms\n64 bytes from ${ip}: icmp_seq=1 ttl=64 time=0.048 ms\n64 bytes from ${ip}: icmp_seq=2 ttl=64 time=0.041 ms\n\n--- ${ip} ping statistics ---\n3 packets transmitted, 3 packets received, 0.0% packet loss`;
