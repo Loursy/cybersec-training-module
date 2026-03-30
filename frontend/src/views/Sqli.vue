@@ -4,7 +4,7 @@
 
     <div class="container">
       <button class="lang-btn" @click="toggleLanguage">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         {{ currentLang === 'tr' ? 'EN' : 'TR' }}
       </button>
 
@@ -66,12 +66,11 @@
               <div class="simulation-box" :class="{'system-hacked': exploitStatus === 'success'}">
                 <div class="sim-header">
                   <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-                  <span style="margin-left: 10px; font-family: monospace; color: #94a3b8;">portal.globalcorp.local</span>
+                  <span style="margin-left: 10px; font-family: monospace; color: #94a3b8;">admin.globalcorp.local</span>
                 </div>
 
                 <div class="hacking-overlay" v-if="exploitStatus === 'hacking'">
                   <div class="hack-spinner"></div>
-                  <p>{{ currentLang === 'tr' ? 'Veritabanı sorgusu enjekte ediliyor...' : 'Injecting database query...' }}</p>
                   <p class="blink-text">{{ currentLang === 'tr' ? 'Kimlik doğrulama atlatılıyor...' : 'Bypassing authentication...' }}</p>
                 </div>
 
@@ -106,12 +105,12 @@
                   <h3>{{ currentText.simPanelTitle }}</h3>
                   
                   <div class="input-group">
-                    <label>{{ currentLang === 'tr' ? 'E-posta Adresi' : 'Email Address' }}</label>
+                    <label>E-posta / Kullanıcı Adı</label>
                     <input type="text" v-model="simEmail" class="sim-input" :placeholder="currentText.emailPlaceholder" autocomplete="off" />
                   </div>
                   
                   <div class="input-group">
-                    <label>{{ currentLang === 'tr' ? 'Şifre' : 'Password' }}</label>
+                    <label>Şifre</label>
                     <input type="password" v-model="simPass" class="sim-input" :placeholder="currentText.passPlaceholder" />
                   </div>
 
@@ -125,8 +124,7 @@
                 </div>
               </div>
 
-              <div class="action-footer space-between" style="margin-top: 25px;">
-                <button class="btn-secondary" @click="currentStep = 1">Önceki</button>
+              <div class="action-footer" style="margin-top: 25px;">
                 <button class="btn-success" @click="currentStep = 3" v-if="exploitStatus === 'success' || isReviewMode">
                   {{ currentText.btnNext2 }}
                 </button>
@@ -175,8 +173,7 @@
 
           </div>
 
-          <div class="action-footer space-between">
-            <button class="btn-secondary" @click="currentStep = 2">Önceki</button>
+          <div class="action-footer">
             <button class="btn-primary" @click="currentStep = 4">{{ currentText.btnNext3 }}</button>
           </div>
         </div>
@@ -197,8 +194,7 @@
             </div>
           </div>
 
-          <div class="action-footer space-between">
-            <button class="btn-secondary" @click="currentStep = 3">Önceki</button>
+          <div class="action-footer">
             <button class="btn-warning" @click="finishPostTest" :disabled="isSaving">
               <span v-if="isSaving" class="spinner-small"></span>
               {{ isReviewMode ? (currentLang === 'tr' ? 'İncelemeyi Bitir ve Dön' : 'Finish Review & Return') : (isSaving ? (currentLang === 'tr' ? 'Kaydediliyor...' : 'Saving...') : currentText.btnFinish) }}
@@ -267,11 +263,15 @@ const translations = {
 
     s2Title: "Adım 2: Zafiyet Simülasyonu",
     gTitle: "OPERASYON BRİFİNGİ",
-    s2Summary: "Normal bir sisteme şifre bilmeden girmek imkansızdır. Ancak bu modülde e-posta kutusuna sıradan bir yazı yerine bir 'SQL komutu' yazarak veritabanını manipüle edeceğiz.",
-    s2Desc: "<b>Durum Analizi:</b><br>Karşımızda standart bir kullanıcı giriş paneli var ve hiçbir şifre bilmiyoruz. Geliştirici, kullanıcıdan aldığı e-posta verisini kontrol etmeden doğrudan veritabanı sorgusuna dahil etmiş. <br><br><b>Arka Plandaki Tehlikeli Kod:</b><br>Sistem giriş yaparken veritabanına şu soruyu soruyor:<br><code style='background:#000; color:#cbd5e1; padding:4px 8px; border-radius:4px; display:inline-block; font-size:12px;'>SELECT * FROM users WHERE email='<span style=\"color:#ef4444\">[SENİN_YAZDIĞIN]</span>' AND password='...'</code><br><br><b>Saldırı Planı (Payload):</b><br>Biz e-posta kutusuna sıradan bir metin yerine, veritabanının doğrudan çalıştıracağı bir <b>SQL komutu</b> yazacağız. Aşağıdaki giriş paneline inin ve E-posta kısmına bu SQL komutunu yazın:<br><code class='glitch-payload' style='font-size:16px; margin: 10px 0; display:inline-block;'>' OR 1=1 --</code><br><br><b>Bu SQL Komutu Ne Yapacak?</b><br>1. <b style='color: #38bdf8;'>' (Tek Tırnak):</b> Geliştiricinin yazdığı e-posta sorgusunu erken kapatır.<br>2. <b style='color: #f59e0b;'>OR 1=1:</b> 'Veya 1=1' diyerek sorguya her zaman DOĞRU (True) kabul edilecek bir kural ekler.<br>3. <b style='color: #ef4444;'>-- (İki Tire):</b> SQL dilinde yorum satırı demektir. Sorgunun geri kalanını (şifre sorma kısmını) tamamen çöpe atar.",
+    s2Summary: "Amacımız şifreyi bilmeden, veritabanını kandırarak aşağıdaki yönetici paneline sızmak.",
+    s2Desc: "<b>Durum Analizi:</b><br>Normalde bir sistem giriş yaparken arka planda şu kuralı işletir: <br><i>'Eğer Kullanıcı Adı doğruysa <b>VE</b> Şifre doğruysa içeri al.'</i><br><br><b>Saldırı Planı:</b><br>Biz e-posta kutusuna öyle sihirli bir kelime yazacağız ki, sistem şifreyi kontrol etmeyi tamamen unutacak! Siber güvenlikte hedefe gönderilen bu zararlı metinlere <b>'Payload' (Saldırı Yükü)</b> denir.<br><br>Aşağıdaki panelde E-posta kısmına bu payload'u yazarak giriş yapın:<br><code class='glitch-payload' style='font-size:18px; margin: 15px 0; display:inline-block;'>' OR 1=1 --</code>",
+    infoTitle: "Nasıl Çalıştı?",
+    expl1: "Sistemin e-posta sorusunu erken bitirir.",
+    expl2: "Sisteme 'Veya 1=1' diyerek her zaman DOĞRU (True) olan bir kural ekler.",
+    expl3: "Sorgunun geri kalanını (Şifre kontrolünü) tamamen çöpe atar!",
     
-    simPanelTitle: "KULLANICI GİRİŞİ",
-    emailPlaceholder: "E-posta (SQL komutunu buraya yazın)",
+    simPanelTitle: "YÖNETİCİ GİRİŞİ",
+    emailPlaceholder: "E-posta (Payload'u buraya yazın)",
     passPlaceholder: "Şifre (Boş bırakın veya sallayın)",
     btnHack: "Giriş Yap",
     btnNext2: "Saldırıyı Analiz Et (Eğitime Geç)",
@@ -305,8 +305,8 @@ const translations = {
     postQ3d: "D) Sadece yöneticilere yetki vererek",
     btnFinish: "Modülü Tamamla",
 
-    msgSuccess: "VERİTABANI DÖKÜMÜ BAŞARILI! Şifre kontrolü atlatıldı.",
-    msgFail: "Erişim Reddedildi! E-posta veya şifre hatalı.",
+    msgSuccess: "SYSTEM OVERRIDE: VERİTABANI DÖKÜMÜ BAŞARILI",
+    msgFail: "Erişim Reddedildi! Geçersiz E-posta veya Şifre.",
     tblEmail: "E-Posta Adresi",
     tblPass: "Şifre (Hash)",
     tblSecret: "Gizli Departman Verisi",
@@ -335,12 +335,16 @@ const translations = {
     btnNext1: "Finish Test & Go to Simulation",
 
     s2Title: "Step 2: Vulnerability Simulation",
-    s2Summary: "It is impossible to enter a normal system without knowing the password. However, in this module, we will manipulate the database by writing an 'SQL command' into the email box instead of plain text.",
+    s2Summary: "Our goal is to bypass the admin login panel. We will trick the database to get in without knowing the password.",
     gTitle: "MISSION BRIEFING",
-    s2Desc: "<b>Situation Analysis:</b><br>We have a standard user login panel and no passwords. The developer has directly included the email input into the database query without validation.<br><br><b>The Dangerous Background Code:</b><br>The system asks the database this question:<br><code style='background:#000; color:#cbd5e1; padding:4px 8px; border-radius:4px; display:inline-block; font-size:12px;'>SELECT * FROM users WHERE email='<span style=\"color:#ef4444\">[YOUR_INPUT]</span>' AND password='...'</code><br><br><b>Attack Plan (Payload):</b><br>Instead of a normal text, we will write an <b>SQL command</b> into the email box. Go to the login panel below and inject this SQL command:<br><code class='glitch-payload' style='font-size:16px; margin: 10px 0; display:inline-block;'>' OR 1=1 --</code><br><br><b>What will this SQL command do?</b><br>1. <b style='color: #38bdf8;'>' (Single Quote):</b> Closes the email query prematurely.<br>2. <b style='color: #f59e0b;'>OR 1=1:</b> Adds a mathematical truth that is always TRUE.<br>3. <b style='color: #ef4444;'>-- (Double Dash):</b> Comments out and entirely trashes the rest of the query (the password check).",
+    s2Desc: "<b>Situation Analysis:</b><br>Normally, a system evaluates this rule: <br><i>'If Email is TRUE <b>AND</b> Password is TRUE, grant access.'</i><br><br><b>Attack Plan:</b><br>We will type a magic word into the email box so the system completely forgets to check the password! These malicious texts are called <b>'Payloads'</b>.<br><br>Go to the admin panel below and inject this payload into the Email field:<br><code class='glitch-payload' style='font-size:18px; margin: 15px 0; display:inline-block;'>' OR 1=1 --</code>",
+    infoTitle: "How does it work?",
+    expl1: "Prematurely closes the email query.",
+    expl2: "Adds a mathematical truth (Or 1=1) that is always TRUE.",
+    expl3: "Comments out and entirely cancels the rest of the query (password check).",
     
     simPanelTitle: "USER LOGIN",
-    emailPlaceholder: "Email (Type SQL command here)",
+    emailPlaceholder: "Email (Type payload here)",
     passPlaceholder: "Password (Type anything)",
     btnHack: "Log In",
     btnNext2: "Analyze Attack",
@@ -374,7 +378,7 @@ const translations = {
     postQ3d: "D) Applying authorization checks.",
     btnFinish: "Complete Module",
 
-    msgSuccess: "DATABASE DUMP SUCCESSFUL! Password check bypassed.",
+    msgSuccess: "SYSTEM OVERRIDE: DATABASE DUMP SUCCESSFUL",
     msgFail: "Access Denied! Invalid Email or Password.",
     tblEmail: "Email Address",
     tblPass: "Password (Hash)",
@@ -465,7 +469,7 @@ const runExploit = async () => {
     
     const responseData = await response.json();
     
-    // Çok daha hızlı simülasyon (0.3 Saniye bekleme)
+    // Çok daha hızlı simülasyon (0.1 Saniye bekleme / anlık flaş efekti)
     setTimeout(() => {
       if (responseData.success) {
         leakedData.value = responseData.data;
@@ -474,7 +478,7 @@ const runExploit = async () => {
         exploitStatus.value = 'error';
         setTimeout(() => { exploitStatus.value = 'idle'; }, 3000);
       }
-    }, 300); 
+    }, 100); 
 
   } catch (error) {
     exploitStatus.value = 'error';
@@ -586,7 +590,7 @@ const finishPostTest = async () => {
 .input-group label { display: block; color: #475569; font-size: 13px; margin-bottom: 8px; font-weight: bold;}
 .sim-input { width: 100%; padding: 14px 15px; background: #f8fafc; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; outline: none; transition: 0.3s; font-size: 15px;}
 .sim-input:focus { border-color: #0284c7; box-shadow: inset 0 0 0 1px #0284c7; }
-.btn-hack-action { width: 100%; background: #0f172a; color: white; border: none; padding: 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; margin-top: 15px;}
+.btn-hack-action { width: 100%; background: #0f172a; color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; margin-top: 15px;}
 .btn-hack-action:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(29, 78, 216, 0.4); }
 .error-toast { background: #fef2f2; color: #ef4444; padding: 12px; border-radius: 6px; margin-top: 20px; font-size: 14px; font-weight: bold; border: 1px solid #fca5a5; text-align: center;}
 
