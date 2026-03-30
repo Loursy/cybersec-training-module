@@ -42,7 +42,6 @@
           </div>
           <div class="module-icon">💉</div>
           <h3 class="module-title">{{ currentText.m1Title }}</h3>
-          <p class="module-desc">{{ currentLang === 'tr' ? 'Veritabanı manipülasyonu.' : 'Database manipulation.' }}</p>
           <button class="btn-start" :class="{ 'completed': completedStatus.sqli }" @click="handleModuleClick('sqli', '/module/sqli')">
             <span>{{ completedStatus.sqli ? currentText.btnCompleted : currentText.btnStart }}</span>
           </button>
@@ -54,7 +53,6 @@
           </div>
           <div class="module-icon">🪪</div>
           <h3 class="module-title">{{ currentText.m2Title }}</h3>
-          <p class="module-desc">{{ currentLang === 'tr' ? 'Yetkisiz erişim kontrolü.' : 'Unauthorized access control.' }}</p>
           <button class="btn-start" :class="{ 'completed': completedStatus.bac }" @click="handleModuleClick('bac', '/module/bac')">
             <span>{{ completedStatus.bac ? currentText.btnCompleted : currentText.btnStart }}</span>
           </button>
@@ -66,7 +64,6 @@
           </div>
           <div class="module-icon">🩻</div>
           <h3 class="module-title">{{ currentText.m3Title }}</h3>
-          <p class="module-desc">{{ currentLang === 'tr' ? 'Gizli verilerin ifşası.' : 'Exposure of sensitive data.' }}</p>
           <button class="btn-start" :class="{ 'completed': completedStatus.ede }" @click="handleModuleClick('ede', '/module/ede')">
             <span>{{ completedStatus.ede ? currentText.btnCompleted : currentText.btnStart }}</span>
           </button>
@@ -78,7 +75,6 @@
           </div>
           <div class="module-icon">🕷️</div>
           <h3 class="module-title">{{ currentText.m4Title }}</h3>
-          <p class="module-desc">{{ currentLang === 'tr' ? 'Tarayıcıda kod çalıştırma.' : 'Executing code in browser.' }}</p>
           <button class="btn-start" :class="{ 'completed': completedStatus.xss }" @click="handleModuleClick('xss', '/module/xss')">
             <span>{{ completedStatus.xss ? currentText.btnCompleted : currentText.btnStart }}</span>
           </button>
@@ -90,7 +86,6 @@
           </div>
           <div class="module-icon">🚦</div>
           <h3 class="module-title">{{ currentText.m5Title }}</h3>
-          <p class="module-desc">{{ currentLang === 'tr' ? 'Hız sınırlandırma atlatması.' : 'Rate limit circumvention.' }}</p>
           <button class="btn-start" :class="{ 'completed': completedStatus.rate }" @click="handleModuleClick('rate', '/module/rate')">
             <span>{{ completedStatus.rate ? currentText.btnCompleted : currentText.btnStart }}</span>
           </button>
@@ -102,7 +97,6 @@
           </div>
           <div class="module-icon">⚡</div>
           <h3 class="module-title">{{ currentText.m6Title }}</h3>
-          <p class="module-desc">{{ currentLang === 'tr' ? 'Sunucuda komut çalıştırma.' : 'Executing commands on server.' }}</p>
           <button class="btn-start" :class="{ 'completed': completedStatus.cmd }" @click="handleModuleClick('cmd', '/module/cmd')">
             <span>{{ completedStatus.cmd ? currentText.btnCompleted : currentText.btnStart }}</span>
           </button>
@@ -138,12 +132,12 @@ const translations = {
     logout: "Çıkış",
     pageTitle: "Siber Güvenlik Laboratuvarı",
     pageDesc: "Aşağıdaki zafiyet simülasyonlarını tamamlayarak sistemleri nasıl koruyacağınızı öğrenin.",
-    m1Title: "SQL Injection",
-    m2Title: "Broken Access Control",
-    m3Title: "Excessive Data Exposure",
-    m4Title: "Cross-Site Scripting (XSS)",
-    m5Title: "Rate Limiting",
-    m6Title: "OS Command Injection",
+    m1Title: "1. SQL Injection",
+    m2Title: "2. Broken Access Control",
+    m3Title: "3. Excessive Data Exposure",
+    m4Title: "4. Cross-Site Scripting (XSS)",
+    m5Title: "5. Rate Limiting",
+    m6Title: "6. OS Command Injection",
     btnStart: "MODÜLE GİT",
     btnCompleted: "İNCELE",
   },
@@ -153,12 +147,12 @@ const translations = {
     logout: "Logout",
     pageTitle: "Cybersecurity Lab",
     pageDesc: "Complete the vulnerability simulations below to learn how to protect systems.",
-    m1Title: "SQL Injection",
-    m2Title: "Broken Access Control",
-    m3Title: "Excessive Data Exposure",
-    m4Title: "Cross-Site Scripting (XSS)",
-    m5Title: "Rate Limiting",
-    m6Title: "OS Command Injection",
+    m1Title: "1. SQL Injection",
+    m2Title: "2. Broken Access Control",
+    m3Title: "3. Excessive Data Exposure",
+    m4Title: "4. Cross-Site Scripting (XSS)",
+    m5Title: "5. Rate Limiting",
+    m6Title: "6. OS Command Injection",
     btnStart: "START MODULE",
     btnCompleted: "REVIEW",
   }
@@ -343,18 +337,18 @@ onMounted(async () => {
   border: 1px solid rgba(16, 185, 129, 0.5);
 }
 
-.module-icon { font-size: 65px; margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.05)); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.module-icon { font-size: 65px; margin-bottom: 25px; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.05)); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .module-card:hover .module-icon { transform: scale(1.15) translateY(-5px); filter: drop-shadow(0 5px 15px rgba(14, 165, 233, 0.4)); }
 .completed-card:hover .module-icon { filter: drop-shadow(0 5px 15px rgba(16, 185, 129, 0.4)); }
 
-.module-title { color: #f8fafc; font-size: 20px; font-weight: 700; margin: 0 0 10px 0; letter-spacing: 0.5px; }
-.module-desc { color: #64748b; font-size: 14px; margin: 0 0 30px 0; line-height: 1.5; }
+.module-title { color: #f8fafc; font-size: 20px; font-weight: 700; margin: 0 0 30px 0; letter-spacing: 0.5px; }
 
+/* Yenilenmiş Dinamik Buton Tasarımı */
 .btn-start {
   background: #1e293b;
   color: #cbd5e1;
   border: 1px solid #334155;
-  padding: 12px;
+  padding: 14px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 13.5px;
@@ -364,6 +358,22 @@ onMounted(async () => {
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-top: auto;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Kayan Ok Animasyonu */
+.btn-start::after {
+  content: "→";
+  position: absolute;
+  opacity: 0;
+  transform: translateX(-15px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  right: 25px;
+  font-size: 18px;
 }
 
 .module-card:hover .btn-start:not(.completed) {
@@ -371,8 +381,27 @@ onMounted(async () => {
   color: #ffffff;
   border-color: transparent;
   box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  padding-right: 35px; /* Ok için yer açıyoruz */
 }
 
-.btn-start.completed { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.3); }
-.module-card:hover .btn-start.completed { background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; border-color: transparent; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+.module-card:hover .btn-start:not(.completed)::after {
+  opacity: 1;
+  transform: translateX(0); /* Ok yerine oturuyor */
+}
+
+/* Tamamlanmış Buton Tasarımı */
+.btn-start.completed { 
+  background: rgba(16, 185, 129, 0.1); 
+  color: #10b981; 
+  border-color: rgba(16, 185, 129, 0.3); 
+}
+.module-card:hover .btn-start.completed { 
+  background: linear-gradient(135deg, #10b981, #059669); 
+  color: #ffffff; 
+  border-color: transparent; 
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); 
+}
+.btn-start.completed::after {
+  display: none; /* İnceleme butonunda ok çıkmasına gerek yok */
+}
 </style>
