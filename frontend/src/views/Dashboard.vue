@@ -343,68 +343,86 @@ onMounted(async () => {
 
 .module-title { color: #f8fafc; font-size: 20px; font-weight: 700; margin: 0 0 30px 0; letter-spacing: 0.5px; }
 
-/* Yenilenmiş Dinamik Buton Tasarımı */
+/* TEMEL BUTON TASARIMI */
 .btn-start {
   background: #1e293b;
   color: #cbd5e1;
   border: 1px solid #334155;
-  padding: 14px 20px; /* Sağa biraz ok için boşluk ekledik */
+  padding: 14px 20px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 13.5px;
   font-weight: 700;
   width: 100%;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Geçiş efekti eklendi */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-transform: uppercase;
   letter-spacing: 1.5px;
   margin-top: auto;
-  position: relative; /* Ok için gerekli */
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden; /* Okun kart dışına taşmasını engeller */
+  overflow: hidden;
 }
 
-/* Kayan Ok Animasyonu (İnaktif) */
+/* OK İŞARETİ (GİZLİ BAŞLAR) */
 .btn-start::after {
   content: "→";
   position: absolute;
   opacity: 0;
   transform: translateX(-15px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  right: 25px; /* Okun konumu */
+  right: 25px;
   font-size: 18px;
 }
 
-/* Kart Hover Olunca Buton (Yasal) */
+/* 1. AŞAMA: SADECE KARTIN ÜSTÜNE GELİNCE (Buton hafifçe hazır olduğunu belli eder) */
 .module-card:hover .btn-start:not(.completed) {
-  background: linear-gradient(135deg, #0ea5e9, #2563eb);
-  color: #ffffff;
-  border-color: transparent;
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
-  padding-right: 35px; /* Ok için yer açıyoruz */
+  border-color: #0ea5e9;
+  color: #0ea5e9;
+  box-shadow: 0 0 10px rgba(14, 165, 233, 0.15);
 }
 
-/* Kart Hover Olunca Ok Animasyonu (Aktivasyon) */
-.module-card:hover .btn-start:not(.completed)::after {
-  opacity: 1;
-  transform: translateX(0); /* Ok yerine oturuyor */
+/* 2. AŞAMA: FARE DİREKT BUTONUN ÜSTÜNE GELİNCE (Asıl Animasyon) */
+.btn-start:not(.completed):hover {
+  background: linear-gradient(135deg, #0ea5e9, #2563eb) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5) !important;
+  padding-right: 35px !important; /* Ok için sağda yer aç */
+  transform: scale(1.03); /* Butona tıkla hissi için hafifçe büyüt */
 }
 
-/* Tamamlanmış Buton Tasarımı */
+/* BUTONUN ÜSTÜNE GELİNCE OK GÖRÜNSÜN */
+.btn-start:not(.completed):hover::after {
+  opacity: 1 !important;
+  transform: translateX(0) !important; /* Oku sağa doğru kaydırarak yerine oturt */
+}
+
+
+/* TAMAMLANMIŞ "İNCELE" BUTONU TASARIMI */
 .btn-start.completed { 
-  background: rgba(16, 185, 129, 0.1); 
+  background: rgba(16, 185, 129, 0.05); 
   color: #10b981; 
   border-color: rgba(16, 185, 129, 0.3); 
 }
-.module-card:hover .btn-start.completed { 
-  background: linear-gradient(135deg, #10b981, #059669); 
-  color: #ffffff; 
-  border-color: transparent; 
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); 
+
+/* Karta gelince İncele butonu da hafifçe yeşil parlar */
+.module-card:hover .btn-start.completed {
+  border-color: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
 }
-/* İnceleme butonunda ok çıkmasın */
-.module-card:hover .btn-start.completed::after {
-  display: none;
+
+/* Direkt İncele butonuna gelince */
+.btn-start.completed:hover { 
+  background: linear-gradient(135deg, #10b981, #059669) !important; 
+  color: #ffffff !important; 
+  border-color: transparent !important; 
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4) !important; 
+  transform: scale(1.03);
+}
+
+.btn-start.completed::after {
+  display: none; /* İnceleme butonunda ok çıkmasına gerek yok */
 }
 </style>
