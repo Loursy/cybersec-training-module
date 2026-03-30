@@ -338,7 +338,7 @@ onMounted(async () => {
 }
 
 .module-icon { font-size: 65px; margin-bottom: 25px; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.05)); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-.module-card:hover .module-icon { transform: scale(1.15) translateY(-5px); filter: drop-shadow(0 5px 15px rgba(14, 165, 233, 0.4)); }
+.module-card:hover .module-icon { transform: scale(1.1) translateY(-3px); filter: drop-shadow(0 5px 15px rgba(14, 165, 233, 0.4)); }
 .completed-card:hover .module-icon { filter: drop-shadow(0 5px 15px rgba(16, 185, 129, 0.4)); }
 
 .module-title { color: #f8fafc; font-size: 20px; font-weight: 700; margin: 0 0 30px 0; letter-spacing: 0.5px; }
@@ -348,42 +348,44 @@ onMounted(async () => {
   background: #1e293b;
   color: #cbd5e1;
   border: 1px solid #334155;
-  padding: 14px;
+  padding: 14px 20px; /* Sağa biraz ok için boşluk ekledik */
   border-radius: 8px;
   cursor: pointer;
   font-size: 13.5px;
   font-weight: 700;
   width: 100%;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Geçiş efekti eklendi */
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   margin-top: auto;
-  position: relative;
+  position: relative; /* Ok için gerekli */
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  overflow: hidden; /* Okun kart dışına taşmasını engeller */
 }
 
-/* Kayan Ok Animasyonu */
+/* Kayan Ok Animasyonu (İnaktif) */
 .btn-start::after {
   content: "→";
   position: absolute;
   opacity: 0;
   transform: translateX(-15px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  right: 25px;
+  right: 25px; /* Okun konumu */
   font-size: 18px;
 }
 
+/* Kart Hover Olunca Buton (Yasal) */
 .module-card:hover .btn-start:not(.completed) {
   background: linear-gradient(135deg, #0ea5e9, #2563eb);
   color: #ffffff;
   border-color: transparent;
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
   padding-right: 35px; /* Ok için yer açıyoruz */
 }
 
+/* Kart Hover Olunca Ok Animasyonu (Aktivasyon) */
 .module-card:hover .btn-start:not(.completed)::after {
   opacity: 1;
   transform: translateX(0); /* Ok yerine oturuyor */
@@ -401,7 +403,8 @@ onMounted(async () => {
   border-color: transparent; 
   box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); 
 }
-.btn-start.completed::after {
-  display: none; /* İnceleme butonunda ok çıkmasına gerek yok */
+/* İnceleme butonunda ok çıkmasın */
+.module-card:hover .btn-start.completed::after {
+  display: none;
 }
 </style>
