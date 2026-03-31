@@ -26,9 +26,9 @@
           <div class="question" v-for="(q, index) in [1, 2, 3]" :key="'pre'+index">
             <p><b v-html="currentText[`qPre${q}`]"></b></p>
             <div class="options">
-              <label v-for="opt in ['a', 'b', 'c']" :key="opt" :class="getLabelClass('pre', `q${q}`, opt)">
+              <label v-for="opt in ['a', 'b', 'c', 'd']" :key="opt" :class="getLabelClass('pre', `q${q}`, opt)">
                 <input type="radio" v-model="answers[`preQ${q}`]" :value="opt" :disabled="isReviewMode" /> 
-                <span>{{ currentText[`optPre${q}_${opt === 'a' ? 1 : opt === 'b' ? 2 : 3}`] }}</span>
+                <span>{{ currentText[`optPre${q}_${opt === 'a' ? 1 : opt === 'b' ? 2 : opt === 'c' ? 3 : 4}`] }}</span>
               </label>
             </div>
           </div>
@@ -152,15 +152,17 @@
               </div>
 
               <div v-if="currentMission >= 3 && !isExploitSuccess" class="exploit-area fade-in">
-                <b>🏴‍☠️ {{ currentText.expTitle }}</b>
+                <div class="exploit-header">
+                  <span class="pulse-icon"></span> <b>{{ currentText.expTitle }}</b>
+                </div>
                 <p>{{ currentText.expDesc }}</p>
-                <input type="text" v-model="exploitTokenInput" :placeholder="currentText.inputToken" autocomplete="off" />
+                <input type="text" v-model="exploitTokenInput" :placeholder="currentText.inputToken" autocomplete="off" spellcheck="false" />
                 <button class="btn-danger" @click="verifyExploit">
                   {{ currentText.btnExp }}
                 </button>
               </div>
 
-              <div class="action-footer">
+              <div class="action-footer" style="justify-content: center;">
                 <button v-if="isExploitSuccess || isReviewMode" class="btn-success fade-in" @click="currentStep = 3">
                   {{ currentText.btnToTrn }}
                 </button>
@@ -176,6 +178,10 @@
           
           <div class="edu-card logic-box">
             <p class="edu-desc">{{ currentText.trnDesc }}</p>
+            
+            <div style="margin-top: 20px; margin-bottom: 30px; text-align: center;">
+               
+            </div>
 
             <div class="flow-step">
               <div class="flow-num step-blue">1</div>
@@ -205,6 +211,9 @@
             <div class="solution-box">
               <b class="solution-title">{{ currentText.trnH4 }}</b>
               <p class="solution-desc" v-html="currentText.trnP4"></p>
+              <div style="margin-top: 25px; text-align: center;">
+                 
+              </div>
             </div>
           </div>
 
@@ -218,13 +227,14 @@
           <h2 class="step-title" :class="{ 'review-mode-title': isReviewMode }">
             {{ isReviewMode ? (currentLang === 'tr' ? '🔍 İnceleme Modu: Son-Test Analizi' : '🔍 Review Mode: Post-Test Analysis') : currentText.postTitle }}
           </h2>
+          <p class="step-desc" v-if="!isReviewMode">{{ currentText.s4Desc }}</p>
 
           <div class="question" v-for="(q, index) in [1, 2, 3]" :key="'post'+index">
             <p><b v-html="currentText[`qPost${q}`]"></b></p>
             <div class="options">
-              <label v-for="opt in ['a', 'b', 'c']" :key="opt" :class="getLabelClass('post', `q${q}`, opt)">
+              <label v-for="opt in ['a', 'b', 'c', 'd']" :key="opt" :class="getLabelClass('post', `q${q}`, opt)">
                 <input type="radio" v-model="answers[`postQ${q}`]" :value="opt" :disabled="isReviewMode" /> 
-                <span>{{ currentText[`optPost${q}_${opt === 'a' ? 1 : opt === 'b' ? 2 : 3}`] }}</span>
+                <span>{{ currentText[`optPost${q}_${opt === 'a' ? 1 : opt === 'b' ? 2 : opt === 'c' ? 3 : 4}`] }}</span>
               </label>
             </div>
           </div>
@@ -288,18 +298,27 @@ const translations = {
     alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nKarnenize yönlendiriliyorsunuz...`,
     modTitle: "Modül 3: Excessive Data Exposure",
     preTitle: "Ön-Test",
+    s1Desc: "Aşağıdaki soruları yanıtlayarak mevcut bilgi seviyenizi ölçelim.",
+    s4Desc: "Bu modülde öğrendiklerinizi pekiştirelim.",
+    
     qPre1: "1. Excessive Data Exposure zafiyetinin temel çalışma mantığı aşağıdakilerden hangisidir?",
     optPre1_1: "A) İstemci tarafında çalışan zararlı betiklerin sunucu bellek alanını taşırarak sistemi durdurması.",
     optPre1_2: "B) API'nin, istemcinin ihtiyacı olandan çok daha fazla ve hassas veriyi ağ üzerinden tarayıcıya göndermesi.",
     optPre1_3: "C) Web uygulamasının dosya dizin yollarının manipüle edilerek yetkisiz sistem konfigürasyonlarının okunması.",
+    optPre1_4: "D) Veritabanı portunun internete açık bırakılması.",
+    
     qPre2: "2. Bu zafiyetin tespit edilmesi geleneksel arayüz (UI) testlerinde neden zordur?",
     optPre2_1: "A) Çünkü sızdırılan veriler veritabanında her zaman 256-bit askeri düzey şifreleme ile korunmaktadır.",
     optPre2_2: "B) Çünkü sızdırılan veriler web arayüzünde görünmez, yalnızca arka plandaki API ağ trafiğinde bulunur.",
     optPre2_3: "C) Çünkü sunucu yalnızca yetkilendirilmiş hesaplara veri gönderimi yaparak sıradan kullanıcıları reddeder.",
+    optPre2_4: "D) Çünkü modern tarayıcılar JSON düğümlerini oluşturmadan önce otomatik olarak siler.",
+    
     qPre3: "3. Ön yüz (Frontend) geliştiricilerinin hassas verileri CSS ile gizlemesi neden güvenli DEĞİLDİR?",
     optPre3_1: "A) Çünkü veri sunucudan tarayıcıya çoktan ulaşmıştır ve ağ izleme araçlarıyla kolayca okunabilir.",
     optPre3_2: "B) Çünkü CSS kodları sayfanın yüklenme hızını yavaşlatır ve arama motorları tarafından engellenir.",
     optPre3_3: "C) Çünkü bu yöntem sadece SQL tabanlı veritabanlarında çalışır.",
+    optPre3_4: "D) CSS 'display:none' özelliği modern hacker araçları tarafından yoksayılır.",
+    
     btnPre: "Simülasyona Başla",
 
     simTitle: "Adım 2: Simülasyon",
@@ -319,7 +338,7 @@ const translations = {
     expTitle: "Yönetici Hesabına Sız",
     expDesc: "Ağ trafiğinde bulduğun 'recovery_token' değerini buraya yapıştır:",
     inputToken: "Gizli Token'ı Yapıştır...",
-    btnExp: "Hesabı Ele Geçir",
+    btnExp: "HESABI ELE GEÇİR",
     wrongToken: "Hatalı Token! Lütfen JSON ağ trafiğini daha dikkatli inceleyin.",
     btnToTrn: "TÜM GÖREVLER BAŞARILI - EĞİTİME GEÇ",
 
@@ -342,18 +361,25 @@ const translations = {
     btnToPost: "Tüm Detayları Anladım -> Son Teste Geç",
 
     postTitle: "Son-Test",
+    
     qPost1: "1. Excessive Data Exposure zafiyetine karşı API'leri korumak için kullanılması gereken en etkili mimari desen hangisidir?",
     optPost1_1: "A) Gelen istekleri sınırlandıran Rate Limiting mekanizması kullanmak.",
     optPost1_2: "B) İstemciye sadece yetkisi olan ve ihtiyaç duyduğu alanları gönderen DTO (Data Transfer Object) mimarisi kullanmak.",
     optPost1_3: "C) Frontend tarafında kritik değişkenleri CSS dosyasında kalıcı olarak gizlemek.",
+    optPost1_4: "D) Ağ tabanlı bir Web Application Firewall (WAF) kurarak büyük paketleri engellemek.",
+    
     qPost2: "2. Ön yüz (Frontend) kodlamasında hassas verileri ekrana yazdırmamak güvenlik için neden yeterli DEĞİLDİR?",
     optPost2_1: "A) Çünkü JavaScript kapatıldığında tüm veritabanı yapısı ekranda listelenir.",
     optPost2_2: "B) Çünkü veri sunucudan tarayıcıya iletildiğinde, sayfa render edilmese bile ağ trafiği izlenerek çalınabilir.",
     optPost2_3: "C) Çünkü modern tarayıcılar ön yüzdeki gizli verileri otomatik olarak arama motorlarına kaydeder.",
+    optPost2_4: "D) Çünkü hackerlar CSS kurallarını SQL Injection ile aşabilir.",
+    
     qPost3: "3. Aşırı Veri İfşası zafiyetinin temel nedeni aşağıdakilerden hangisidir?",
     optPost3_1: "A) Sunucuya gönderilen aşırı yüklü paketlerin veritabanında bellek taşmasına yol açması.",
     optPost3_2: "B) API'nin, istemcinin ihtiyacı olandan çok daha fazla ve hassas veriyi ağ üzerinden göndermesi.",
     optPost3_3: "C) Kötü niyetli kişilerin uygulamanın yönetici paneline ait URL yollarını tahmin ederek içeriye sızması.",
+    optPost3_4: "D) Frontend sunucusunda SSL/TLS sertifikasının eksik olması.",
+    
     btnPost: "Eğitimi Bitir",
 
     corpLogo: "🏢 GlobalCorp İnsan Kaynakları",
@@ -373,18 +399,27 @@ const translations = {
     alertResult: (pre, post) => `Congratulations!\nPre-Test: ${pre}%\nPost-Test: ${post}%\n\nRedirecting to stats...`,
     modTitle: "Module 3: Excessive Data Exposure",
     preTitle: "Pre-Test",
+    s1Desc: "Let's measure your current knowledge level.",
+    s4Desc: "Let's reinforce what you learned.",
+    
     qPre1: "1. What is the fundamental mechanism of an Excessive Data Exposure vulnerability?",
     optPre1_1: "A) Overflowing the server's memory space by executing malicious client-side scripts to halt the system.",
     optPre1_2: "B) The API transmitting significantly more sensitive data over the network than the client actually needs.",
     optPre1_3: "C) Manipulating the web application's file directory paths to unauthorizedly read system configurations.",
+    optPre1_4: "D) Exposing the database port directly to the public internet.",
+    
     qPre2: "2. Why is this vulnerability difficult to detect during traditional UI testing?",
     optPre2_1: "A) Because the leaked data is always protected by 256-bit military-grade encryption in the database.",
     optPre2_2: "B) Because the leaked data does not appear on the web interface, it exists only in the background API network traffic.",
     optPre2_3: "C) Because the server strictly routes data only to authorized accounts, rejecting standard users.",
+    optPre2_4: "D) Because modern browsers automatically delete excess JSON nodes before rendering.",
+    
     qPre3: "3. Why is it NOT secure for Frontend developers to hide sensitive data using CSS?",
     optPre3_1: "A) Because the data has already reached the browser from the server and can be easily read via Developer Tools.",
     optPre3_2: "B) Because CSS codes slow down the page loading speed and are permanently penalized by search engines.",
     optPre3_3: "C) Because this method only works on SQL-based databases.",
+    optPre3_4: "D) Because the CSS 'display:none' property is ignored by modern hacking tools.",
+    
     btnPre: "Start Simulation",
 
     simTitle: "Step 2: Simulation",
@@ -404,7 +439,7 @@ const translations = {
     expTitle: "Breach Admin Account",
     expDesc: "Paste the 'recovery_token' you found in the network traffic here:",
     inputToken: "Paste the Secret Token...",
-    btnExp: "Takeover Account",
+    btnExp: "TAKEOVER ACCOUNT",
     wrongToken: "Invalid Token! Please inspect the JSON network traffic more carefully.",
     btnToTrn: "ALL MISSIONS SUCCESSFUL - GO TO TRAINING",
 
@@ -427,18 +462,25 @@ const translations = {
     btnToPost: "I Understood the Details -> Go to Post-Test",
 
     postTitle: "Post-Test",
+    
     qPost1: "1. Which architectural pattern is the most effective defense against Excessive Data Exposure vulnerabilities in APIs?",
     optPost1_1: "A) Implementing a Rate Limiting mechanism to restrict incoming requests.",
     optPost1_2: "B) Utilizing a DTO (Data Transfer Object) architecture to send only the fields the client needs and is authorized to see.",
     optPost1_3: "C) Permanently hiding critical variables on the frontend side by using CSS.",
+    optPost1_4: "D) Implementing a Web Application Firewall (WAF) to drop heavy packets.",
+    
     qPost2: "2. Why is merely refraining from displaying sensitive data on the screen insufficient for security in Frontend development?",
     optPost2_1: "A) Because when JavaScript is disabled, the entire database structure is listed on the screen.",
     optPost2_2: "B) Because once the data is transmitted from server to browser, it can be stolen by monitoring network traffic, even if not rendered.",
     optPost2_3: "C) Because modern browsers automatically save hidden data from the frontend interface into search engine indices.",
+    optPost2_4: "D) Because hackers can bypass CSS restrictions using SQL Injection.",
+    
     qPost3: "3. What is the primary cause of the Excessive Data Exposure vulnerability?",
     optPost3_1: "A) Overloaded packets sent to the server causing a Buffer Overflow in the database.",
     optPost3_2: "B) The API transmitting significantly more sensitive data over the network than the client actually needs.",
     optPost3_3: "C) Malicious actors predicting the URL paths of the application's admin panel to infiltrate the system.",
+    optPost3_4: "D) The lack of SSL/TLS certificates on the frontend server.",
+    
     btnPost: "Finish Training",
 
     corpLogo: "🏢 GlobalCorp Human Resources",
@@ -475,7 +517,6 @@ const getLabelClass = (testPrefix, questionKey, option) => {
   return '';
 };
 
-// DİKKAT: KAYDEDERKEN E-POSTA EKLENDİ
 watch(answers, (newAnswers) => {
   if (!isReviewMode.value && userEmail) {
     localStorage.setItem(`ede_draft_answers_${userEmail}`, JSON.stringify(newAnswers));
@@ -496,7 +537,6 @@ onMounted(async () => {
       }
     } catch (error) {}
   } else {
-    // DİKKAT: YÜKLERKEN E-POSTA EKLENDİ
     const savedDraft = localStorage.getItem(`ede_draft_answers_${userEmail}`);
     if (savedDraft) Object.assign(answers, JSON.parse(savedDraft));
   }
@@ -600,7 +640,6 @@ const finishPostTest = async () => {
       body: JSON.stringify({ email: userEmail, module: "ede", preScore, postScore, answers }),
     });
     alert(currentText.value.alertResult(preScore, postScore));
-    // DİKKAT: SİLERKEN E-POSTA EKLENDİ
     localStorage.removeItem(`ede_draft_answers_${userEmail}`); 
     router.push("/stats");
   } catch (err) {
@@ -625,11 +664,12 @@ const finishPostTest = async () => {
 .neon-divider { height: 1px; background: linear-gradient(90deg, #3b82f6, transparent); margin-bottom: 35px; }
 
 .step-title { color: #f8fafc; font-size: 24px; border-left: 4px solid #3b82f6; padding-left: 15px; margin-bottom: 25px; }
+.step-desc { font-size: 15px; color: #94a3b8; margin-bottom: 25px;}
 .review-mode-title { color: #10b981; border-left-color: #10b981; }
 
 /* Sorular ve Seçenekler */
 .question { background: #1e293b; padding: 25px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
-.question p { margin-top: 0; font-size: 16px; color: #f8fafc; margin-bottom: 15px; }
+.question p { margin-top: 0; font-size: 16px; color: #f8fafc; margin-bottom: 15px; line-height: 1.5; }
 .options label { display: block; margin: 10px 0; cursor: pointer; color: #94a3b8; transition: all 0.2s; padding: 12px 15px; border-radius: 8px; border: 1px solid #334155; background: #0b1120; }
 .options label:hover:not(.correct-answer):not(.wrong-answer) { border-color: #3b82f6; background: rgba(59, 130, 246, 0.05); color: #f8fafc; }
 .options label input { margin-right: 10px; accent-color: #3b82f6; }
@@ -644,7 +684,7 @@ const finishPostTest = async () => {
 .guide-panel { background: rgba(30, 41, 59, 0.4); padding: 25px; border-radius: 12px; border: 1px solid #334155; display: flex; flex-direction: column; }
 .guide-title { margin-top: 0; color: #f8fafc; font-size: 18px; margin-bottom: 10px; }
 .guide-desc { font-size: 14px; margin-bottom: 20px; color: #94a3b8; line-height: 1.6; }
-.guide-step { padding: 15px; border-radius: 8px; margin-bottom: 12px; transition: 0.3s; opacity: 0.4; }
+.guide-step { padding: 15px; border-radius: 8px; margin-bottom: 12px; transition: 0.3s; opacity: 0.4; border: 1px solid transparent; }
 .guide-step.current { opacity: 1; background: rgba(59, 130, 246, 0.05); border: 1px solid #3b82f6; box-shadow: inset 0 0 15px rgba(59, 130, 246, 0.05); }
 .guide-step.done { opacity: 0.5; border-left: 4px solid #10b981; }
 .guide-step b { display: block; color: #38bdf8; margin-bottom: 8px; font-size: 14px; }
@@ -695,11 +735,11 @@ code.highlight { background: #000; color: #f59e0b; padding: 3px 6px; border-radi
 :deep(.val-boolean) { color: #c084fc; } 
 
 /* Sömürü Alanı (Exploit) */
-.exploit-area { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.3); padding: 20px; border-radius: 8px; margin-top: 15px; }
-.exploit-area b { color: #ef4444; display: block; font-size: 16px; margin-bottom: 5px; }
-.exploit-area p { margin: 0 0 10px 0; font-size: 13px; color: #fca5a5; }
-.exploit-area input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ef4444; background: #050505; color: white; box-sizing: border-box; font-family: monospace; font-size: 14px; outline: none; transition: 0.3s; }
-.exploit-area input:focus { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2); }
+.exploit-area { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.3); padding: 25px; border-radius: 12px; margin-top: 20px; box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.05); }
+.exploit-header { display: flex; align-items: center; gap: 10px; color: #ef4444; font-size: 18px; margin-bottom: 10px; }
+.exploit-area p { margin: 0 0 15px 0; font-size: 14px; color: #fca5a5; }
+.exploit-area input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid #ef4444; background: #050505; color: #f8fafc; box-sizing: border-box; font-family: monospace; font-size: 15px; outline: none; transition: 0.3s; }
+.exploit-area input:focus { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2); border-color: #f87171; }
 
 /* Hacklenmiş Dashboard */
 .hacked-box { border-color: #ef4444; box-shadow: 0 0 30px rgba(239, 68, 68, 0.2); }
@@ -718,43 +758,46 @@ code.highlight { background: #000; color: #f59e0b; padding: 3px 6px; border-radi
 
 /* Eğitim Adımı (Adım 3) */
 .edu-card { background: #1e293b; border-radius: 12px; padding: 30px; border: 1px solid #334155; }
-.logic-box { border-left: 4px solid #38bdf8; }
+.logic-box { border-left: 4px solid #3b82f6; }
 .edu-desc { font-size: 15px; line-height: 1.6; color: #cbd5e1; margin-top: 0; margin-bottom: 25px; }
 .flow-step { display: flex; gap: 15px; margin-top: 20px; align-items: flex-start; }
 .flow-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 14px; color: #0f172a; }
 .step-blue { background: #38bdf8; }
 .step-yellow { background: #fbbf24; }
 .step-red { background: #ef4444; color: #fff; }
-.step-heading { font-size: 16px; display: block; margin-bottom: 5px; }
+.step-title-text { font-size: 16px; display: block; margin-bottom: 5px; }
 .blue-text { color: #38bdf8; }
 .yellow-text { color: #fbbf24; }
 .red-text { color: #ef4444; }
-.step-info { margin: 0; font-size: 14px; color: #94a3b8; line-height: 1.6; }
-.code-red { color: #fca5a5; background: #000; padding: 2px 4px; border-radius: 4px; font-family: monospace;}
-.code-green { color: #10b981; background: #000; padding: 2px 4px; border-radius: 4px; font-family: monospace;}
-.solution-box { background: rgba(16, 185, 129, 0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2); margin-top: 35px; border-left: 5px solid #10b981; }
-.solution-title-text { color: #10b981; font-size: 16px; display: block; margin-bottom: 10px; }
-.solution-info { margin: 0; font-size: 14px; line-height: 1.7; color: #cbd5e1; }
+.step-desc-text { margin: 0; font-size: 14px; color: #94a3b8; line-height: 1.6; }
+.code-block { background: #0b1120; color: #f8fafc; padding: 15px; border-radius: 6px; font-family: monospace; margin: 12px 0 0 0; border: 1px solid #334155; font-size: 13px; }
+.comment { color: #64748b; font-style: italic; }
+.solution-box { background: rgba(16, 185, 129, 0.05); padding: 20px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3); margin-top: 35px; border-left: 4px solid #10b981; }
+.solution-title { color: #10b981; font-size: 16px; display: block; margin-bottom: 10px; }
+.solution-desc { margin: 0; font-size: 14px; line-height: 1.7; color: #cbd5e1; }
 
-/* Butonlar & Utils */
-.action-footer { margin-top: 30px; display: flex; justify-content: flex-end; }
+/* Butonlar & Aksiyonlar */
+.action-footer { margin-top: 30px; display: flex; justify-content: flex-end; width: 100%;}
 .action-footer.space-between { justify-content: space-between; }
-.btn-primary { background: #0284c7; color: #fff; padding: 12px 28px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; transition: 0.3s;}
-.btn-primary:hover { background: #0369a1; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(2, 132, 199, 0.4); }
-.btn-secondary { background: #334155; color: #fff; padding: 12px 28px; border-radius: 8px; border: none; cursor: pointer; transition: 0.3s;}
+button { font-family: inherit; }
+.btn-primary { background: #3b82f6; color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+.btn-primary:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4); }
+.btn-secondary { background: #334155; color: #f8fafc; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
 .btn-secondary:hover { background: #475569; }
-.btn-success { background: #059669; color: #fff; padding: 12px 28px; border-radius: 8px; border: none; cursor: pointer; transition: 0.3s; width: auto;}
-.btn-success:hover { background: #047857; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(5, 150, 105, 0.4); }
-.btn-warning { background: #f59e0b; color: #0f172a; padding: 12px 28px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s;}
+.btn-success { background: #10b981; color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; width: auto;}
+.btn-success:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4); }
+.btn-danger { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border: none; padding: 14px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+.btn-danger:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5); }
+.btn-warning { background: #f59e0b; color: #0f172a; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; }
 .btn-warning:hover:not(:disabled) { background: #d97706; transform: translateY(-2px); }
 .btn-warning:disabled { opacity: 0.7; cursor: not-allowed; }
 
-.loading-screen { text-align: center; padding: 80px 0; }
-.spinner { display: inline-block; border: 4px solid rgba(0, 229, 255, 0.2); border-top-color: #00e5ff; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; }
-.spinner-small { display: inline-block; border: 3px solid rgba(15, 23, 42, 0.3); border-top-color: #0f172a; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; margin-right: 10px; }
-@keyframes spin { 100% { transform: rotate(360deg); } }
+/* Animasyonlar ve Yükleyiciler */
 .fade-in { animation: fadeIn 0.5s ease-out forwards; }
-.fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+.loading-screen { text-align: center; padding: 80px 0; }
+.spinner { display: inline-block; border: 4px solid rgba(59, 130, 246, 0.2); border-top-color: #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+.spinner-small { display: inline-block; border: 3px solid rgba(148, 163, 184, 0.3); border-top-color: #94a3b8; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; margin-right: 10px; vertical-align: middle;}
+@keyframes spin { 100% { transform: rotate(360deg); } }
 </style>
