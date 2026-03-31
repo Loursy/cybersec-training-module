@@ -4,7 +4,7 @@
 
     <div class="container">
       <button class="lang-btn" @click="toggleLanguage">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         {{ currentLang === 'tr' ? 'EN' : 'TR' }}
       </button>
 
@@ -21,6 +21,7 @@
           <h2 class="step-title" :class="{ 'review-mode-title': isReviewMode }">
             {{ isReviewMode ? (currentLang === 'tr' ? '🔍 İnceleme Modu: Ön-Test Analizi' : '🔍 Review Mode: Pre-Test Analysis') : currentText.preTitle }}
           </h2>
+          <p class="step-desc" v-if="!isReviewMode">{{ currentText.s1Desc }}</p>
 
           <div class="question" v-for="(q, index) in [1, 2, 3]" :key="'pre'+index">
             <p><b v-html="currentText[`qPre${q}`]"></b></p>
@@ -32,7 +33,7 @@
             </div>
           </div>
 
-          <div class="action-footer">
+          <div class="action-footer" style="justify-content: flex-end;">
             <button class="btn-primary" @click="finishPreTest">
               {{ isReviewMode ? (currentLang === 'tr' ? 'Sonraki Aşama (Simülasyon)' : 'Next Step (Simulation)') : currentText.btnPre }}
             </button>
@@ -281,7 +282,6 @@ const answerKeys = {
   post: { q1: "b", q2: "b", q3: "b" },
 };
 
-// Çeviriler (Orijinal haliyle korundu)
 const translations = {
   tr: {
     warnEmpty: "Lütfen tüm soruları cevaplayın!",
@@ -475,9 +475,10 @@ const getLabelClass = (testPrefix, questionKey, option) => {
   return '';
 };
 
+// DİKKAT: KAYDEDERKEN E-POSTA EKLENDİ
 watch(answers, (newAnswers) => {
-  if (!isReviewMode.value) {
-    localStorage.setItem('ede_draft_answers', JSON.stringify(newAnswers));
+  if (!isReviewMode.value && userEmail) {
+    localStorage.setItem(`ede_draft_answers_${userEmail}`, JSON.stringify(newAnswers));
   }
 }, { deep: true });
 
@@ -486,7 +487,6 @@ onMounted(async () => {
 
   if (isReviewMode.value) {
     try {
-      // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
       const response = await fetch(`/api/get-user-stats/${userEmail}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -496,7 +496,8 @@ onMounted(async () => {
       }
     } catch (error) {}
   } else {
-    const savedDraft = localStorage.getItem('ede_draft_answers');
+    // DİKKAT: YÜKLERKEN E-POSTA EKLENDİ
+    const savedDraft = localStorage.getItem(`ede_draft_answers_${userEmail}`);
     if (savedDraft) Object.assign(answers, JSON.parse(savedDraft));
   }
   isLoading.value = false;
@@ -531,7 +532,6 @@ const searchUser = async () => {
   if (!input) return;
 
   try {
-    // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
     const response = await fetch("/api/vuln/ede/search", {
       method: "POST",
       headers: { 
@@ -591,7 +591,6 @@ const finishPostTest = async () => {
   postScore = Math.round(postScore);
   
   try {
-    // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
     await fetch(`/api/save-score`, {
       method: "POST",
       headers: { 
@@ -601,7 +600,8 @@ const finishPostTest = async () => {
       body: JSON.stringify({ email: userEmail, module: "ede", preScore, postScore, answers }),
     });
     alert(currentText.value.alertResult(preScore, postScore));
-    localStorage.removeItem('ede_draft_answers'); 
+    // DİKKAT: SİLERKEN E-POSTA EKLENDİ
+    localStorage.removeItem(`ede_draft_answers_${userEmail}`); 
     router.push("/stats");
   } catch (err) {
     alert("Hata oluştu!");
@@ -718,46 +718,43 @@ code.highlight { background: #000; color: #f59e0b; padding: 3px 6px; border-radi
 
 /* Eğitim Adımı (Adım 3) */
 .edu-card { background: #1e293b; border-radius: 12px; padding: 30px; border: 1px solid #334155; }
-.logic-box { border-left: 4px solid #3b82f6; }
+.logic-box { border-left: 4px solid #38bdf8; }
 .edu-desc { font-size: 15px; line-height: 1.6; color: #cbd5e1; margin-top: 0; margin-bottom: 25px; }
 .flow-step { display: flex; gap: 15px; margin-top: 20px; align-items: flex-start; }
 .flow-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 14px; color: #0f172a; }
 .step-blue { background: #38bdf8; }
 .step-yellow { background: #fbbf24; }
 .step-red { background: #ef4444; color: #fff; }
-.step-title-text { font-size: 16px; display: block; margin-bottom: 5px; }
+.step-heading { font-size: 16px; display: block; margin-bottom: 5px; }
 .blue-text { color: #38bdf8; }
 .yellow-text { color: #fbbf24; }
 .red-text { color: #ef4444; }
-.step-desc-text { margin: 0; font-size: 14px; color: #94a3b8; line-height: 1.6; }
-.code-block { background: #0b1120; color: #f8fafc; padding: 15px; border-radius: 6px; font-family: monospace; margin: 12px 0 0 0; border: 1px solid #334155; font-size: 13px; }
-.comment { color: #64748b; font-style: italic; }
-.solution-box { background: rgba(16, 185, 129, 0.05); padding: 20px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3); margin-top: 35px; border-left: 4px solid #10b981; }
-.solution-title { color: #10b981; font-size: 16px; display: block; margin-bottom: 10px; }
-.solution-desc { margin: 0; font-size: 14px; line-height: 1.7; color: #cbd5e1; }
+.step-info { margin: 0; font-size: 14px; color: #94a3b8; line-height: 1.6; }
+.code-red { color: #fca5a5; background: #000; padding: 2px 4px; border-radius: 4px; font-family: monospace;}
+.code-green { color: #10b981; background: #000; padding: 2px 4px; border-radius: 4px; font-family: monospace;}
+.solution-box { background: rgba(16, 185, 129, 0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2); margin-top: 35px; border-left: 5px solid #10b981; }
+.solution-title-text { color: #10b981; font-size: 16px; display: block; margin-bottom: 10px; }
+.solution-info { margin: 0; font-size: 14px; line-height: 1.7; color: #cbd5e1; }
 
-/* Butonlar & Aksiyonlar */
+/* Butonlar & Utils */
 .action-footer { margin-top: 30px; display: flex; justify-content: flex-end; }
 .action-footer.space-between { justify-content: space-between; }
-button { font-family: inherit; }
-.btn-primary { background: #0284c7; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+.btn-primary { background: #0284c7; color: #fff; padding: 12px 28px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; transition: 0.3s;}
 .btn-primary:hover { background: #0369a1; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(2, 132, 199, 0.4); }
-.btn-secondary { background: #334155; color: #f8fafc; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+.btn-secondary { background: #334155; color: #fff; padding: 12px 28px; border-radius: 8px; border: none; cursor: pointer; transition: 0.3s;}
 .btn-secondary:hover { background: #475569; }
-.btn-success { background: #059669; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; width: 100%;}
+.btn-success { background: #059669; color: #fff; padding: 12px 28px; border-radius: 8px; border: none; cursor: pointer; transition: 0.3s; width: auto;}
 .btn-success:hover { background: #047857; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(5, 150, 105, 0.4); }
-.btn-danger { background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 15px; }
-.btn-danger:hover { background: #dc2626; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4); }
-.btn-warning { background: #f59e0b; color: #0f172a; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; }
+.btn-warning { background: #f59e0b; color: #0f172a; padding: 12px 28px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s;}
 .btn-warning:hover:not(:disabled) { background: #d97706; transform: translateY(-2px); }
 .btn-warning:disabled { opacity: 0.7; cursor: not-allowed; }
 
-/* Animasyonlar ve Yükleyiciler */
-.fade-in { animation: fadeIn 0.5s ease-out forwards; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
 .loading-screen { text-align: center; padding: 80px 0; }
-.spinner { display: inline-block; border: 4px solid rgba(56, 189, 248, 0.2); border-top-color: #38bdf8; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+.spinner { display: inline-block; border: 4px solid rgba(0, 229, 255, 0.2); border-top-color: #00e5ff; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; }
 .spinner-small { display: inline-block; border: 3px solid rgba(15, 23, 42, 0.3); border-top-color: #0f172a; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; margin-right: 10px; }
 @keyframes spin { 100% { transform: rotate(360deg); } }
+.fade-in { animation: fadeIn 0.5s ease-out forwards; }
+.fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 </style>

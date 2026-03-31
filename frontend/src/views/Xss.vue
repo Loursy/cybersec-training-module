@@ -32,7 +32,7 @@
             </div>
           </div>
 
-          <div class="action-footer">
+          <div class="action-footer" style="justify-content: flex-end;">
             <button class="btn-primary" @click="finishPreTest">
               {{ isReviewMode ? (currentLang === 'tr' ? 'Sonraki Aşama (Simülasyon)' : 'Next Step (Simulation)') : currentText.btnPre }}
             </button>
@@ -207,7 +207,7 @@
             <p class="edu-desc-txt">{{ currentText.trnDesc }}</p>
             
             <div style="margin-top: 20px; margin-bottom: 30px; text-align: center;">
-              
+               
             </div>
 
             <div class="flow-step">
@@ -529,9 +529,10 @@ const getLabelClass = (testPrefix, questionKey, option) => {
   return '';
 };
 
+// DİKKAT: KAYDEDERKEN E-POSTA EKLENDİ
 watch(answers, (newAnswers) => {
-  if (!isReviewMode.value) {
-    localStorage.setItem('xss_draft_answers', JSON.stringify(newAnswers));
+  if (!isReviewMode.value && userEmail) {
+    localStorage.setItem(`xss_draft_answers_${userEmail}`, JSON.stringify(newAnswers));
   }
 }, { deep: true });
 
@@ -540,7 +541,6 @@ onMounted(async () => {
 
   if (isReviewMode.value) {
     try {
-      // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
       const response = await fetch(`/api/get-user-stats/${userEmail}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -550,7 +550,8 @@ onMounted(async () => {
       }
     } catch (error) {}
   } else {
-    const savedDraft = localStorage.getItem('xss_draft_answers');
+    // DİKKAT: YÜKLERKEN E-POSTA EKLENDİ
+    const savedDraft = localStorage.getItem(`xss_draft_answers_${userEmail}`);
     if (savedDraft) Object.assign(answers, JSON.parse(savedDraft));
   }
   
@@ -636,7 +637,6 @@ const finishPostTest = async () => {
   postScore = Math.round(postScore);
   
   try {
-    // JWT ENTEGRE EDİLDİ VE LOCALHOST SİLİNDİ
     await fetch(`/api/save-score`, {
       method: "POST",
       headers: { 
@@ -646,7 +646,8 @@ const finishPostTest = async () => {
       body: JSON.stringify({ email: userEmail, module: "xss", preScore, postScore, answers }),
     });
     alert(currentText.value.alertResult(preScore, postScore));
-    localStorage.removeItem('xss_draft_answers'); 
+    // DİKKAT: SİLERKEN E-POSTA EKLENDİ
+    localStorage.removeItem(`xss_draft_answers_${userEmail}`); 
     router.push("/stats");
   } catch (err) {
     alert("Hata oluştu!");

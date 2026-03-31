@@ -4,7 +4,7 @@
 
     <div class="container">
       <button class="lang-btn" @click="toggleLanguage">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         {{ currentLang === 'tr' ? 'EN' : 'TR' }}
       </button>
 
@@ -44,7 +44,7 @@
           <h2 class="step-title" :class="{ 'review-mode-title': isReviewMode }">
             {{ isReviewMode ? (currentLang === 'tr' ? '🔍 İnceleme Modu: Simülasyon' : '🔍 Review Mode: Simulation') : currentText.s2Title }}
           </h2>
-
+          
           <div class="mission-layout">
             <div class="guide-panel">
               <div class="summary-box">
@@ -232,7 +232,6 @@ const simPass = ref('');
 const exploitStatus = ref('idle'); // idle, hacking, success, error
 const leakedData = ref([]);
 
-// YENİ CEVAP ANAHTARI
 const answerKeys = {
   pre: { q1: "c", q2: "b", q3: "d" },
   post: { q1: "b", q2: "c", q3: "b" },
@@ -403,9 +402,10 @@ const getLabelClass = (testPrefix, questionKey, option) => {
   return '';
 };
 
+// DİKKAT: Bütün modüllerindeki bu kısmı böyle güncellemeyi unutma!
 watch(answers, (newAnswers) => {
-  if (!isReviewMode.value) {
-    localStorage.setItem('sqli_draft_answers', JSON.stringify(newAnswers));
+  if (!isReviewMode.value && userEmail) {
+    localStorage.setItem(`sqli_draft_answers_${userEmail}`, JSON.stringify(newAnswers));
   }
 }, { deep: true });
 
@@ -427,7 +427,8 @@ onMounted(async () => {
       }
     } catch (error) {}
   } else {
-    const savedDraft = localStorage.getItem('sqli_draft_answers');
+    // DİKKAT: Yüklerken de kullanıcıya özel anahtarı çağırıyoruz.
+    const savedDraft = localStorage.getItem(`sqli_draft_answers_${userEmail}`);
     if (savedDraft) Object.assign(answers, JSON.parse(savedDraft));
   }
   
@@ -468,7 +469,6 @@ const runExploit = async () => {
     
     const responseData = await response.json();
     
-    // Çok daha hızlı simülasyon (0.1 Saniye bekleme / anlık flaş efekti)
     setTimeout(() => {
       if (responseData.success) {
         leakedData.value = responseData.data;
@@ -517,7 +517,8 @@ const finishPostTest = async () => {
     });
     
     alert(currentText.value.alertResult(preScore, postScore));
-    localStorage.removeItem('sqli_draft_answers'); 
+    // DİKKAT: Temizlerken de kullanıcıya özel anahtarı siliyoruz.
+    localStorage.removeItem(`sqli_draft_answers_${userEmail}`); 
     router.push("/dashboard");
   } catch (err) {
     alert("Skor kaydedilirken hata oluştu!");

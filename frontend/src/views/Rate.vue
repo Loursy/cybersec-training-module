@@ -225,7 +225,6 @@ const answers = reactive({
   postQ1: '', postQ2: '', postQ3: ''
 });
 
-// JWT Token ve Kullanıcı Email'i
 const token = localStorage.getItem('token');
 const userEmail = localStorage.getItem('userEmail');
 
@@ -323,6 +322,7 @@ const translations = {
     btnToPost: "Tüm Detayları Anladım -> Son Teste Geç",
 
     postTitle: "Son-Test",
+    
     qPost1: "1. Simülasyonda 'NovaCrypto' borsasının 4 haneli onay ekranını aşmak için kullandığımız 'Hydra' aracı hangi saldırı türünü gerçekleştirmiştir?",
     optPost1_1: "A) SQL Injection (SQLi)",
     optPost1_2: "B) Brute-Force (Kaba Kuvvet)",
@@ -415,6 +415,7 @@ const translations = {
     btnToPost: "I Understood the Details -> Go to Post-Test",
 
     postTitle: "Post-Test",
+    
     qPost1: "1. What type of attack did we perform using the 'Hydra' tool to bypass NovaCrypto's 4-digit SMS verification screen in the simulation?",
     optPost1_1: "A) SQL Injection (SQLi)",
     optPost1_2: "B) Brute-Force",
@@ -453,9 +454,10 @@ const getLabelClass = (testPrefix, questionKey, option) => {
   return '';
 };
 
+// DİKKAT: KAYDEDERKEN E-POSTA EKLENDİ
 watch(answers, (newAnswers) => {
-  if (!isReviewMode.value) {
-    localStorage.setItem('rate_draft_answers', JSON.stringify(newAnswers));
+  if (!isReviewMode.value && userEmail) {
+    localStorage.setItem(`rate_draft_answers_${userEmail}`, JSON.stringify(newAnswers));
   }
 }, { deep: true });
 
@@ -473,7 +475,8 @@ onMounted(async () => {
       }
     } catch (error) {}
   } else {
-    const savedDraft = localStorage.getItem('rate_draft_answers');
+    // DİKKAT: YÜKLERKEN E-POSTA EKLENDİ
+    const savedDraft = localStorage.getItem(`rate_draft_answers_${userEmail}`);
     if (savedDraft) Object.assign(answers, JSON.parse(savedDraft));
   }
   
@@ -623,7 +626,8 @@ const finishPostTest = async () => {
       body: JSON.stringify({ email: userEmail, module: "rate", preScore, postScore, answers }),
     });
     alert(currentText.value.alertResult(preScore, postScore));
-    localStorage.removeItem('rate_draft_answers'); 
+    // DİKKAT: SİLERKEN E-POSTA EKLENDİ
+    localStorage.removeItem(`rate_draft_answers_${userEmail}`); 
     router.push("/stats");
   } catch (err) {
     alert("Hata oluştu!");

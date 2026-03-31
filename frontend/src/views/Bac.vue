@@ -4,7 +4,7 @@
 
     <div class="container">
       <button class="lang-btn" @click="toggleLanguage">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         {{ currentLang === 'tr' ? 'EN' : 'TR' }}
       </button>
 
@@ -356,8 +356,8 @@ const getLabelClass = (testPrefix, questionKey, option) => {
 };
 
 watch(answers, (newAnswers) => {
-  if (!isReviewMode.value) {
-    localStorage.setItem('bac_draft_answers', JSON.stringify(newAnswers));
+  if (!isReviewMode.value && userEmail) {
+    localStorage.setItem(`bac_draft_answers_${userEmail}`, JSON.stringify(newAnswers));
   }
 }, { deep: true });
 
@@ -379,9 +379,9 @@ onMounted(async () => {
       }
     } catch (error) {}
   } else {
-    const savedDraft = localStorage.getItem('bac_draft_answers');
+    const savedDraft = localStorage.getItem(`bac_draft_answers_${userEmail}`);
     if (savedDraft) Object.assign(answers, JSON.parse(savedDraft));
-    loadProfile(); // Sayfa açılışında Atakan'ın profilini (2) yükle
+    loadProfile(); 
   }
   
   isLoading.value = false; 
@@ -495,7 +495,7 @@ const finishPostTest = async () => {
     });
     
     alert(currentText.value.alertResult(preScore, postScore));
-    localStorage.removeItem('bac_draft_answers'); 
+    localStorage.removeItem(`bac_draft_answers_${userEmail}`); 
     router.push("/dashboard");
   } catch (err) {
     alert("Skor kaydedilirken hata oluştu!");
