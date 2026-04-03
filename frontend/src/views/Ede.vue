@@ -257,7 +257,6 @@ const currentStep = ref(1);
 const isLoading = ref(true);
 const isSaving = ref(false);
 
-// --- OTOMATİK SCROLL EKLENDİ ---
 watch(currentStep, () => {
   window.scrollTo({
     top: 0,
@@ -272,11 +271,9 @@ const answers = reactive({
   postQ1: '', postQ2: '', postQ3: ''
 });
 
-// JWT Token ve User Email
 const token = localStorage.getItem('token');
 const userEmail = localStorage.getItem('userEmail');
 
-// Simülasyon Değişkenleri
 const currentMission = ref(1);
 const currentTab = ref('web');
 const searchInput = ref('');
@@ -296,7 +293,6 @@ const answerKeys = {
 const translations = {
   tr: {
     warnEmpty: "Lütfen tüm soruları cevaplayın!",
-    // --- YÖNLENDİRME METNİ DÜZELTİLDİ ---
     alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nDashboard'a yönlendiriliyorsunuz...`,
     modTitle: "Modül 3: Excessive Data Exposure",
     preTitle: "Ön-Test",
@@ -394,11 +390,14 @@ const translations = {
     corpStatus: "Durum:",
     corpActive: "● Aktif",
     netWaiting: "⏳ Dinleniyor... Ağ trafiği bekleniyor. Lütfen önce Web Arayüzünden bir arama yapın.",
-    simRoleTranslated: computed(() => simUser.value ? simUser.value.role : '')
+    simRoleTranslated: computed(() => {
+      if(!simUser.value) return '';
+      if(simUser.value.role === 'IT Departmanı') return 'IT Department';
+      return simUser.value.role;
+    })
   },
   en: {
     warnEmpty: "Please answer all questions!",
-    // --- YÖNLENDİRME METNİ DÜZELTİLDİ ---
     alertResult: (pre, post) => `Congratulations!\nPre-Test: ${pre}%\nPost-Test: ${post}%\n\nRedirecting to Dashboard...`,
     modTitle: "Module 3: Excessive Data Exposure",
     preTitle: "Pre-Test",
@@ -527,7 +526,7 @@ watch(answers, (newAnswers) => {
 }, { deep: true });
 
 onMounted(async () => {
-  if (!userEmail || !token) return router.push('/'); // Güvenlik Kalkanı
+  if (!userEmail || !token) return router.push('/');
 
   if (isReviewMode.value) {
     try {
@@ -617,7 +616,6 @@ const verifyExploit = () => {
 };
 
 const finishPostTest = async () => {
-  // --- YÖNLENDİRME VE SCROLL DÜZELTİLDİ ---
   if (isReviewMode.value) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     return router.push("/dashboard");
@@ -649,7 +647,6 @@ const finishPostTest = async () => {
     });
     alert(currentText.value.alertResult(preScore, postScore));
     localStorage.removeItem(`ede_draft_answers_${userEmail}`); 
-    // --- YÖNLENDİRME VE SCROLL DÜZELTİLDİ ---
     window.scrollTo({ top: 0, behavior: 'smooth' });
     router.push("/dashboard");
   } catch (err) {
@@ -693,7 +690,7 @@ const finishPostTest = async () => {
 .mission-layout { display: grid; grid-template-columns: 350px 1fr; gap: 25px; margin-top: 20px; }
 .guide-panel { background: rgba(30, 41, 59, 0.4); padding: 25px; border-radius: 12px; border: 1px solid #334155; display: flex; flex-direction: column; }
 .guide-title { margin-top: 0; color: #f8fafc; font-size: 18px; margin-bottom: 10px; }
-.guide-desc { font-size: 13.5px; color: #94a3b8; line-height: 1.6; margin-bottom: 20px; }
+.guide-desc { font-size: 14px; margin-bottom: 20px; color: #94a3b8; line-height: 1.6; }
 .guide-step { padding: 15px; border-radius: 8px; margin-bottom: 12px; transition: 0.3s; opacity: 0.4; border: 1px solid transparent; }
 .guide-step.current { opacity: 1; background: rgba(59, 130, 246, 0.05); border: 1px solid #3b82f6; box-shadow: inset 0 0 15px rgba(59, 130, 246, 0.05); }
 .guide-step.done { opacity: 0.5; border-left: 4px solid #10b981; }
@@ -795,12 +792,14 @@ code.highlight { background: #000; color: #f59e0b; padding: 2px 5px; border-radi
 .btn-secondary:hover { background: #475569; }
 .btn-success { background: #059669; color: #fff; padding: 12px 28px; border-radius: 8px; border: none; cursor: pointer; transition: 0.3s; width: auto;}
 .btn-success:hover { background: #047857; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(5, 150, 105, 0.4); }
+.btn-danger { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border: none; padding: 14px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+.btn-danger:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5); }
 .btn-warning { background: #f59e0b; color: #0f172a; padding: 12px 28px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s;}
 .btn-warning:hover:not(:disabled) { background: #d97706; transform: translateY(-2px); }
 .btn-warning:disabled { opacity: 0.7; cursor: not-allowed; }
 
 .loading-screen { text-align: center; padding: 80px 0; }
 .spinner { display: inline-block; border: 4px solid rgba(59, 130, 246, 0.2); border-top-color: #3b82f6; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; }
-.spinner-small { display: inline-block; border: 3px solid rgba(148, 163, 184, 0.3); border-top-color: #94a3b8; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; margin-right: 10px; vertical-align: middle;}
+.spinner-small { display: inline-block; border: 3px solid rgba(148, 163, 184, 0.3); border-top-color: #94a3b8; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; margin-right: 10px; }
 @keyframes spin { 100% { transform: rotate(360deg); } }
 </style>
