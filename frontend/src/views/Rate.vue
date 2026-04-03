@@ -21,6 +21,7 @@
           <h2 class="step-title" :class="{ 'review-mode-title': isReviewMode }">
             {{ isReviewMode ? (currentLang === 'tr' ? '🔍 İnceleme Modu: Ön-Test Analizi' : '🔍 Review Mode: Pre-Test Analysis') : currentText.preTitle }}
           </h2>
+          <p class="step-desc" v-if="!isReviewMode">{{ currentText.s1Desc }}</p>
 
           <div class="question" v-for="(q, index) in [1, 2, 3]" :key="'pre'+index">
             <p><b v-html="currentText[`qPre${q}`]"></b></p>
@@ -183,6 +184,7 @@
           <h2 class="step-title" :class="{ 'review-mode-title': isReviewMode }">
             {{ isReviewMode ? (currentLang === 'tr' ? '🔍 İnceleme Modu: Son-Test Analizi' : '🔍 Review Mode: Post-Test Analysis') : currentText.postTitle }}
           </h2>
+          <p class="step-desc" v-if="!isReviewMode">{{ currentText.s4Desc }}</p>
 
           <div class="question" v-for="(q, index) in [1, 2, 3]" :key="'post'+index">
             <p><b v-html="currentText[`qPost${q}`]"></b></p>
@@ -218,6 +220,14 @@ const currentStep = ref(1);
 const isLoading = ref(true);
 const isSaving = ref(false);
 
+// --- OTOMATİK SCROLL EKLENDİ ---
+watch(currentStep, () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
 const isReviewMode = computed(() => route.query.review === 'true');
 
 const answers = reactive({
@@ -225,6 +235,7 @@ const answers = reactive({
   postQ1: '', postQ2: '', postQ3: ''
 });
 
+// JWT Token ve Kullanıcı Bilgisi
 const token = localStorage.getItem('token');
 const userEmail = localStorage.getItem('userEmail');
 
@@ -252,9 +263,11 @@ const answerKeys = {
 const translations = {
   tr: {
     warnEmpty: "Lütfen tüm soruları cevaplayın!",
-    alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nKarnenize yönlendiriliyorsunuz...`,
+    // --- ALERT MESAJI DÜZELTİLDİ ---
+    alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nDashboard'a yönlendiriliyorsunuz...`,
     modTitle: "Modül 5: Rate Limiting (Hız Sınırlandırma)",
     preTitle: "Ön-Test",
+    s1Desc: "Aşağıdaki soruları yanıtlayarak mevcut bilgi seviyenizi ölçelim.",
     
     qPre1: "1. 'Rate Limiting' mekanizmasının temel güvenlik işlevi aşağıdakilerden hangisidir?",
     optPre1_1: "A) Sunucunun çökmemesi adına çok hızlı veri trafiğini filtrelemek veya yavaşlatmak.",
@@ -322,6 +335,7 @@ const translations = {
     btnToPost: "Tüm Detayları Anladım -> Son Teste Geç",
 
     postTitle: "Son-Test",
+    s4Desc: "Bu modülde öğrendiklerinizi pekiştirelim.",
     
     qPost1: "1. Simülasyonda 'NovaCrypto' borsasının 4 haneli onay ekranını aşmak için kullandığımız 'Hydra' aracı hangi saldırı türünü gerçekleştirmiştir?",
     optPost1_1: "A) SQL Injection (SQLi)",
@@ -345,9 +359,11 @@ const translations = {
   },
   en: {
     warnEmpty: "Please answer all questions!",
-    alertResult: (pre, post) => `Congratulations!\nPre-Test: ${pre}%\nPost-Test: ${post}%\n\nRedirecting to stats...`,
+    // --- ALERT MESAJI DÜZELTİLDİ ---
+    alertResult: (pre, post) => `Congratulations!\nPre-Test: ${pre}%\nPost-Test: ${post}%\n\nRedirecting to Dashboard...`,
     modTitle: "Module 5: Rate Limiting",
     preTitle: "Pre-Test",
+    s1Desc: "Let's measure your current knowledge level.",
     
     qPre1: "1. What is the primary security function of a 'Rate Limiting' mechanism?",
     optPre1_1: "A) To filter or slow down very fast data traffic to prevent the server from crashing.",
@@ -415,6 +431,7 @@ const translations = {
     btnToPost: "I Understood the Details -> Go to Post-Test",
 
     postTitle: "Post-Test",
+    s4Desc: "Let's reinforce what you learned.",
     
     qPost1: "1. What type of attack did we perform using the 'Hydra' tool to bypass NovaCrypto's 4-digit SMS verification screen in the simulation?",
     optPost1_1: "A) SQL Injection (SQLi)",
@@ -462,7 +479,10 @@ watch(answers, (newAnswers) => {
 }, { deep: true });
 
 onMounted(async () => {
-  if (!userEmail || !token) return router.push('/'); // Güvenlik Kalkanı
+  if (!userEmail || !token) {
+    router.push('/'); // Güvenlik Kalkanı
+    return;
+  }
 
   if (isReviewMode.value) {
     try {
@@ -600,8 +620,16 @@ const backToTarget = () => {
 };
 
 const finishPostTest = async () => {
-  if (isReviewMode.value) return router.push("/stats");
-  if (!answers.postQ1 || !answers.postQ2 || !answers.postQ3) return alert(currentText.value.warnEmpty);
+  // --- YÖNLENDİRME DÜZELTİLDİ ---
+  if (isReviewMode.value) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    router.push("/dashboard");
+    return;
+  }
+  
+  if (!answers.postQ1 || !answers.postQ2 || !answers.postQ3) {
+    return alert(currentText.value.warnEmpty);
+  }
   
   isSaving.value = true;
   let preScore = 0; let postScore = 0;
@@ -628,7 +656,9 @@ const finishPostTest = async () => {
     alert(currentText.value.alertResult(preScore, postScore));
     // DİKKAT: SİLERKEN E-POSTA EKLENDİ
     localStorage.removeItem(`rate_draft_answers_${userEmail}`); 
-    router.push("/stats");
+    // --- YÖNLENDİRME VE SCROLL DÜZELTİLDİ ---
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    router.push("/dashboard");
   } catch (err) {
     alert("Hata oluştu!");
   } finally {
@@ -650,7 +680,8 @@ const finishPostTest = async () => {
 .mod-title { color: #f8fafc; font-size: 32px; font-weight: 700; margin-bottom: 20px; }
 .neon-divider { height: 1px; background: linear-gradient(90deg, #f59e0b, transparent); margin-bottom: 35px; }
 
-.step-title { color: #f8fafc; font-size: 24px; border-left: 4px solid #f59e0b; padding-left: 15px; margin-bottom: 25px; }
+.step-title { color: #f8fafc; font-size: 24px; border-left: 4px solid #f59e0b; padding-left: 15px; margin-bottom: 10px; }
+.step-desc { font-size: 15px; color: #94a3b8; margin-bottom: 25px;}
 .review-mode-title { color: #10b981; border-left-color: #10b981; }
 
 /* Sorular ve Seçenekler */

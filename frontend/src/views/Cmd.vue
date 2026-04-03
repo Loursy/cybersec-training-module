@@ -4,7 +4,7 @@
 
     <div class="container">
       <button class="lang-btn" @click="toggleLanguage">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         {{ currentLang === 'tr' ? 'EN' : 'TR' }}
       </button>
 
@@ -207,6 +207,14 @@ const currentStep = ref(1);
 const isLoading = ref(true);
 const isSaving = ref(false);
 
+// --- OTOMATİK SCROLL EKLENDİ ---
+watch(currentStep, () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
 const isReviewMode = computed(() => route.query.review === 'true');
 
 const answers = reactive({
@@ -234,7 +242,8 @@ const answerKeys = {
 const translations = {
   tr: {
     warnEmpty: "Lütfen tüm soruları cevaplayın!",
-    alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nKarnenize yönlendiriliyorsunuz...`,
+    // --- YÖNLENDİRME MESAJI DÜZELTİLDİ ---
+    alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nDashboard'a yönlendiriliyorsunuz...`,
     modTitle: "Modül 6: OS Command Injection",
     preTitle: "Ön-Test",
     s1Desc: "Aşağıdaki soruları yanıtlayarak mevcut bilgi seviyenizi ölçelim.",
@@ -287,7 +296,7 @@ const translations = {
     trnH3: "Sınırları Aşmak (Tam Yetki)",
     trnP3: "Sistem <code class='highlight'>ping 127.0.0.1</code> işlemini başarıyla tamamladıktan hemen sonra, senin gizlice sızdırdığın <code class='highlight'>cat /etc/passwd</code> komutunu kendi yerel komutuymuş gibi çalıştırdı. Böylece basit bir ağ aracı, veritabanı hırsızlığına dönüştü.",
     trnH4: "🛡️ Kesin Çözüm: Allowlist (İzin Listesi) Doğrulaması",
-    trnP4: "Bu zafiyeti önlemek için \"Kara Liste\" (noktalı virgülü veya 'cat' kelimesini yasaklamak) işe yaramaz; çünkü hackerlar her zaman komutları bağlayacak başka bir karakter (örn: <code style='color:#10b981;'>&&</code> veya <code style='color:#10b981;'>|</code>) bulur.<br><br><b>Doğru ve tek yöntem \"Beyaz Liste\" (Allowlist) kullanmaktır:</b> Sistem, gelen verinin SADECE rakamlardan ve noktalardan (0-9 ve .) oluşup oluşmadığını kontrol etmeli, içinde harf veya özel karakter barındıran tüm işlemleri anında reddetmelidir.",
+    trnP4: "Bu zafiyeti önlemek için \"Kara Liste\" (noktalı virgülü veya 'cat' kelimesini yasaklamak) işe yaramaz; çünkü hackerlar her zaman komutları bağlayacak başka bir karakter (örn: <code style='color:#10b981;'>&&</code> veya <code style='color:#10b981;'>|</code>).<br><br><b>Doğru ve tek yöntem \"Beyaz Liste\" (Allowlist) kullanmaktır:</b> Sistem, gelen verinin SADECE rakamlardan ve noktalardan (0-9 ve .) oluşup oluşmadığını kontrol etmeli, içinde harf veya özel karakter barındıran tüm işlemleri anında reddetmelidir.",
     btnToPost: "Tüm Detayları Anladım -> Son Teste Geç",
 
     postTitle: "Son-Test",
@@ -314,7 +323,8 @@ const translations = {
   },
   en: {
     warnEmpty: "Please answer all questions!",
-    alertResult: (pre, post) => `Congratulations!\nPre-Test: ${pre}%\nPost-Test: ${post}%\n\nRedirecting to stats...`,
+    // --- YÖNLENDİRME MESAJI DÜZELTİLDİ ---
+    alertResult: (pre, post) => `Congratulations!\nPre-Test: ${pre}%\nPost-Test: ${post}%\n\nRedirecting to Dashboard...`,
     modTitle: "Module 6: OS Command Injection",
     preTitle: "Pre-Test",
     s1Desc: "Let's measure your current knowledge level.",
@@ -410,9 +420,10 @@ const getLabelClass = (testPrefix, questionKey, option) => {
   return '';
 };
 
+// DİKKAT: KAYDEDERKEN E-POSTA EKLENDİ
 watch(answers, (newAnswers) => {
-  if (!isReviewMode.value) {
-    localStorage.setItem('cmd_draft_answers', JSON.stringify(newAnswers));
+  if (!isReviewMode.value && userEmail) {
+    localStorage.setItem(`cmd_draft_answers_${userEmail}`, JSON.stringify(newAnswers));
   }
 }, { deep: true });
 
@@ -430,7 +441,8 @@ onMounted(async () => {
       }
     } catch (error) {}
   } else {
-    const savedDraft = localStorage.getItem('cmd_draft_answers');
+    // DİKKAT: YÜKLERKEN E-POSTA EKLENDİ
+    const savedDraft = localStorage.getItem(`cmd_draft_answers_${userEmail}`);
     if (savedDraft) Object.assign(answers, JSON.parse(savedDraft));
   }
   
@@ -547,7 +559,13 @@ const executeCommand = async () => {
 };
 
 const finishPostTest = async () => {
-  if (isReviewMode.value) return router.push("/stats");
+  // --- YÖNLENDİRME DÜZELTİLDİ ---
+  if (isReviewMode.value) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    router.push("/dashboard");
+    return;
+  }
+
   if (!answers.postQ1 || !answers.postQ2 || !answers.postQ3) return alert(currentText.value.warnEmpty);
   
   isSaving.value = true;
@@ -574,8 +592,11 @@ const finishPostTest = async () => {
       body: JSON.stringify({ email: userEmail, module: "cmd", preScore, postScore, answers }),
     });
     alert(currentText.value.alertResult(preScore, postScore));
-    localStorage.removeItem('cmd_draft_answers'); 
-    router.push("/stats");
+    // DİKKAT: SİLERKEN E-POSTA EKLENDİ
+    localStorage.removeItem(`cmd_draft_answers_${userEmail}`); 
+    // --- YÖNLENDİRME DÜZELTİLDİ ---
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    router.push("/dashboard");
   } catch (err) {
     alert("Hata oluştu!");
   } finally {

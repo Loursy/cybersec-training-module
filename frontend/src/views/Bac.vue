@@ -172,6 +172,14 @@ const currentStep = ref(1);
 const isSaving = ref(false);
 const isLoading = ref(true);
 
+// Otomatik Scroll Eklemesi
+watch(currentStep, () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
 const isReviewMode = computed(() => route.query.review === 'true');
 
 const answers = reactive({
@@ -179,6 +187,7 @@ const answers = reactive({
   postQ1: '', postQ2: '', postQ3: ''
 });
 
+// JWT Token ve User Email
 const token = localStorage.getItem('token');
 const userEmail = localStorage.getItem('userEmail');
 
@@ -198,7 +207,8 @@ const answerKeys = {
 const translations = {
   tr: {
     warnEmpty: "Lütfen tüm soruları cevaplayın!",
-    alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nKarnenize yönlendiriliyorsunuz...`,
+    // --- YÖNLENDİRME MESAJI DÜZELTİLDİ ---
+    alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nDashboard'a yönlendiriliyorsunuz...`,
     modTitle: "Modül 2: Broken Access Control (BAC)",
     s1Title: "Adım 1: Ön-Test (Bilgi Ölçümü)",
     s1Desc: "Aşağıdaki soruları yanıtlayarak mevcut bilgi seviyenizi ölçelim.",
@@ -262,7 +272,8 @@ const translations = {
   },
   en: {
     warnEmpty: "Please answer all questions!",
-    alertResult: (pre, post) => `Congratulations!\nPre-Test Score: ${pre}%\nPost-Test Score: ${post}%\n\nRedirecting to your stats...`,
+    // --- YÖNLENDİRME MESAJI DÜZELTİLDİ ---
+    alertResult: (pre, post) => `Congratulations!\nPre-Test Score: ${pre}%\nPost-Test Score: ${post}%\n\nRedirecting to your Dashboard...`,
     modTitle: "Module 2: Broken Access Control (BAC)",
     s1Title: "Step 1: Pre-Test",
     s1Desc: "Let's measure your current knowledge level.",
@@ -464,7 +475,9 @@ const loadProfile = async () => {
 };
 
 const finishPostTest = async () => {
+  // --- YÖNLENDİRME VE SCROLL EKLENDİ ---
   if (isReviewMode.value) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     router.push("/dashboard");
     return;
   }
@@ -496,6 +509,8 @@ const finishPostTest = async () => {
     
     alert(currentText.value.alertResult(preScore, postScore));
     localStorage.removeItem(`bac_draft_answers_${userEmail}`); 
+    // --- YÖNLENDİRME VE SCROLL EKLENDİ ---
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     router.push("/dashboard");
   } catch (err) {
     alert("Skor kaydedilirken hata oluştu!");

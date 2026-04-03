@@ -4,7 +4,7 @@
 
     <div class="lang-selector">
       <button class="lang-btn" :class="showPassword ? 'lang-btn-red' : 'lang-btn-blue'" @click="toggleLanguage">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         {{ currentLang === 'tr' ? 'EN' : 'TR' }}
       </button>
     </div>
@@ -158,8 +158,19 @@ const submitLogin = async () => {
     
     const data = await response.json();
     if (data.success) {
+      // 1. Ana oturum bilgileri kaydediliyor
       localStorage.setItem('token', data.token);
       localStorage.setItem('userEmail', email.value);
+
+      // 2. Beni Hatırla mantığı
+      if (rememberMe.value) {
+        localStorage.setItem('rememberedEmail', email.value);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+
+      // 3. Scroll to top ve Yönlendirme
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       router.push('/dashboard');
     } else {
       errorMessage.value = data.message || "Bir hata oluştu.";
@@ -172,8 +183,16 @@ const submitLogin = async () => {
 };
 
 onMounted(() => {
+  // Dil tercihini yükle
   const savedLang = localStorage.getItem('preferredLang');
   if (savedLang) currentLang.value = savedLang;
+
+  // Beni hatırla e-postasını yükle
+  const savedEmail = localStorage.getItem('rememberedEmail');
+  if (savedEmail) {
+    email.value = savedEmail;
+    rememberMe.value = true; // Tikli gelsin
+  }
 });
 </script>
 

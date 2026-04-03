@@ -178,10 +178,6 @@
           
           <div class="edu-card logic-box">
             <p class="edu-desc">{{ currentText.trnDesc }}</p>
-            
-            <div style="margin-top: 20px; margin-bottom: 30px; text-align: center;">
-               
-            </div>
 
             <div class="flow-step">
               <div class="flow-num step-blue">1</div>
@@ -211,9 +207,6 @@
             <div class="solution-box">
               <b class="solution-title">{{ currentText.trnH4 }}</b>
               <p class="solution-desc" v-html="currentText.trnP4"></p>
-              <div style="margin-top: 25px; text-align: center;">
-                 
-              </div>
             </div>
           </div>
 
@@ -264,6 +257,14 @@ const currentStep = ref(1);
 const isLoading = ref(true);
 const isSaving = ref(false);
 
+// --- OTOMATİK SCROLL EKLENDİ ---
+watch(currentStep, () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
 const isReviewMode = computed(() => route.query.review === 'true');
 
 const answers = reactive({
@@ -295,7 +296,8 @@ const answerKeys = {
 const translations = {
   tr: {
     warnEmpty: "Lütfen tüm soruları cevaplayın!",
-    alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nKarnenize yönlendiriliyorsunuz...`,
+    // --- YÖNLENDİRME METNİ DÜZELTİLDİ ---
+    alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nDashboard'a yönlendiriliyorsunuz...`,
     modTitle: "Modül 3: Excessive Data Exposure",
     preTitle: "Ön-Test",
     s1Desc: "Aşağıdaki soruları yanıtlayarak mevcut bilgi seviyenizi ölçelim.",
@@ -396,7 +398,8 @@ const translations = {
   },
   en: {
     warnEmpty: "Please answer all questions!",
-    alertResult: (pre, post) => `Congratulations!\nPre-Test: ${pre}%\nPost-Test: ${post}%\n\nRedirecting to stats...`,
+    // --- YÖNLENDİRME METNİ DÜZELTİLDİ ---
+    alertResult: (pre, post) => `Congratulations!\nPre-Test: ${pre}%\nPost-Test: ${post}%\n\nRedirecting to Dashboard...`,
     modTitle: "Module 3: Excessive Data Exposure",
     preTitle: "Pre-Test",
     s1Desc: "Let's measure your current knowledge level.",
@@ -614,7 +617,12 @@ const verifyExploit = () => {
 };
 
 const finishPostTest = async () => {
-  if (isReviewMode.value) return router.push("/stats");
+  // --- YÖNLENDİRME VE SCROLL DÜZELTİLDİ ---
+  if (isReviewMode.value) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return router.push("/dashboard");
+  }
+
   if (!answers.postQ1 || !answers.postQ2 || !answers.postQ3) return alert(currentText.value.warnEmpty);
   
   isSaving.value = true;
@@ -641,7 +649,9 @@ const finishPostTest = async () => {
     });
     alert(currentText.value.alertResult(preScore, postScore));
     localStorage.removeItem(`ede_draft_answers_${userEmail}`); 
-    router.push("/stats");
+    // --- YÖNLENDİRME VE SCROLL DÜZELTİLDİ ---
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    router.push("/dashboard");
   } catch (err) {
     alert("Hata oluştu!");
   } finally {
@@ -683,13 +693,13 @@ const finishPostTest = async () => {
 .mission-layout { display: grid; grid-template-columns: 350px 1fr; gap: 25px; margin-top: 20px; }
 .guide-panel { background: rgba(30, 41, 59, 0.4); padding: 25px; border-radius: 12px; border: 1px solid #334155; display: flex; flex-direction: column; }
 .guide-title { margin-top: 0; color: #f8fafc; font-size: 18px; margin-bottom: 10px; }
-.guide-desc { font-size: 14px; margin-bottom: 20px; color: #94a3b8; line-height: 1.6; }
+.guide-desc { font-size: 13.5px; color: #94a3b8; line-height: 1.6; margin-bottom: 20px; }
 .guide-step { padding: 15px; border-radius: 8px; margin-bottom: 12px; transition: 0.3s; opacity: 0.4; border: 1px solid transparent; }
 .guide-step.current { opacity: 1; background: rgba(59, 130, 246, 0.05); border: 1px solid #3b82f6; box-shadow: inset 0 0 15px rgba(59, 130, 246, 0.05); }
 .guide-step.done { opacity: 0.5; border-left: 4px solid #10b981; }
-.guide-step b { display: block; color: #38bdf8; margin-bottom: 8px; font-size: 14px; }
-.guide-step p { margin: 0; font-size: 13px; line-height: 1.6; color: #cbd5e1; }
-code.highlight { background: #000; color: #f59e0b; padding: 3px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; border: 1px solid #334155; }
+.guide-step b { display: block; color: #38bdf8; margin-bottom: 5px; font-size: 14px; }
+.guide-step p { margin: 0; font-size: 12.5px; line-height: 1.5; color: #cbd5e1; }
+code.highlight { background: #000; color: #f59e0b; padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 12px; border: 1px solid #334155; }
 
 /* UYGULAMA PANELİ (Adım 2 Sağ Taraf) */
 .app-container { display: flex; flex-direction: column; gap: 15px; }
@@ -757,47 +767,40 @@ code.highlight { background: #000; color: #f59e0b; padding: 3px 6px; border-radi
 .hacker-watermark { text-align: center; margin-top: 30px; font-family: monospace; color: #374151; letter-spacing: 4px; font-weight: bold; font-size: 16px; }
 
 /* Eğitim Adımı (Adım 3) */
-.edu-card { background: #1e293b; border-radius: 12px; padding: 30px; border: 1px solid #334155; }
+.edu-card { background: #1e293b; padding: 30px; border-radius: 12px; border: 1px solid #334155; }
 .logic-box { border-left: 4px solid #3b82f6; }
-.edu-desc { font-size: 15px; line-height: 1.6; color: #cbd5e1; margin-top: 0; margin-bottom: 25px; }
+.edu-desc-txt { font-size: 15px; line-height: 1.6; color: #cbd5e1; margin-top: 0; margin-bottom: 25px; }
 .flow-step { display: flex; gap: 15px; margin-top: 20px; align-items: flex-start; }
 .flow-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 14px; color: #0f172a; }
 .step-blue { background: #38bdf8; }
 .step-yellow { background: #fbbf24; }
 .step-red { background: #ef4444; color: #fff; }
-.step-title-text { font-size: 16px; display: block; margin-bottom: 5px; }
+.step-heading { font-size: 16px; display: block; margin-bottom: 5px; }
 .blue-text { color: #38bdf8; }
 .yellow-text { color: #fbbf24; }
 .red-text { color: #ef4444; }
-.step-desc-text { margin: 0; font-size: 14px; color: #94a3b8; line-height: 1.6; }
-.code-block { background: #0b1120; color: #f8fafc; padding: 15px; border-radius: 6px; font-family: monospace; margin: 12px 0 0 0; border: 1px solid #334155; font-size: 13px; }
-.comment { color: #64748b; font-style: italic; }
-.solution-box { background: rgba(16, 185, 129, 0.05); padding: 20px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3); margin-top: 35px; border-left: 4px solid #10b981; }
-.solution-title { color: #10b981; font-size: 16px; display: block; margin-bottom: 10px; }
-.solution-desc { margin: 0; font-size: 14px; line-height: 1.7; color: #cbd5e1; }
+.step-info { margin: 0; font-size: 14px; color: #94a3b8; line-height: 1.6; }
+.code-red { color: #fca5a5; background: #000; padding: 2px 4px; border-radius: 4px; font-family: monospace;}
+.code-green { color: #10b981; background: #000; padding: 2px 4px; border-radius: 4px; font-family: monospace;}
+.solution-box { background: rgba(16, 185, 129, 0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2); margin-top: 35px; border-left: 5px solid #10b981; }
+.solution-title-text { color: #10b981; font-size: 16px; display: block; margin-bottom: 10px; }
+.solution-info { margin: 0; font-size: 14px; line-height: 1.7; color: #cbd5e1; }
 
-/* Butonlar & Aksiyonlar */
-.action-footer { margin-top: 30px; display: flex; justify-content: flex-end; width: 100%;}
+/* Butonlar & Utils */
+.action-footer { margin-top: 30px; display: flex; justify-content: flex-end; }
 .action-footer.space-between { justify-content: space-between; }
-button { font-family: inherit; }
-.btn-primary { background: #3b82f6; color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; }
-.btn-primary:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4); }
-.btn-secondary { background: #334155; color: #f8fafc; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+.btn-primary { background: #0284c7; color: #fff; padding: 12px 28px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; transition: 0.3s;}
+.btn-primary:hover { background: #0369a1; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(2, 132, 199, 0.4); }
+.btn-secondary { background: #334155; color: #fff; padding: 12px 28px; border-radius: 8px; border: none; cursor: pointer; transition: 0.3s;}
 .btn-secondary:hover { background: #475569; }
-.btn-success { background: #10b981; color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; width: auto;}
-.btn-success:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4); }
-.btn-danger { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border: none; padding: 14px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
-.btn-danger:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5); }
-.btn-warning { background: #f59e0b; color: #0f172a; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; }
+.btn-success { background: #059669; color: #fff; padding: 12px 28px; border-radius: 8px; border: none; cursor: pointer; transition: 0.3s; width: auto;}
+.btn-success:hover { background: #047857; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(5, 150, 105, 0.4); }
+.btn-warning { background: #f59e0b; color: #0f172a; padding: 12px 28px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s;}
 .btn-warning:hover:not(:disabled) { background: #d97706; transform: translateY(-2px); }
 .btn-warning:disabled { opacity: 0.7; cursor: not-allowed; }
 
-/* Animasyonlar ve Yükleyiciler */
-.fade-in { animation: fadeIn 0.5s ease-out forwards; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
 .loading-screen { text-align: center; padding: 80px 0; }
-.spinner { display: inline-block; border: 4px solid rgba(59, 130, 246, 0.2); border-top-color: #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+.spinner { display: inline-block; border: 4px solid rgba(59, 130, 246, 0.2); border-top-color: #3b82f6; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; }
 .spinner-small { display: inline-block; border: 3px solid rgba(148, 163, 184, 0.3); border-top-color: #94a3b8; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; margin-right: 10px; vertical-align: middle;}
 @keyframes spin { 100% { transform: rotate(360deg); } }
 </style>

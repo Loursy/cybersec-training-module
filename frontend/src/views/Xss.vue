@@ -278,6 +278,14 @@ const currentStep = ref(1);
 const isLoading = ref(true);
 const isSaving = ref(false);
 
+// --- OTOMATİK SCROLL EKLENDİ ---
+watch(currentStep, () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
 const isReviewMode = computed(() => route.query.review === 'true');
 
 const answers = reactive({
@@ -309,7 +317,8 @@ const answerKeys = {
 const translations = {
   tr: {
     warnEmpty: "Lütfen tüm soruları cevaplayın!",
-    alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nKarnenize yönlendiriliyorsunuz...`,
+    // --- YÖNLENDİRME MESAJI DÜZELTİLDİ ---
+    alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nDashboard'a yönlendiriliyorsunuz...`,
     modTitle: "Modül 4: Cross-Site Scripting (XSS)",
     preTitle: "Ön-Test",
     
@@ -411,7 +420,8 @@ const translations = {
   },
   en: {
     warnEmpty: "Please answer all questions!",
-    alertResult: (pre, post) => `Congratulations!\nPre-Test: ${pre}%\nPost-Test: ${post}%\n\nRedirecting to stats...`,
+    // --- YÖNLENDİRME MESAJI DÜZELTİLDİ ---
+    alertResult: (pre, post) => `Congratulations!\nPre-Test: ${pre}%\nPost-Test: ${post}%\n\nRedirecting to Dashboard...`,
     modTitle: "Module 4: Cross-Site Scripting (XSS)",
     preTitle: "Pre-Test",
     
@@ -529,7 +539,6 @@ const getLabelClass = (testPrefix, questionKey, option) => {
   return '';
 };
 
-// DİKKAT: KAYDEDERKEN E-POSTA EKLENDİ
 watch(answers, (newAnswers) => {
   if (!isReviewMode.value && userEmail) {
     localStorage.setItem(`xss_draft_answers_${userEmail}`, JSON.stringify(newAnswers));
@@ -550,7 +559,6 @@ onMounted(async () => {
       }
     } catch (error) {}
   } else {
-    // DİKKAT: YÜKLERKEN E-POSTA EKLENDİ
     const savedDraft = localStorage.getItem(`xss_draft_answers_${userEmail}`);
     if (savedDraft) Object.assign(answers, JSON.parse(savedDraft));
   }
@@ -620,8 +628,17 @@ const hijackSession = () => {
 };
 
 const finishPostTest = async () => {
-  if (isReviewMode.value) return router.push("/stats");
-  if (!answers.postQ1 || !answers.postQ2 || !answers.postQ3) return alert(currentText.value.warnEmpty);
+  // --- YÖNLENDİRME VE SCROLL DÜZELTİLDİ ---
+  if (isReviewMode.value) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    router.push("/dashboard");
+    return;
+  }
+
+  if (!answers.postQ1 || !answers.postQ2 || !answers.postQ3) {
+    alert(currentText.value.warnEmpty);
+    return;
+  }
   
   isSaving.value = true;
   let preScore = 0; let postScore = 0;
@@ -646,9 +663,10 @@ const finishPostTest = async () => {
       body: JSON.stringify({ email: userEmail, module: "xss", preScore, postScore, answers }),
     });
     alert(currentText.value.alertResult(preScore, postScore));
-    // DİKKAT: SİLERKEN E-POSTA EKLENDİ
     localStorage.removeItem(`xss_draft_answers_${userEmail}`); 
-    router.push("/stats");
+    // --- YÖNLENDİRME VE SCROLL DÜZELTİLDİ ---
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    router.push("/dashboard");
   } catch (err) {
     alert("Hata oluştu!");
   } finally {
@@ -752,16 +770,21 @@ code.highlight { background: #000; color: #f59e0b; padding: 2px 5px; border-radi
 /* Admin Panel */
 .admin-panel-success { background: #050505; padding: 30px; border-radius: 12px; border: 2px solid #ef4444; box-shadow: 0 0 30px rgba(239, 68, 68, 0.2); animation: fadeIn 1s;}
 .admin-panel-header { color: #ef4444; font-size: 22px; font-weight: bold; border-bottom: 1px dashed #ef4444; padding-bottom: 15px; margin-bottom: 20px; display: flex; align-items: center; }
-.blinking-dot { width: 14px; height: 14px; background: #ef4444; border-radius: 50%; margin-right: 12px; animation: blink 1s infinite; }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-.admin-desc-txt { font-size: 15px; color: #fca5a5; margin-bottom:25px; line-height:1.6; }
+.blinking-dot { width: 14px; height: 14px; background: #ef4444; border-radius: 50%; margin-right: 12px; animation: blink 1s infinite; box-shadow: 0 0 8px #ef4444;}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.hacked-mode { background: #000; padding: 30px; }
+.admin-dashboard { color: #f8fafc; }
+.glitch-text { color: #ef4444; margin-top: 0; font-size: 24px; text-transform: uppercase; border-bottom: 1px dashed #ef4444; padding-bottom: 10px; margin-bottom: 10px; }
+.admin-desc { font-size: 14px; color: #fca5a5; line-height: 1.6; margin-bottom: 25px; }
 .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.admin-card { background: #111827; padding: 20px; border-radius: 8px; border: 1px solid #374151; }
-.admin-card code { display: block; background: #000; color: #10b981; padding: 8px; border-radius: 4px; font-size: 11px; margin-top: 10px; }
+.admin-card { background: #111827; border: 1px solid #374151; padding: 20px; border-radius: 8px; }
+.admin-card h4 { margin: 0 0 15px 0; color: #f8fafc; font-size: 15px; border-bottom: 1px solid #374151; padding-bottom: 10px;}
+.admin-card code { display: block; background: #050505; color: #10b981; padding: 8px; margin-bottom: 8px; border-radius: 4px; font-size: 12px; border-left: 3px solid #10b981; }
+.hacker-watermark { text-align: center; margin-top: 30px; font-family: monospace; color: #374151; letter-spacing: 4px; font-weight: bold; font-size: 16px; }
 
-/* Eğitim Adımı */
+/* Eğitim Adımı (Adım 3) */
 .edu-card { background: #1e293b; padding: 30px; border-radius: 12px; border: 1px solid #334155; }
-.logic-box { border-left: 4px solid #38bdf8; }
+.logic-box { border-left: 4px solid #3b82f6; }
 .edu-desc-txt { font-size: 15px; line-height: 1.6; color: #cbd5e1; margin-top: 0; margin-bottom: 25px; }
 .flow-step { display: flex; gap: 15px; margin-top: 20px; align-items: flex-start; }
 .flow-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 14px; color: #0f172a; }
@@ -793,11 +816,7 @@ code.highlight { background: #000; color: #f59e0b; padding: 2px 5px; border-radi
 .btn-warning:disabled { opacity: 0.7; cursor: not-allowed; }
 
 .loading-screen { text-align: center; padding: 80px 0; }
-.spinner { display: inline-block; border: 4px solid rgba(0, 229, 255, 0.2); border-top-color: #00e5ff; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; }
-.spinner-small { display: inline-block; border: 3px solid rgba(15, 23, 42, 0.3); border-top-color: #0f172a; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; margin-right: 10px; }
+.spinner { display: inline-block; border: 4px solid rgba(59, 130, 246, 0.2); border-top-color: #3b82f6; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; }
+.spinner-small { display: inline-block; border: 3px solid rgba(148, 163, 184, 0.3); border-top-color: #94a3b8; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; margin-right: 10px; vertical-align: middle;}
 @keyframes spin { 100% { transform: rotate(360deg); } }
-.fade-in { animation: fadeIn 0.5s ease-out forwards; }
-.fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 </style>

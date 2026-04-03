@@ -216,6 +216,14 @@ const currentStep = ref(1);
 const isSaving = ref(false);
 const isLoading = ref(true);
 
+// Otomatik Scroll Eklemesi
+watch(currentStep, () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
 const isReviewMode = computed(() => route.query.review === 'true');
 
 const answers = reactive({
@@ -309,6 +317,7 @@ const translations = {
     tblPass: "Şifre (Hash)",
     tblSecret: "Gizli Departman Verisi",
     warnEmpty: "Lütfen ilerlemeden önce tüm soruları yanıtlayın.",
+    // --- YÖNLENDİRME METNİ DÜZELTİLDİ ---
     alertResult: (pre, post) => `Modül tamamlandı!\n\n📋 Ön-Test Başarınız: ${pre}/100\n🏆 Son-Test Başarınız: ${post}/100\n\nFarkındalık artışınız kaydediliyor... Dashboard'a yönlendiriliyorsunuz.`,
   },
   en: {
@@ -382,6 +391,7 @@ const translations = {
     tblPass: "Password (Hash)",
     tblSecret: "Secret Dept Data",
     warnEmpty: "Please answer all questions.",
+    // --- YÖNLENDİRME METNİ DÜZELTİLDİ ---
     alertResult: (pre, post) => `Module completed!\n\n📋 Pre-Test: ${pre}/100\n🏆 Post-Test: ${post}/100\n\nRedirecting to Dashboard...`,
   }
 };
@@ -402,7 +412,6 @@ const getLabelClass = (testPrefix, questionKey, option) => {
   return '';
 };
 
-// DİKKAT: Bütün modüllerindeki bu kısmı böyle güncellemeyi unutma!
 watch(answers, (newAnswers) => {
   if (!isReviewMode.value && userEmail) {
     localStorage.setItem(`sqli_draft_answers_${userEmail}`, JSON.stringify(newAnswers));
@@ -427,7 +436,6 @@ onMounted(async () => {
       }
     } catch (error) {}
   } else {
-    // DİKKAT: Yüklerken de kullanıcıya özel anahtarı çağırıyoruz.
     const savedDraft = localStorage.getItem(`sqli_draft_answers_${userEmail}`);
     if (savedDraft) Object.assign(answers, JSON.parse(savedDraft));
   }
@@ -486,7 +494,9 @@ const runExploit = async () => {
 };
 
 const finishPostTest = async () => {
+  // --- YÖNLENDİRME VE SCROLL EKLENDİ ---
   if (isReviewMode.value) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     router.push("/dashboard");
     return;
   }
@@ -517,8 +527,9 @@ const finishPostTest = async () => {
     });
     
     alert(currentText.value.alertResult(preScore, postScore));
-    // DİKKAT: Temizlerken de kullanıcıya özel anahtarı siliyoruz.
     localStorage.removeItem(`sqli_draft_answers_${userEmail}`); 
+    // --- YÖNLENDİRME VE SCROLL EKLENDİ ---
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     router.push("/dashboard");
   } catch (err) {
     alert("Skor kaydedilirken hata oluştu!");
