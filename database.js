@@ -64,25 +64,12 @@ const db = new sqlite3.Database("./training.db", (err) => {
             secret_message TEXT
         )`,
       () => {
-        db.get("SELECT COUNT(*) AS count FROM dummy_profiles", (err, row) => {
-          if (row.count === 0) {
-            db.serialize(() => {
-              // DİKKAT: ID'leri açıkça belirterek ekliyoruz ki kimse kimsenin yerine geçmesin!
-              db.run(
-                "INSERT INTO dummy_profiles (id, name, role, department, email, phone, secret_message) VALUES (1, 'Ahmet Yılmaz', 'CEO', 'Yönetim Kurulu', 'burak.k@sirket.com', '+90 555 100 0001', 'GİZLİ KARAR: Şirketin satılma planları başladı. Hedef 2027.')",
-              );
-
-              // 2 NUMARALI ID KESİNLİKLE ATAKAN OLACAK
-              db.run(
-                "INSERT INTO dummy_profiles (id, name, role, department, email, phone, secret_message) VALUES (2, 'Atakan', 'YBS Uzmanı', 'Bilişim Teknolojileri', 'atakan@sirket.com', '+90 555 200 0002', 'Sistem güncelleme notu: Sunucu şifreleri yarın sıfırlanacak.')",
-              );
-
-              db.run(
-                "INSERT INTO dummy_profiles (id, name, role, department, email, phone, secret_message) VALUES (3, 'Zeynep Demir', 'İK Müdürü', 'İnsan Kaynakları', 'zeynep.d@sirket.com', '+90 555 300 0003', 'DİKKAT: IT departmanındaki küçülme planı onaylandı.')",
-              );
+        db.serialize(() => {
+              db.run("INSERT OR REPLACE INTO dummy_profiles (id, name, role, department, email, phone, secret_message) VALUES (1, 'Mert Aslan', 'Sistem Yöneticisi', 'Bilişim Teknolojileri', 'mert.a@globalcorp.com', '+90 555 100 0001', 'Root Şifresi: Srv@2026!Master — Üretim sunucusu erişimi. KİMSEYLE PAYLAŞMA.')");
+              db.run("INSERT OR REPLACE INTO dummy_profiles (id, name, role, department, email, phone, secret_message) VALUES (2, 'Atakan', 'YBS Uzmanı', 'Bilişim Teknolojileri', 'atakan@globalcorp.com', '+90 555 200 0002', 'Sistem güncelleme notu: Sunucu şifreleri yarın sıfırlanacak.')");
+              db.run("INSERT OR REPLACE INTO dummy_profiles (id, name, role, department, email, phone, secret_message) VALUES (3, 'Elif Şahin', 'Güvenlik Analisti', 'Bilişim Teknolojileri', 'elif.s@globalcorp.com', '+90 555 300 0003', 'Pentest Raporu 2026-05: Sistemde 3 kritik zafiyet tespit edildi. Rapor gizli tutulmalıdır.')");
+              db.run("INSERT OR REPLACE INTO dummy_profiles (id, name, role, department, email, phone, secret_message) VALUES (4, 'Burak Kılıç', 'CFO', 'Finans', 'burak.k@globalcorp.com', '+90 555 400 0004', 'UYARI: Q4 bilanço raporu gizlendi. Belge: finans_2026_gizli.xlsx')");
             });
-          }
-        });
       },
     );
   }

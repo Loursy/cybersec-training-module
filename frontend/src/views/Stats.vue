@@ -2,73 +2,181 @@
   <div class="stats-wrapper">
     <div class="dot-grid"></div>
     <div class="container">
-      
+
       <div class="header">
-        <h2>🏆 Eğitim Karnem</h2>
-        <button class="btn-back" @click="goToDashboard">← Dashboard'a Dön</button>
+        <h2>🏆 {{ currentText.pageTitle }}</h2>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button class="lang-btn" @click="toggleLanguage">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            {{ currentLang === 'tr' ? 'EN' : 'TR' }}
+          </button>
+          <button class="btn-back" @click="goToDashboard">← {{ currentText.btnBack }}</button>
+        </div>
       </div>
 
       <div v-if="isLoading" class="loading-state">
         <span class="spinner"></span>
-        <p>Verileriniz güvenli bağlantı üzerinden çekiliyor...</p>
+        <p>{{ currentText.loading }}</p>
       </div>
 
       <div v-else class="stats-grid">
-        
-        <div v-for="mod in modules" :key="mod.id" class="stat-card" :class="{ 'completed': statsData[mod.id + '_completed'] }">
+
+        <div v-for="mod in currentModules" :key="mod.id" class="stat-card" :class="{ 'completed': statsData[mod.id + '_completed'] }">
           <h3>{{ mod.title }}</h3>
-          
+
           <div v-if="statsData[mod.id + '_completed']" class="scores-container">
             <div class="score-row">
-              <span class="score-label">Ön-Test:</span>
+              <span class="score-label">{{ currentText.preTest }}</span>
               <span class="score-value" :class="getScoreColor(statsData[mod.id + '_pre'])">
                 {{ statsData[mod.id + '_pre'] }} / 100
               </span>
             </div>
             <div class="score-row">
-              <span class="score-label">Son-Test:</span>
+              <span class="score-label">{{ currentText.postTest }}</span>
               <span class="score-value" :class="getScoreColor(statsData[mod.id + '_post'])">
                 {{ statsData[mod.id + '_post'] }} / 100
               </span>
             </div>
-            
+
+            <div class="score-row diff-row">
+              <span class="score-label">{{ currentText.diffLabel }}</span>
+              <span class="diff-badge" :class="getDiffColor(getDiff(mod.id))">
+                <span>{{ getDiff(mod.id) > 0 ? '↑' : getDiff(mod.id) < 0 ? '↓' : '→' }}</span>
+                {{ getDiff(mod.id) > 0 ? '+' : '' }}{{ getDiff(mod.id) }} {{ currentText.points }}
+              </span>
+            </div>
+
             <button class="btn-review" @click="goToReview(mod.path)">
-              🔍 Cevaplarımı İncele
+              🔍 {{ currentText.btnReview }}
             </button>
           </div>
-          
+
           <div v-else class="not-completed">
             <div class="lock-icon">🔒</div>
-            <p>Bu modülü henüz tamamlamadınız.</p>
+            <p>{{ currentText.notCompleted }}</p>
           </div>
         </div>
 
       </div>
+
+      <div v-if="completedCount > 0" class="summary-panel">
+        <h3 class="summary-title">📊 {{ currentText.summaryTitle }}</h3>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <div class="summary-num">{{ completedCount }} / 3</div>
+            <div class="summary-label">{{ currentText.completedModules }}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-num" :class="getScoreColor(overallStats.avgPre)">{{ overallStats.avgPre }}</div>
+            <div class="summary-label">{{ currentText.avgPre }}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-num" :class="getScoreColor(overallStats.avgPost)">{{ overallStats.avgPost }}</div>
+            <div class="summary-label">{{ currentText.avgPost }}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-num" :class="getDiffColor(overallStats.avgDiff)">
+              {{ overallStats.avgDiff > 0 ? '+' : '' }}{{ overallStats.avgDiff }}
+            </div>
+            <div class="summary-label">{{ currentText.overallDiff }}</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const isLoading = ref(true);
 const statsData = ref({});
+const currentLang = ref(localStorage.getItem('preferredLang') || 'tr');
 
-// JWT Token ve User Email
 const token = localStorage.getItem('token');
 const userEmail = localStorage.getItem('userEmail');
 
-// Platformdaki tüm modüllerin listesi ve rotaları
-const modules = [
-  { id: 'sqli', title: '1. SQL Injection', path: '/module/sqli' },
-  { id: 'bac', title: '2. Broken Access Control', path: '/module/bac' },
-  { id: 'ede', title: '3. Excessive Data Exposure', path: '/module/ede' },
-  { id: 'xss', title: '4. Cross-Site Scripting (XSS)', path: '/module/xss' },
-  { id: 'rate', title: '5. Rate Limiting', path: '/module/rate' },
-  { id: 'cmd', title: '6. OS Command Injection', path: '/module/cmd' }
+const translations = {
+  tr: {
+    pageTitle: 'Eğitim Karnem',
+    btnBack: "Dashboard'a Dön",
+    loading: 'Verileriniz güvenli bağlantı üzerinden çekiliyor...',
+    preTest: 'Ön-Test:',
+    postTest: 'Son-Test:',
+    diffLabel: 'Başarı Farkı:',
+    points: 'puan',
+    btnReview: 'Cevaplarımı İncele',
+    notCompleted: 'Bu modülü henüz tamamlamadınız.',
+    summaryTitle: 'Genel Başarı Özeti',
+    completedModules: 'Tamamlanan Modül',
+    avgPre: 'Ort. Ön-Test',
+    avgPost: 'Ort. Son-Test',
+    overallDiff: 'Genel Gelişim',
+  },
+  en: {
+    pageTitle: 'My Training Report',
+    btnBack: 'Back to Dashboard',
+    loading: 'Fetching your data over a secure connection...',
+    preTest: 'Pre-Test:',
+    postTest: 'Post-Test:',
+    diffLabel: 'Score Change:',
+    points: 'pts',
+    btnReview: 'Review My Answers',
+    notCompleted: 'You have not completed this module yet.',
+    summaryTitle: 'Overall Performance Summary',
+    completedModules: 'Modules Completed',
+    avgPre: 'Avg. Pre-Test',
+    avgPost: 'Avg. Post-Test',
+    overallDiff: 'Overall Progress',
+  }
+};
+
+const currentText = computed(() => translations[currentLang.value]);
+
+const toggleLanguage = () => {
+  currentLang.value = currentLang.value === 'tr' ? 'en' : 'tr';
+  localStorage.setItem('preferredLang', currentLang.value);
+};
+
+const modulesTr = [
+  { id: 'bac',  title: 'Broken Access Control (A01)',  path: '/module/bac' },
+  { id: 'sqli', title: 'SQL Injection (A05)',          path: '/module/sqli' },
+  { id: 'cf',   title: 'Authentication Failures (A07)',path: '/module/cf' },
 ];
+
+const allModuleIds = ['bac', 'sqli', 'cf'];
+
+const currentModules = computed(() => modulesTr);
+
+const completedCount = computed(() =>
+  allModuleIds.filter(id => statsData.value[`${id}_completed`]).length
+);
+
+const getDiff = (moduleId) => {
+  const pre = statsData.value[`${moduleId}_pre`];
+  const post = statsData.value[`${moduleId}_post`];
+  if (pre === undefined || post === undefined) return 0;
+  return post - pre;
+};
+
+const getDiffColor = (diff) => {
+  if (diff > 0) return 'text-green';
+  if (diff < 0) return 'text-red';
+  return 'text-neutral';
+};
+
+const overallStats = computed(() => {
+  const completed = allModuleIds.filter(id => statsData.value[`${id}_completed`]);
+  if (completed.length === 0) return { avgPre: 0, avgPost: 0, avgDiff: 0 };
+  const totalPre = completed.reduce((sum, id) => sum + (statsData.value[`${id}_pre`] || 0), 0);
+  const totalPost = completed.reduce((sum, id) => sum + (statsData.value[`${id}_post`] || 0), 0);
+  const avgPre = Math.round(totalPre / completed.length);
+  const avgPost = Math.round(totalPost / completed.length);
+  return { avgPre, avgPost, avgDiff: avgPost - avgPre };
+});
 
 onMounted(async () => {
   // 1. Güvenlik Kontrolü: Token veya Email yoksa girişe şutla
@@ -163,6 +271,28 @@ const getScoreColor = (score) => {
   font-size: 28px;
 }
 
+.lang-btn {
+  background: rgba(15, 23, 42, 0.8);
+  color: #94a3b8;
+  border: 1px solid #334155;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.lang-btn:hover {
+  background: #1e293b;
+  color: #f8fafc;
+  border-color: #0ea5e9;
+}
+
 .btn-back {
   background: transparent;
   color: #00e5ff;
@@ -172,6 +302,7 @@ const getScoreColor = (score) => {
   cursor: pointer;
   font-weight: bold;
   transition: all 0.3s ease;
+  font-family: inherit;
 }
 
 .btn-back:hover {
@@ -233,6 +364,70 @@ const getScoreColor = (score) => {
 .text-green { color: #10b981; }
 .text-yellow { color: #f59e0b; }
 .text-red { color: #ef4444; }
+.text-neutral { color: #64748b; }
+
+.diff-row {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid #1e293b;
+}
+
+.diff-badge {
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.summary-panel {
+  margin-top: 40px;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 28px 30px;
+}
+
+.summary-title {
+  color: #e2e8f0;
+  margin: 0 0 24px 0;
+  font-size: 18px;
+  border-bottom: 1px solid #1f2937;
+  padding-bottom: 14px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 640px) {
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.summary-item {
+  text-align: center;
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 10px;
+  padding: 18px 10px;
+}
+
+.summary-num {
+  font-size: 32px;
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+}
 
 .btn-review {
   background: linear-gradient(135deg, #10b981, #059669);

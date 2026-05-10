@@ -74,30 +74,66 @@
                   <p class="blink-text">{{ currentLang === 'tr' ? 'Kimlik doğrulama atlatılıyor...' : 'Bypassing authentication...' }}</p>
                 </div>
 
-                <div class="db-dump-screen fade-in" v-else-if="exploitStatus === 'success'">
-                  <div class="dump-header">
-                    <h3>⚠️ {{ currentText.msgSuccess }}</h3>
+                <div class="admin-panel fade-in" v-else-if="exploitStatus === 'success'">
+                  <div class="ap-topbar">
+                    <div class="ap-brand">🏢 GlobalCorp — {{ currentText.apPortalName }}</div>
+                    <div class="ap-user-chip">
+                      <span class="online-dot"></span>
+                      {{ leakedData[0]?.email || 'admin@globalcorp.com' }}
+                    </div>
                   </div>
-                  
-                  <div class="cyber-table-wrapper">
-                    <table class="cyber-table">
-                      <thead>
-                        <tr>
-                          <th>ID</th>
-                          <th>{{ currentText.tblEmail }}</th>
-                          <th>{{ currentText.tblPass }}</th>
-                          <th>{{ currentText.tblSecret }}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="user in leakedData" :key="user.id">
-                          <td>{{ user.id }}</td>
-                          <td class="td-email">{{ user.email }}</td>
-                          <td class="td-pass">{{ user.password }}</td>
-                          <td class="td-secret">{{ user.secret_data }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
+
+                  <div class="ap-bypass-alert">
+                    <span class="bypass-icon">⚠️</span>
+                    <div>
+                      <b>{{ currentText.bypassTitle }}</b>
+                      <p>{{ currentText.bypassDesc }}</p>
+                    </div>
+                  </div>
+
+                  <div class="ap-stats-grid">
+                    <div class="ap-stat-card">
+                      <div class="stat-icon">👥</div>
+                      <div class="stat-num">1,247</div>
+                      <div class="stat-label">{{ currentText.apStatUsers }}</div>
+                    </div>
+                    <div class="ap-stat-card">
+                      <div class="stat-icon">💰</div>
+                      <div class="stat-num">$2.4M</div>
+                      <div class="stat-label">{{ currentText.apStatRevenue }}</div>
+                    </div>
+                    <div class="ap-stat-card ap-danger-card">
+                      <div class="stat-icon">🔓</div>
+                      <div class="stat-num">OPEN</div>
+                      <div class="stat-label">{{ currentText.apStatSecurity }}</div>
+                    </div>
+                    <div class="ap-stat-card">
+                      <div class="stat-icon">🖥️</div>
+                      <div class="stat-num">843</div>
+                      <div class="stat-label">{{ currentText.apStatSessions }}</div>
+                    </div>
+                  </div>
+
+                  <div class="ap-internal-docs">
+                    <div class="ap-docs-header">
+                      <span>🔒</span>
+                      <span>{{ currentText.apDocsTitle }}</span>
+                    </div>
+                    <div class="ap-doc-row">
+                      <span class="doc-icon">📊</span>
+                      <span class="doc-name">{{ currentText.apDoc1 }}</span>
+                      <span class="doc-badge">{{ currentText.apDocBadge }}</span>
+                    </div>
+                    <div class="ap-doc-row">
+                      <span class="doc-icon">🗄️</span>
+                      <span class="doc-name">{{ currentText.apDoc2 }}</span>
+                      <span class="doc-badge">{{ currentText.apDocBadge }}</span>
+                    </div>
+                    <div class="ap-doc-row ap-highlight-row" v-if="leakedData[0]">
+                      <span class="doc-icon">🔑</span>
+                      <span class="doc-name">{{ leakedData[0].secret_data }}</span>
+                      <span class="doc-badge doc-badge-red">{{ currentText.apDocBadgeTop }}</span>
+                    </div>
                   </div>
                 </div>
 
@@ -247,7 +283,7 @@ const answerKeys = {
 
 const translations = {
   tr: {
-    modTitle: "Modül 1: SQL Injection (SQLi)",
+    modTitle: "A05: SQL Injection",
     s1Title: "Adım 1: Ön-Test (Bilgi Ölçümü)",
     s1Desc: "Aşağıdaki soruları yanıtlayarak mevcut bilgi seviyenizi ölçelim.",
     
@@ -311,17 +347,25 @@ const translations = {
     postQ3d: "D) Sadece yöneticilere yetki vererek",
     btnFinish: "Modülü Tamamla",
 
-    msgSuccess: "VERİTABANI DÖKÜMÜ BAŞARILI! Şifre kontrolü atlatıldı.",
     msgFail: "Erişim Reddedildi! E-posta veya şifre hatalı.",
-    tblEmail: "E-Posta Adresi",
-    tblPass: "Şifre (Hash)",
-    tblSecret: "Gizli Departman Verisi",
+    apPortalName: "Admin Paneli",
+    bypassTitle: "KİMLİK DOĞRULAMA ATLATILDI",
+    bypassDesc: "Hiçbir şifre bilmeden admin hesabıyla sisteme sızdınız. Şu anda kurumsal yönetim paneline yetkisiz erişiminiz var.",
+    apStatUsers: "Kayıtlı Kullanıcı",
+    apStatRevenue: "Aylık Gelir",
+    apStatSecurity: "Güvenlik Kapısı",
+    apStatSessions: "Aktif Oturum",
+    apDocsTitle: "Yetkili Belgeler ve Kayıtlar",
+    apDoc1: "Q4 2024 — Finansal Bilanço.xlsx",
+    apDoc2: "kullanici_veritabani_yedek.sql",
+    apDocBadge: "GİZLİ",
+    apDocBadgeTop: "ADMIN ONLY",
     warnEmpty: "Lütfen ilerlemeden önce tüm soruları yanıtlayın.",
     // --- YÖNLENDİRME METNİ DÜZELTİLDİ ---
     alertResult: (pre, post) => `Modül tamamlandı!\n\n📋 Ön-Test Başarınız: ${pre}/100\n🏆 Son-Test Başarınız: ${post}/100\n\nFarkındalık artışınız kaydediliyor... Dashboard'a yönlendiriliyorsunuz.`,
   },
   en: {
-    modTitle: "Module 1: SQL Injection (SQLi)",
+    modTitle: "A05: SQL Injection",
     s1Title: "Step 1: Pre-Test (Knowledge Assessment)",
     s1Desc: "Let's measure your current knowledge level.",
     
@@ -385,11 +429,19 @@ const translations = {
     postQ3d: "D) Applying authorization checks.",
     btnFinish: "Complete Module",
 
-    msgSuccess: "DATABASE DUMP SUCCESSFUL! Password check bypassed.",
     msgFail: "Access Denied! Invalid Email or Password.",
-    tblEmail: "Email Address",
-    tblPass: "Password (Hash)",
-    tblSecret: "Secret Dept Data",
+    apPortalName: "Admin Panel",
+    bypassTitle: "AUTHENTICATION BYPASSED",
+    bypassDesc: "You infiltrated the system as admin without knowing any password. You now have unauthorized access to the corporate management panel.",
+    apStatUsers: "Registered Users",
+    apStatRevenue: "Monthly Revenue",
+    apStatSecurity: "Security Gate",
+    apStatSessions: "Active Sessions",
+    apDocsTitle: "Authorized Documents & Records",
+    apDoc1: "Q4 2024 — Financial Balance Sheet.xlsx",
+    apDoc2: "user_database_backup.sql",
+    apDocBadge: "CLASSIFIED",
+    apDocBadgeTop: "ADMIN ONLY",
     warnEmpty: "Please answer all questions.",
     // --- YÖNLENDİRME METNİ DÜZELTİLDİ ---
     alertResult: (pre, post) => `Module completed!\n\n📋 Pre-Test: ${pre}/100\n🏆 Post-Test: ${post}/100\n\nRedirecting to Dashboard...`,
@@ -611,19 +663,70 @@ const finishPostTest = async () => {
 .blink-text { animation: blink 1s infinite; color: #f8fafc; margin-top: 5px;}
 @keyframes blink { 0%, 100% {opacity:1;} 50% {opacity:0.3;} }
 
-/* Veritabanı Dökümü Ekranı (DB Dump - Blursuz) */
-.db-dump-screen { padding: 30px; background: #050505; }
-.dump-header { border-bottom: 1px dashed #ef4444; padding-bottom: 15px; margin-bottom: 20px; }
-.dump-header h3 { margin: 0; color: #ef4444; font-family: monospace; font-size: 18px; letter-spacing: 1px;}
-.cyber-table-wrapper { overflow-x: auto; border: 1px solid #1e293b; border-radius: 6px; }
-.cyber-table { width: 100%; border-collapse: collapse; font-family: "Consolas", monospace; font-size: 14px; text-align: left; }
-.cyber-table th { background: #111827; color: #94a3b8; padding: 12px 15px; border-bottom: 1px solid #334155; }
-.cyber-table td { padding: 12px 15px; border-bottom: 1px solid #1e293b; color: #10b981; }
-.cyber-table tr:last-child td { border-bottom: none;}
-.cyber-table tr:hover td { background: rgba(16, 185, 129, 0.05); }
-.td-email { color: #f8fafc !important; }
-.td-pass { color: #cbd5e1 !important; }
-.td-secret { color: #f59e0b !important; font-weight: bold; }
+/* ─── ADMIN PANEL (Başarı Ekranı) ───────────────────── */
+.admin-panel { background: #050505; color: #e2e8f0; }
+
+.ap-topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  background: #0c1929; padding: 12px 20px;
+  border-bottom: 1px solid #1a3045;
+}
+.ap-brand { font-weight: 700; font-size: 13px; color: #f1f5f9; letter-spacing: 0.3px; }
+.ap-user-chip {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: #94a3b8;
+  background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 20px; padding: 4px 12px;
+}
+.online-dot {
+  width: 7px; height: 7px; background: #10b981; border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.ap-bypass-alert {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: rgba(239, 68, 68, 0.07); border-left: 4px solid #ef4444;
+  border-bottom: 1px solid rgba(239, 68, 68, 0.15); padding: 14px 20px;
+}
+.bypass-icon { font-size: 20px; flex-shrink: 0; line-height: 1.3; }
+.ap-bypass-alert b { display: block; color: #ef4444; font-size: 12px; letter-spacing: 0.8px; margin-bottom: 4px; }
+.ap-bypass-alert p { margin: 0; font-size: 12.5px; color: #94a3b8; }
+
+.ap-stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1px; background: #111; border-bottom: 1px solid #111;
+}
+.ap-stat-card { background: #090909; padding: 16px 14px; text-align: center; }
+.ap-danger-card { background: rgba(239, 68, 68, 0.05); }
+.stat-icon { font-size: 18px; margin-bottom: 6px; }
+.stat-num { font-size: 20px; font-weight: 800; color: #f1f5f9; font-family: monospace; margin-bottom: 4px; }
+.ap-danger-card .stat-num { color: #ef4444; }
+.stat-label { font-size: 9.5px; color: #475569; text-transform: uppercase; letter-spacing: 0.8px; }
+
+.ap-internal-docs { padding: 18px 20px; }
+.ap-docs-header {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 700; color: #475569;
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+}
+.ap-doc-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: 6px;
+  background: #0d0d0d; border: 1px solid #1a1a1a; margin-bottom: 8px;
+}
+.ap-highlight-row { border-color: rgba(239, 68, 68, 0.28); background: rgba(239, 68, 68, 0.04); }
+.doc-icon { font-size: 15px; flex-shrink: 0; }
+.doc-name { flex: 1; font-size: 12.5px; color: #cbd5e1; font-family: monospace; }
+.doc-badge {
+  font-size: 9.5px; font-weight: 800;
+  background: rgba(245, 158, 11, 0.1); color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.22); border-radius: 4px;
+  padding: 2px 8px; letter-spacing: 0.5px; flex-shrink: 0;
+}
+.doc-badge-red {
+  background: rgba(239, 68, 68, 0.1); color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.22);
+}
 
 /* Eğitim Adımı (Adım 3) */
 .edu-card { background: transparent; }

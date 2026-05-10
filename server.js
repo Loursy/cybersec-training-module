@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const db = require("./database");
@@ -7,7 +8,7 @@ const bcrypt = require("bcrypt");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = "siber_guvenlik_lab_gizli_anahtari_123!";
+const JWT_SECRET = process.env.JWT_SECRET || "siber_guvenlik_lab_gizli_anahtari_123!";
 // ==========================================
 // FIREBASE ADMİN BAŞLATMA (GERÇEK VERİLER İÇİN)
 // ==========================================
@@ -184,6 +185,7 @@ app.post("/api/save-score", authenticateToken, async (req, res) => {
 
   try {
     const safeEmail = email.trim().toLowerCase();
+    const diff = postScore - preScore;
 
     await firestore
       .collection("results")
@@ -192,6 +194,7 @@ app.post("/api/save-score", authenticateToken, async (req, res) => {
         {
           [module + "_pre"]: preScore,
           [module + "_post"]: postScore,
+          [module + "_diff"]: diff,
           [module + "_completed"]: true,
           [module + "_answers"]: answers,
           last_updated: admin.firestore.FieldValue.serverTimestamp(),
@@ -236,7 +239,24 @@ app.post("/api/vuln/sqli/login", authenticateToken, (req, res) => {
   });
 });
 
-// Module 2: Broken Access Control
+// Module 2: Broken Access Control - Admin (Vulnerable: authenticates but never checks role)
+app.get("/api/vuln/bac/admin", authenticateToken, (req, res) => {
+  db.all("SELECT id, name, role, department, email FROM dummy_profiles", [], (err, rows) => {
+    if (err) return res.status(500).json({ success: false, error: err.message });
+    res.json({
+      success: true,
+      data: {
+        totalUsers: 247,
+        activeSessions: 31,
+        pendingAlerts: 3,
+        lastBackup: "2026-05-06 03:00 UTC",
+        users: rows,
+      },
+    });
+  });
+});
+
+// Module 2: Broken Access Control - Profile
 app.get("/api/vuln/bac/profile/:id", authenticateToken, (req, res) => {
   const id = req.params.id;
   const query = `SELECT * FROM dummy_profiles WHERE id = ?`;
@@ -249,92 +269,11 @@ app.get("/api/vuln/bac/profile/:id", authenticateToken, (req, res) => {
   });
 });
 
-// Module 3: Excessive Data Exposure API
-app.post("/api/vuln/ede/search", authenticateToken, (req, res) => {
-  const { username } = req.body;
-  if (username === "admin") {
-    return res.json({
-      success: true,
-      user: {
-        id: 1,
-        username: "admin",
-        full_name: "Sistem Yöneticisi",
-        role: "IT Departmanı",
-        salary_usd: 15000,
-        home_address: "Cyber Street No: 404, Istanbul",
-        password_hash: "$2b$12$eImiTXuWVxfM37uY4JANjQ==...",
-        recovery_token: "X7F9-ADMIN-SECURE-KEY",
-      },
-    });
-  }
-  return res.json({ success: false, message: "Kullanıcı bulunamadı" });
+// Module 2: Cryptographic Failures API
+app.post("/api/vuln/cf/check", authenticateToken, (req, res) => {
+  res.json({ success: true });
 });
 
-// Module 4: Cross-Site Scripting (XSS) API
-app.post("/api/vuln/xss/search", authenticateToken, (req, res) => {
-  const { term } = req.body;
-  return res.json({ success: true, term: term });
-});
-
-// Module 5: Rate Limiting (HIZ SINIRLANDIRMA) API
-app.post("/api/vuln/rate/verify", authenticateToken, (req, res) => {
-  const { otp } = req.body;
-  const gercekSmsKodu = "8427";
-  if (otp === gercekSmsKodu) {
-    return res.json({
-      success: true,
-      message: "2FA Doğrulandı! Kripto Cüzdanına erişim sağlandı.",
-    });
-  } else {
-    return res.status(401).json({
-      success: false,
-      message: "Hatalı SMS kodu.",
-    });
-  }
-});
-
-// Module 6: OS Command Injection
-app.post("/api/vuln/cmd/ping", authenticateToken, (req, res) => {
-  const { ip } = req.body;
-
-  if (!ip) {
-    return res.json({
-      success: false,
-      output: "Hata: Lütfen bir IP adresi girin.",
-    });
-  }
-
-  if (ip.includes(";") || ip.includes("&&") || ip.includes("|")) {
-    let output = `PING ${ip.split(/[;&|]/)[0].trim()} (192.168.1.1): 56 data bytes\n64 bytes from 192.168.1.1: icmp_seq=0 ttl=64 time=0.042 ms\n\n`;
-
-    // 1. SIKI KONTROL: Sadece TAM OLARAK "cat /etc/passwd" yazılırsa şifreleri ver!
-    if (ip.toLowerCase().includes("cat /etc/passwd")) {
-      output += `root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\nadmin:x:1000:1000:Admin,,,:/home/admin:/bin/bash\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin`;
-      return res.json({ success: true, isHacked: true, output: output });
-    }
-    // 2. GERÇEKÇİ HATA: Eğer "cat" yazıp yanlış bir dosya adı (passqd vb.) girerse Linux hatası ver!
-    else if (ip.toLowerCase().includes("cat ")) {
-      const fakeFile = ip.split("cat")[1].trim();
-      output += `cat: ${fakeFile}: No such file or directory`;
-      return res.json({ success: true, isHacked: false, output: output });
-    }
-
-    if (ip.toLowerCase().includes("ls")) {
-      output += `index.html\nserver.js\ndatabase.sqlite\npackage.json\nsecret_keys.txt`;
-      return res.json({ success: true, isHacked: true, output: output });
-    }
-    if (ip.toLowerCase().includes("whoami")) {
-      output += `root`;
-      return res.json({ success: true, isHacked: true, output: output });
-    }
-
-    output += `sh: command not found`;
-    return res.json({ success: true, isHacked: false, output: output });
-  }
-
-  const normalOutput = `PING ${ip} (${ip}): 56 data bytes\n64 bytes from ${ip}: icmp_seq=0 ttl=64 time=0.045 ms\n64 bytes from ${ip}: icmp_seq=1 ttl=64 time=0.048 ms\n64 bytes from ${ip}: icmp_seq=2 ttl=64 time=0.041 ms\n\n--- ${ip} ping statistics ---\n3 packets transmitted, 3 packets received, 0.0% packet loss`;
-  res.json({ success: true, isHacked: false, output: normalOutput });
-});
 
 app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));

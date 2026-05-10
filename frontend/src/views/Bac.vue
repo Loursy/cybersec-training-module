@@ -44,58 +44,199 @@
           <h2 class="step-title" :class="{ 'review-mode-title': isReviewMode }">
             {{ isReviewMode ? (currentLang === 'tr' ? '🔍 İnceleme Modu: Simülasyon' : '🔍 Review Mode: Simulation') : currentText.s2Title }}
           </h2>
-          
-          <div class="guide-panel" style="margin-bottom: 25px;">
-            <div class="brief-header" style="margin-bottom: 15px;">
-              <span class="pulse-icon"></span> 
+
+          <div class="mission-brief">
+            <div class="brief-top">
+              <span class="pulse-icon"></span>
               <b>{{ currentText.gTitle }}</b>
             </div>
             <p class="sim-desc" v-html="currentText.simDesc"></p>
           </div>
 
-          <div class="mock-browser fade-in">
-            <div class="browser-header">
+          <div class="mock-browser">
+            <!-- Top loading progress bar -->
+            <div class="browser-progress" :style="{ width: loadProgress + '%', opacity: loadProgress > 0 ? 1 : 0 }"></div>
+
+            <!-- Browser chrome: dots + tab -->
+            <div class="browser-chrome">
               <div class="browser-dots">
                 <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
               </div>
-              <div class="url-bar">
-                <span class="url-protocol">🔒 https://intranet.globalcorp.local/api/profile/</span>
-                <input type="text" v-model="targetId" class="url-input" autocomplete="off" @keydown.enter="loadProfile" />
-                <button class="url-btn" @click="loadProfile">ENTER</button>
+              <div class="browser-tab">
+                <span class="tab-icon">🏢</span>
+                <span class="tab-label">GlobalCorp Portal</span>
               </div>
             </div>
-            
-            <div class="browser-content">
-              <div v-if="isSimLoading" class="sim-loading">
-                <span class="spinner-small"></span> {{ currentText.loading }}
+
+            <!-- Address bar -->
+            <div class="browser-addressbar">
+              <div class="addr-pill" @click="addrInput?.focus()">
+                <span class="addr-lock-icon">🔒</span>
+                <div class="addr-url">
+                  <span class="addr-scheme">https://</span><span class="addr-host">intranet.globalcorp.com</span><input
+                    ref="addrInput"
+                    type="text"
+                    class="addr-path-input"
+                    v-model="targetPath"
+                    @keydown.enter="loadResource"
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                </div>
               </div>
-              
-              <div v-else-if="profileData" class="profile-card fade-in" :class="{'admin-profile': profileData.displayRole.includes('CEO') || profileData.displayRole.includes('Manager') || profileData.displayRole.includes('Müdür')}">
-                <div class="profile-header">
-                  <div class="avatar" :style="{ background: profileData.avatarColor }">{{ profileData.initial }}</div>
-                  <div class="profile-info">
-                    <h3>{{ profileData.name }}</h3>
-                    <span class="badge badge-role">{{ profileData.displayRole }}</span>
-                    <span class="badge badge-dept">{{ profileData.displayDept }}</span>
+              <button class="addr-go-btn" @click="loadResource" title="Go">↩</button>
+            </div>
+
+            <!-- Page body -->
+            <div class="browser-body">
+              <div v-if="isSimLoading" class="page-loading">
+                <div class="page-spinner"></div>
+                <span>{{ currentText.loading }}</span>
+              </div>
+
+              <div v-else-if="profileData" class="intranet-page fade-in">
+                <!-- Intranet nav -->
+                <div class="intranet-topbar">
+                  <span class="intranet-brand">🏢 GlobalCorp Intranet</span>
+                  <span class="intranet-breadcrumb">/ {{ currentText.empDir }} / #{{ displayedId }}</span>
+                  <span class="intranet-user">{{ currentText.loggedAs }}: <b>Atakan (ID:2)</b></span>
+                </div>
+
+                <!-- IDOR banner -->
+                <div v-if="displayedId !== '2'" class="idor-alert">
+                  <span class="idor-icon">⚠️</span>
+                  <span v-html="currentText.idorAlert"></span>
+                </div>
+
+                <!-- Employee card -->
+                <div class="emp-card" :class="{ 'emp-card-breach': displayedId !== '2' }">
+                  <div class="emp-sidebar">
+                    <div class="emp-avatar" :style="{ background: profileData.avatarColor }">{{ profileData.initial }}</div>
+                    <div class="emp-id-tag">{{ profileData.empId }}</div>
+                    <div class="clearance-badge" :style="{ borderColor: profileData.clearanceColor, color: profileData.clearanceColor }">
+                      🔐 {{ profileData.clearance }}
+                    </div>
                   </div>
-                </div>
-                <div class="profile-details">
-                  <p>📧 <b>{{ currentText.email }}:</b> {{ profileData.email || 'Belirtilmedi' }}</p>
-                  <p>📞 <b>{{ currentText.phone }}:</b> {{ profileData.phone || 'Belirtilmedi' }}</p>
-                </div>
-                <div class="secret-alert" v-if="profileData.displaySecretMsg">
-                  <div class="secret-header"><span>🔒</span> <b>{{ currentText.secMsg }}</b></div>
-                  {{ profileData.displaySecretMsg }}
+                  <div class="emp-main">
+                    <div class="emp-title-row">
+                      <h3 class="emp-name">{{ profileData.name }}</h3>
+                      <span class="role-badge" :style="{ background: profileData.roleBg, color: profileData.roleColor, borderColor: profileData.roleColor }">
+                        {{ profileData.displayRole }}
+                      </span>
+                      <span class="dept-badge">{{ profileData.displayDept }}</span>
+                    </div>
+                    <div class="emp-fields">
+                      <div class="emp-field">
+                        <span class="f-label">📧 {{ currentText.email }}</span>
+                        <span class="f-val">{{ profileData.email }}</span>
+                      </div>
+                      <div class="emp-field">
+                        <span class="f-label">📞 {{ currentText.phone }}</span>
+                        <span class="f-val">{{ profileData.phone }}</span>
+                      </div>
+                      <div class="emp-field">
+                        <span class="f-label">🗓️ {{ currentText.joinDate }}</span>
+                        <span class="f-val">{{ profileData.joinYear }}</span>
+                      </div>
+                    </div>
+                    <div v-if="profileData.displaySecretMsg" class="classified-memo">
+                      <div class="memo-header">
+                        <span class="memo-stamp">⛔ {{ currentText.secMsg }}</span>
+                        <span class="memo-level" :style="{ color: profileData.clearanceColor }">{{ profileData.clearance }}</span>
+                      </div>
+                      <p class="memo-content">{{ profileData.displaySecretMsg }}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div v-else-if="simError" class="sim-error fade-in">
-                <b>{{ currentText.notFound }}</b> {{ simError }}
+              <div v-else-if="adminData" class="admin-page fade-in">
+                <div class="intranet-topbar">
+                  <span class="intranet-brand">🏢 GlobalCorp Intranet</span>
+                  <span class="intranet-breadcrumb">/ {{ currentText.adminPanelLabel }}</span>
+                  <span class="intranet-user">{{ currentText.loggedAs }}: <b>Atakan (ID:2)</b></span>
+                </div>
+                <div class="idor-alert admin-alert">
+                  <span class="idor-icon">🚨</span>
+                  <span v-html="currentText.adminBreach"></span>
+                </div>
+                <div class="admin-dashboard">
+                  <div class="admin-stats">
+                    <div class="admin-stat-card">
+                      <div class="admin-stat-num">{{ adminData.totalUsers }}</div>
+                      <div class="admin-stat-label">{{ currentText.adminTotalUsers }}</div>
+                    </div>
+                    <div class="admin-stat-card">
+                      <div class="admin-stat-num">{{ adminData.activeSessions }}</div>
+                      <div class="admin-stat-label">{{ currentText.adminActiveSessions }}</div>
+                    </div>
+                    <div class="admin-stat-card warn">
+                      <div class="admin-stat-num">{{ adminData.pendingAlerts }}</div>
+                      <div class="admin-stat-label">{{ currentText.adminPendingAlerts }}</div>
+                    </div>
+                    <div class="admin-stat-card">
+                      <div class="admin-stat-num-sm">{{ adminData.lastBackup }}</div>
+                      <div class="admin-stat-label">{{ currentText.adminLastBackup }}</div>
+                    </div>
+                  </div>
+                  <div class="admin-table-wrap">
+                    <div class="admin-table-title">{{ currentText.adminUserList }}</div>
+                    <table class="admin-table">
+                      <thead>
+                        <tr>
+                          <th>{{ currentText.adminColId }}</th>
+                          <th>{{ currentText.adminColName }}</th>
+                          <th>{{ currentText.adminColRole }}</th>
+                          <th>{{ currentText.adminColDept }}</th>
+                          <th>{{ currentText.adminColEmail }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="u in adminData.users" :key="u.id" :class="{ 'row-self': u.id === 2 }">
+                          <td>{{ u.id }}</td>
+                          <td>{{ u.name }}</td>
+                          <td>{{ u.role }}</td>
+                          <td>{{ u.department }}</td>
+                          <td>{{ u.email }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else-if="simError" class="sim-404 fade-in">
+                <div class="err-num">404</div>
+                <div class="err-msg">{{ currentText.notFound }}</div>
+                <div class="err-sub">{{ simError }}</div>
               </div>
             </div>
           </div>
 
-          <div class="action-footer" style="justify-content: center;">
+          <!-- Discovery log -->
+          <div v-if="discoveries.length > 0" class="disc-log fade-in">
+            <div class="disc-log-header">
+              <span class="disc-log-title">📋 {{ currentText.discTitle }}</span>
+              <span class="disc-count">{{ discoveries.filter(d => !d.isOwn).length }} {{ currentText.discBreach }}</span>
+            </div>
+            <div class="disc-entries">
+              <div
+                v-for="d in discoveries"
+                :key="d.id"
+                class="disc-entry"
+                :class="d.isOwn ? 'disc-own' : d.isAdmin ? 'disc-admin' : 'disc-breach'"
+              >
+                <span class="disc-icon">{{ d.isOwn ? '👤' : d.isAdmin ? '🔐' : '🔓' }}</span>
+                <span class="disc-info">
+                  <b v-if="d.isAdmin">{{ currentText.adminPanelLabel }}</b>
+                  <span v-else>ID {{ d.id }} — <b>{{ d.name }}</b> &middot; {{ d.role }} &middot; {{ d.dept }}</span>
+                </span>
+                <span class="disc-tag" :class="{ 'disc-admin-tag': d.isAdmin }">{{ d.isOwn ? currentText.discOwn : d.isAdmin ? currentText.discAdminTag : currentText.discBreachTag }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-footer" style="justify-content: center; margin-top: 25px;">
             <button v-if="simulationSuccess || isReviewMode" class="btn-success fade-in" @click="currentStep = 3">
               {{ currentText.btnToTrn }}
             </button>
@@ -112,19 +253,11 @@
             <p v-html="currentText.trnP1"></p>
           </div>
           
-          <div style="margin-top: 20px; margin-bottom: 30px; text-align: center;">
-             
-          </div>
-
           <div class="neon-divider" style="margin: 30px 0; background: linear-gradient(90deg, #1e293b, #334155, #1e293b);"></div>
 
           <div class="info-box solution-box">
             <h3>{{ currentText.trnH2 }}</h3>
             <p v-html="currentText.trnP2"></p>
-          </div>
-          
-          <div style="margin-top: 25px; margin-bottom: 30px; text-align: center;">
-            
           </div>
 
           <div class="action-footer">
@@ -192,12 +325,24 @@ const token = localStorage.getItem('token');
 const userEmail = localStorage.getItem('userEmail');
 
 // BAC Simülasyon Değişkenleri
-const targetId = ref('2'); 
+const addrInput = ref(null);
+const targetPath = ref('/employee/profile/2');
+const displayedId = ref('2');
 const isSimLoading = ref(false);
 const profileData = ref(null);
+const adminData = ref(null);
 const simError = ref('');
-const exploitStatus = ref('idle'); 
+const exploitStatus = ref('idle');
 const simulationSuccess = ref(false);
+const discoveries = ref([]);
+const loadProgress = ref(0);
+
+const profileExtras = {
+  '1': { empId: 'EMP-0001', clearance: 'ÇOK GİZLİ', clearanceTR: 'ÇOK GİZLİ', clearanceEN: 'TOP SECRET',   clearanceColor: '#ef4444', roleBg: 'rgba(239,68,68,0.12)',   roleColor: '#fca5a5', joinYear: '2018' },
+  '2': { empId: 'EMP-0002', clearance: 'STANDART',   clearanceTR: 'STANDART',   clearanceEN: 'STANDARD',     clearanceColor: '#3b82f6', roleBg: 'rgba(59,130,246,0.12)', roleColor: '#93c5fd', joinYear: '2023' },
+  '3': { empId: 'EMP-0003', clearance: 'GİZLİ',      clearanceTR: 'GİZLİ',      clearanceEN: 'CONFIDENTIAL', clearanceColor: '#a855f7', roleBg: 'rgba(168,85,247,0.12)', roleColor: '#d8b4fe', joinYear: '2020' },
+  '4': { empId: 'EMP-0004', clearance: 'GİZLİ',      clearanceTR: 'GİZLİ',      clearanceEN: 'CONFIDENTIAL', clearanceColor: '#f59e0b', roleBg: 'rgba(245,158,11,0.12)', roleColor: '#fcd34d', joinYear: '2019' },
+};
 
 const answerKeys = {
   pre: { q1: "d", q2: "c", q3: "b" },
@@ -209,7 +354,7 @@ const translations = {
     warnEmpty: "Lütfen tüm soruları cevaplayın!",
     // --- YÖNLENDİRME MESAJI DÜZELTİLDİ ---
     alertResult: (pre, post) => `Tebrikler!\nÖn-Test Başarısı: %${pre}\nSon-Test Başarısı: %${post}\n\nDashboard'a yönlendiriliyorsunuz...`,
-    modTitle: "Modül 2: Broken Access Control (BAC)",
+    modTitle: "Modül 1: Broken Access Control (A01)",
     s1Title: "Adım 1: Ön-Test (Bilgi Ölçümü)",
     s1Desc: "Aşağıdaki soruları yanıtlayarak mevcut bilgi seviyenizi ölçelim.",
     
@@ -235,14 +380,35 @@ const translations = {
 
     s2Title: "Adım 2: Zafiyet Simülasyonu (IDOR)",
     gTitle: "OPERASYON BRİFİNGİ: IDOR",
-    simDesc: "Şirketin İntranet portalına <b>YBS Uzmanı Atakan</b> olarak giriş yaptın. Aşağıdaki tarayıcıda adres çubuğunun sonunda senin ID numaran olan <b>2</b> yazıyor ve kendi profilini görüyorsun.<br><br>Acaba sistem adres çubuğundaki (URL) bu sayıya körü körüne güveniyor mu? Kendi ID numaranı silip yerine başka numaralar (Örn: 1 veya 3) yazıp ENTER'a basarsan ne olur? Kimlerin profiline ve gizli verilerine ulaşabileceğini keşfet!",
+    simDesc: "Şirketin İntranet portalına <b>YBS Uzmanı Atakan (Çalışan ID: 2)</b> olarak giriş yaptın. Adres çubuğuna bak: <code>/employee/profile/2</code><br><br>📌 <b>Bu URL ne anlama geliyor?</b><br>Bu adres sisteme şu komutu veriyor: <i>\"ID numarası 2 olan çalışanın profilini getir.\"</i> URL'nin yapısı şöyle:<br><br><code>/employee/profile/<b>[ID]</b></code><br>├── <code>/employee</code> → Çalışan kayıtlarına ait bölüm<br>├── <code>/profile</code> → Profil görüntüleme sayfası<br>└── <code>/<b>[ID]</b></code> → <b>Hangi çalışanın profili gösterilecek?</b> Sondaki bu rakam, veritabanındaki çalışan ID'sini belirtir.<br><br>Yani <code>/employee/profile/2</code> demek: <i>\"ID'si 2 olan çalışanı getir\"</i> demektir. Sondaki rakamı değiştirirsen sistem farklı bir çalışanın profilini getirir.<br><br>🔎 <b>Güvenlik açığı nerede?</b><br>Sistem bu ID rakamını URL'den direkt alıyor ve <u>hiçbir yetki kontrolü yapmıyor</u>. \"Bu kullanıcının bu ID'ye erişim hakkı var mı?\" diye sormuyor bile. URL'deki rakamı değiştirmen yeterli.<br><br>⚡ <b>Senaryo 1 — IDOR Saldırısı:</b><br>Adres çubuğunu temizle ve <code>/employee/profile/1</code> ya da <code>/employee/profile/3</code> yaz, ardından Enter'a bas. Sistemde senden farklı çalışanlara ait <b>gizli belgeler</b> var — sona yazdığın ID rakamını değiştirerek onlara ulaşabilecek misin?<br><br>🔐 <b>Senaryo 2 — Yetkisiz Admin Erişimi:</b><br>Adres çubuğuna <code>/admin</code> yaz ve Enter'a bas. Sistem, admin olup olmadığını kontrol ediyor mu?",
+    adminBreach: "<b>YETKİSİZ YÖNETİCİ PANELİ ERİŞİMİ</b> — Admin rolün yok! Sistem JWT token'ını doğruladı ama rolünü hiç kontrol etmedi.",
+    adminPanelLabel: "Admin Paneli",
+    adminTotalUsers: "Toplam Kullanıcı",
+    adminActiveSessions: "Aktif Oturum",
+    adminPendingAlerts: "Bekleyen Uyarı",
+    adminLastBackup: "Son Yedek",
+    adminUserList: "Kullanıcı Yönetimi",
+    adminColId: "ID",
+    adminColName: "Ad Soyad",
+    adminColRole: "Rol",
+    adminColDept: "Departman",
+    adminColEmail: "E-posta",
+    discAdminTag: "ADMİN ERİŞİMİ ✓",
     btnToTrn: "Zafiyeti Buldun! Eğitime Geç",
-    loading: "Sunucu ile iletişim kuruluyor...",
-    notFound: "Hata:",
+    loading: "Sayfa yükleniyor...",
+    notFound: "Profil bulunamadı",
     errConn: "Sunucu bağlantı hatası! Backend sunucunuzu kontrol edin.",
     email: "E-posta",
     phone: "Telefon",
-    secMsg: "Sistem Uyarı Mesajı",
+    joinDate: "İşe Giriş",
+    secMsg: "GİZLİ BELGE",
+    empDir: "Çalışan Rehberi",
+    loggedAs: "Oturum",
+    idorAlert: "<b>YETKİSİZ ERİŞİM TESPİT EDİLDİ</b> — Bu profil size ait değil! Sistem yetki kontrolü yapmıyor.",
+    discTitle: "Keşif Günlüğü",
+    discBreach: "yetkisiz erişim",
+    discOwn: "Kendi profiliniz",
+    discBreachTag: "YETKİSİZ ERİŞİM ✓",
 
     s3Title: "Adım 3: Az Önce Ne Yaşandı?",
     trnH1: "🛎️ Otel Resepsiyonu Analojisi (IDOR Nedir?)",
@@ -274,7 +440,7 @@ const translations = {
     warnEmpty: "Please answer all questions!",
     // --- YÖNLENDİRME MESAJI DÜZELTİLDİ ---
     alertResult: (pre, post) => `Congratulations!\nPre-Test Score: ${pre}%\nPost-Test Score: ${post}%\n\nRedirecting to your Dashboard...`,
-    modTitle: "Module 2: Broken Access Control (BAC)",
+    modTitle: "Module 1: Broken Access Control (A01)",
     s1Title: "Step 1: Pre-Test",
     s1Desc: "Let's measure your current knowledge level.",
     
@@ -300,14 +466,35 @@ const translations = {
 
     s2Title: "Step 2: Vulnerability Simulation (IDOR)",
     gTitle: "MISSION BRIEFING: IDOR",
-    simDesc: "You logged into the company Intranet portal as an <b>MIS Specialist named Atakan</b>. In the browser below, you see your profile, and the URL ends with your ID number, <b>2</b>.<br><br>Does the system blindly trust this number in the URL? What happens if you delete your ID and type other numbers (e.g., 1 or 3) and press ENTER? Discover whose profiles and private data you can access!",
+    simDesc: "You've logged into the company Intranet portal as <b>MIS Specialist Atakan (Employee ID: 2)</b>. Look at the address bar: <code>/employee/profile/2</code><br><br>📌 <b>What does this URL mean?</b><br>This address sends the following command to the system: <i>\"Fetch the profile of the employee with ID number 2.\"</i> Here's how the URL structure works:<br><br><code>/employee/profile/<b>[ID]</b></code><br>├── <code>/employee</code> → The section for employee records<br>├── <code>/profile</code> → The profile viewer page<br>└── <code>/<b>[ID]</b></code> → <b>Whose profile should be shown?</b> This number at the end is the employee's database ID.<br><br>So <code>/employee/profile/2</code> means: <i>\"Retrieve the employee whose ID is 2.\"</i> Change the number and the system fetches a completely different employee's profile.<br><br>🔎 <b>Where is the vulnerability?</b><br>The system takes this ID directly from the URL and performs <u>zero authorization checks</u>. It never asks \"Does this user actually have access to this ID?\" — changing the number is all it takes.<br><br>⚡ <b>Scenario 1 — IDOR Attack:</b><br>Clear the address bar, type <code>/employee/profile/1</code> or <code>/employee/profile/3</code>, and press Enter. There are employees in this system with <b>classified documents</b> attached to their profiles — can you reach them just by changing the ID at the end?<br><br>🔐 <b>Scenario 2 — Unauthorized Admin Access:</b><br>Type <code>/admin</code> in the address bar and press Enter. Does the system ever verify whether you actually have admin privileges?",
+    adminBreach: "<b>UNAUTHORIZED ADMIN PANEL ACCESS</b> — You have no admin role! The system verified your JWT token but never checked your role.",
+    adminPanelLabel: "Admin Panel",
+    adminTotalUsers: "Total Users",
+    adminActiveSessions: "Active Sessions",
+    adminPendingAlerts: "Pending Alerts",
+    adminLastBackup: "Last Backup",
+    adminUserList: "User Management",
+    adminColId: "ID",
+    adminColName: "Name",
+    adminColRole: "Role",
+    adminColDept: "Department",
+    adminColEmail: "Email",
+    discAdminTag: "ADMIN ACCESS ✓",
     btnToTrn: "Vulnerability Found! Go to Training",
-    loading: "Connecting to server...",
-    notFound: "Error:",
+    loading: "Loading page...",
+    notFound: "Profile not found",
     errConn: "Server connection error! Check your backend server.",
     email: "Email",
     phone: "Phone",
-    secMsg: "Secret System Message",
+    joinDate: "Joined",
+    secMsg: "CLASSIFIED DOCUMENT",
+    empDir: "Employee Directory",
+    loggedAs: "Session",
+    idorAlert: "<b>UNAUTHORIZED ACCESS DETECTED</b> — This profile does not belong to you! The system performs no authorization check.",
+    discTitle: "Discovery Log",
+    discBreach: "unauthorized access",
+    discOwn: "Your own profile",
+    discBreachTag: "UNAUTHORIZED ✓",
 
     s3Title: "Step 3: What Just Happened?",
     trnH1: "🛎️ The Hotel Receptionist Analogy (What is IDOR?)",
@@ -337,15 +524,16 @@ const translations = {
   },
   dbTranslations: {
     "YBS Uzmanı": "MIS Specialist",
-    "İK Müdürü": "HR Manager",
-    "CEO": "CEO",
-    "Yönetim Kurulu": "Board of Directors",
+    "Sistem Yöneticisi": "System Administrator",
+    "Güvenlik Analisti": "Security Analyst",
+    "CFO": "CFO",
     "Bilişim Teknolojileri": "Information Technology",
-    "İnsan Kaynakları": "Human Resources",
+    "Finans": "Finance",
     "Belirtilmedi": "Not Specified",
-    "GİZLİ KARAR: Şirketin satılma planları başladı. Hedef 2027.": "SECRET DECISION: Company sale plans have started. Target 2027.",
+    "Root Şifresi: Srv@2026!Master — Üretim sunucusu erişimi. KİMSEYLE PAYLAŞMA.": "Root Password: Srv@2026!Master — Production server access. DO NOT SHARE WITH ANYONE.",
     "Sistem güncelleme notu: Sunucu şifreleri yarın sıfırlanacak.": "System update note: Server passwords will be reset tomorrow.",
-    "DİKKAT: IT departmanındaki küçülme planı onaylandı.": "ATTENTION: The downsizing plan in the IT department is approved."
+    "Pentest Raporu 2026-05: Sistemde 3 kritik zafiyet tespit edildi. Rapor gizli tutulmalıdır.": "Pentest Report 2026-05: 3 critical vulnerabilities detected. Report must remain confidential.",
+    "UYARI: Q4 bilanço raporu gizlendi. Belge: finans_2026_gizli.xlsx": "WARNING: Q4 balance sheet concealed. File: finance_2026_classified.xlsx"
   }
 };
 
@@ -353,7 +541,7 @@ const currentText = computed(() => translations[currentLang.value]);
 
 const toggleLanguage = () => {
   currentLang.value = currentLang.value === 'tr' ? 'en' : 'tr';
-  if (currentStep.value === 2 && profileData.value) loadProfile(); 
+  if (currentStep.value === 2 && profileData.value) loadResource();
 };
 
 const getLabelClass = (testPrefix, questionKey, option) => {
@@ -392,7 +580,7 @@ onMounted(async () => {
   } else {
     const savedDraft = localStorage.getItem(`bac_draft_answers_${userEmail}`);
     if (savedDraft) Object.assign(answers, JSON.parse(savedDraft));
-    loadProfile(); 
+    loadResource();
   }
   
   isLoading.value = false; 
@@ -415,58 +603,127 @@ const finishPreTest = () => {
   currentStep.value = 2; 
 };
 
-// GERÇEK BACKEND ÜZERİNDEN PROFİL YÜKLEME
-const loadProfile = async () => {
-  if (!targetId.value) return;
-  
+const avatarColors = {
+  '1': 'linear-gradient(135deg, #ef4444, #b91c1c)',
+  '2': 'linear-gradient(135deg, #3b82f6, #2563eb)',
+  '3': 'linear-gradient(135deg, #a855f7, #7e22ce)',
+  '4': 'linear-gradient(135deg, #f59e0b, #b45309)',
+};
+
+const loadResource = async () => {
+  const raw = targetPath.value.trim();
+  if (!raw) return;
+  const path = raw.startsWith('/') ? raw : '/' + raw;
+
   isSimLoading.value = true;
   profileData.value = null;
+  adminData.value = null;
   simError.value = '';
-  
+
+  loadProgress.value = 20;
+  const ticker = setInterval(() => {
+    if (loadProgress.value < 80) loadProgress.value += 18;
+  }, 120);
+
   try {
-    const response = await fetch(`/api/vuln/bac/profile/${targetId.value}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const result = await response.json();
+    await new Promise(r => setTimeout(r, 350));
 
-    if (result.success) {
-      let avatarColor = "linear-gradient(135deg, #64748b, #475569)"; // Default
-      if (targetId.value === "1") avatarColor = "linear-gradient(135deg, #ef4444, #b91c1c)"; // Admin/CEO Red
-      else if (targetId.value === "2") avatarColor = "linear-gradient(135deg, #3b82f6, #2563eb)"; // User Blue
-      else if (targetId.value === "3") avatarColor = "linear-gradient(135deg, #8b5cf6, #6d28d9)"; // HR Purple
+    const profileMatch = path.match(/^\/employee\/profile\/(\d+)$/);
 
-      let role = result.data.role;
-      let dept = result.data.department || "Belirtilmedi";
-      let secMsg = result.data.secret_message;
+    if (profileMatch) {
+      const id = profileMatch[1];
+      const response = await fetch(`/api/vuln/bac/profile/${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const result = await response.json();
 
-      // İngilizce çeviri kontrolü
-      if (currentLang.value === 'en') {
-        const dbT = translations.dbTranslations;
-        role = dbT[role] || role;
-        dept = dbT[dept] || dept;
-        secMsg = dbT[secMsg] || secMsg;
+      clearInterval(ticker);
+
+      if (result.success) {
+        loadProgress.value = 100;
+        setTimeout(() => { loadProgress.value = 0; }, 400);
+
+        const extras = profileExtras[id] || {
+          empId: `EMP-00${id}`, clearance: 'STANDART', clearanceTR: 'STANDART', clearanceEN: 'STANDARD',
+          clearanceColor: '#64748b', roleBg: 'rgba(100,116,139,0.1)', roleColor: '#94a3b8', joinYear: '2022'
+        };
+
+        let role = result.data.role;
+        let dept = result.data.department || 'Belirtilmedi';
+        let secMsg = result.data.secret_message;
+
+        if (currentLang.value === 'en') {
+          const dbT = translations.dbTranslations;
+          role = dbT[role] || role;
+          dept = dbT[dept] || dept;
+          secMsg = dbT[secMsg] || secMsg;
+        }
+
+        const clearance = currentLang.value === 'en' ? extras.clearanceEN : extras.clearanceTR;
+
+        profileData.value = {
+          initial: result.data.name.charAt(0),
+          avatarColor: avatarColors[id] || 'linear-gradient(135deg, #64748b, #475569)',
+          name: result.data.name,
+          displayRole: role,
+          displayDept: dept,
+          email: result.data.email,
+          phone: result.data.phone,
+          displaySecretMsg: secMsg,
+          empId: extras.empId,
+          clearance,
+          clearanceColor: extras.clearanceColor,
+          roleBg: extras.roleBg,
+          roleColor: extras.roleColor,
+          joinYear: extras.joinYear,
+        };
+
+        if (!discoveries.value.find(d => d.id === id)) {
+          discoveries.value.push({ id, name: result.data.name, role, dept, isOwn: id === '2' });
+        }
+
+        displayedId.value = id;
+        exploitStatus.value = 'success';
+        simulationSuccess.value = (id !== '2');
+      } else {
+        loadProgress.value = 0;
+        exploitStatus.value = 'error';
+        simError.value = result.message || currentText.value.errConn;
+        simulationSuccess.value = false;
       }
+    } else if (path === '/admin') {
+      const response = await fetch('/api/vuln/bac/admin', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const result = await response.json();
 
-      profileData.value = {
-        initial: result.data.name.charAt(0),
-        avatarColor,
-        name: result.data.name,
-        displayRole: role,
-        displayDept: dept,
-        email: result.data.email,
-        phone: result.data.phone,
-        displaySecretMsg: secMsg
-      };
+      clearInterval(ticker);
 
-      // 2 (Atakan) harici bir profil açıldığında başarılı say!
-      exploitStatus.value = 'success';
-      simulationSuccess.value = (targetId.value !== "2");
+      if (result.success) {
+        loadProgress.value = 100;
+        setTimeout(() => { loadProgress.value = 0; }, 400);
+
+        adminData.value = result.data;
+        displayedId.value = null;
+        exploitStatus.value = 'success';
+        simulationSuccess.value = true;
+
+        if (!discoveries.value.find(d => d.isAdmin)) {
+          discoveries.value.push({ id: 'admin', name: '', role: '', dept: '', isOwn: false, isAdmin: true });
+        }
+      } else {
+        loadProgress.value = 0;
+        exploitStatus.value = 'error';
+        simError.value = result.message || currentText.value.errConn;
+      }
     } else {
-      exploitStatus.value = 'error';
-      simError.value = result.message || currentText.value.errConn;
-      simulationSuccess.value = false;
+      clearInterval(ticker);
+      loadProgress.value = 0;
+      simError.value = currentText.value.notFound;
     }
   } catch (error) {
+    clearInterval(ticker);
+    loadProgress.value = 0;
     exploitStatus.value = 'error';
     simError.value = currentText.value.errConn;
   } finally {
@@ -548,46 +805,127 @@ const finishPostTest = async () => {
 .wrong-answer { background: rgba(239, 68, 68, 0.1) !important; border-color: #ef4444 !important; color: #ef4444 !important; text-decoration: line-through; }
 
 /* =========================================================
-   SİMÜLASYON TASARIMI (URL MANTIĞI)
+   SİMÜLASYON — YENİ TASARIM
    ========================================================= */
-.guide-panel { background: rgba(15, 23, 42, 0.6); padding: 20px; border-radius: 12px; border: 1px solid #334155; }
-.brief-header { color: #f8fafc; font-size: 14px; font-weight: bold; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
-.pulse-icon { width: 10px; height: 10px; background: #3b82f6; border-radius: 50%; box-shadow: 0 0 10px #3b82f6; animation: pulse 2s infinite; }
-@keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
-.sim-desc { font-size: 15px; line-height: 1.6; margin: 0; color: #cbd5e1; }
 
-.mock-browser { background: #0b1120; border-radius: 12px; border: 1px solid #334155; overflow: hidden; margin-bottom: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
-.browser-header { background: #1e293b; padding: 12px 20px; display: flex; align-items: center; border-bottom: 1px solid #000; }
-.browser-dots { display: flex; gap: 8px; margin-right: 20px; }
-.dot { width: 12px; height: 12px; border-radius: 50%; }
-.dot.red { background: #ef4444; } .dot.yellow { background: #f59e0b; } .dot.green { background: #10b981; }
+/* Mission brief */
+.mission-brief { background: rgba(15, 23, 42, 0.7); border: 1px solid #1e293b; border-left: 4px solid #3b82f6; border-radius: 10px; padding: 18px 22px; margin-bottom: 22px; }
+.brief-top { display: flex; align-items: center; gap: 10px; color: #f8fafc; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+.pulse-icon { width: 9px; height: 9px; background: #3b82f6; border-radius: 50%; box-shadow: 0 0 8px #3b82f6; flex-shrink: 0; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
+.sim-desc { font-size: 14.5px; line-height: 1.7; margin: 0; color: #94a3b8; }
 
-.url-bar { flex-grow: 1; background: #050505; border-radius: 6px; padding: 6px 15px; display: flex; align-items: center; border: 1px solid #334155; font-family: monospace; font-size: 14px; }
-.url-protocol { color: #64748b; }
-.url-input { background: transparent; border: none; color: #38bdf8; font-weight: bold; font-family: monospace; font-size: 16px; flex-grow: 1; outline: none; margin-left: 2px; }
-.url-btn { background: #3b82f6; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; margin-left: 10px;}
-.url-btn:hover { background: #2563eb; }
+/* Mock Browser */
+.mock-browser { background: #070b14; border-radius: 12px; border: 1px solid #1e293b; overflow: hidden; margin-bottom: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; }
 
-.browser-content { padding: 30px; min-height: 280px; background: #0f172a; color: #cbd5e1; }
-.sim-loading, .sim-error { text-align: center; padding: 40px; font-size: 16px; color: #94a3b8;}
-.sim-error { color: #ef4444; }
+.browser-progress { position: absolute; top: 0; left: 0; height: 2px; background: linear-gradient(90deg, #3b82f6, #06b6d4); transition: width 0.15s ease, opacity 0.4s ease; z-index: 10; }
 
-/* Profil Kartı */
-.profile-card { background: #1e293b; border: 1px solid #334155; padding: 30px; border-radius: 12px; }
-.admin-profile { border: 1px solid #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.1); }
-.profile-header { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; border-bottom: 1px solid #334155; padding-bottom: 25px; }
-.avatar { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 32px; font-weight: bold; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); }
-.profile-info h3 { margin: 0 0 10px 0; color: #f8fafc; font-size: 24px; }
-.badge { display: inline-block; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: 700; margin-right: 8px; }
-.badge-role { background: rgba(59, 130, 246, 0.1); color: #38bdf8; border: 1px solid #38bdf8;}
-.badge-dept { background: rgba(148, 163, 184, 0.1); color: #cbd5e1; border: 1px solid #64748b;}
-.admin-profile .badge-role { background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-color: #ef4444; }
+.browser-chrome { background: #111827; padding: 10px 14px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #1a2438; }
+.browser-dots { display: flex; gap: 6px; flex-shrink: 0; }
+.dot { width: 11px; height: 11px; border-radius: 50%; }
+.dot.red { background: #ef4444; } .dot.yellow { background: #f59e0b; } .dot.green { background: #22c55e; }
+.browser-tab { display: flex; align-items: center; gap: 7px; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 5px 14px; font-size: 12px; color: #94a3b8; }
+.tab-icon { font-size: 13px; }
+.tab-label { white-space: nowrap; }
 
-.profile-details { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; background: #0b1120; padding: 20px; border-radius: 8px; border: 1px dashed #334155; }
-.profile-details p { margin: 0; color: #94a3b8; font-size: 15px; }
-.profile-details b { color: #cbd5e1; }
-.secret-alert { background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 20px; color: #fca5a5; font-size: 15px; border-radius: 6px; line-height: 1.6; }
-.secret-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 16px; color: #ef4444;}
+.browser-addressbar { background: #111827; padding: 8px 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #1a2438; }
+.addr-pill { flex: 1; background: #1a2438; border: 1px solid #263248; border-radius: 20px; padding: 6px 16px; display: flex; align-items: center; gap: 8px; cursor: text; min-width: 0; }
+.addr-lock-icon { font-size: 11px; flex-shrink: 0; }
+.addr-url { display: flex; align-items: baseline; font-family: 'Courier New', monospace; font-size: 13px; white-space: nowrap; flex: 1; min-width: 0; }
+.addr-scheme { color: #475569; flex-shrink: 0; }
+.addr-host { color: #e2e8f0; font-weight: 600; flex-shrink: 0; }
+.addr-path { color: #475569; flex-shrink: 0; }
+.addr-path-input { background: transparent; border: none; color: #38bdf8; font-family: 'Courier New', monospace; font-size: 13px; font-weight: 700; flex: 1; min-width: 140px; outline: none; caret-color: #38bdf8; padding: 0; cursor: text; }
+.addr-go-btn { background: transparent; color: #64748b; border: 1px solid #1e293b; padding: 5px 11px; border-radius: 6px; font-size: 15px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; line-height: 1; }
+.addr-go-btn:hover { color: #e2e8f0; border-color: #334155; background: #1e293b; }
+
+/* Browser page body */
+.browser-body { min-height: 320px; background: #0e1520; }
+
+.page-loading { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 80px 20px; color: #475569; font-size: 14px; }
+.page-spinner { width: 20px; height: 20px; border: 3px solid rgba(59,130,246,0.2); border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+/* Intranet page inside browser */
+.intranet-page { color: #cbd5e1; }
+
+.intranet-topbar { display: flex; align-items: center; gap: 10px; background: #111827; padding: 9px 18px; border-bottom: 1px solid #1a2438; font-size: 12px; flex-wrap: wrap; }
+.intranet-brand { color: #f8fafc; font-weight: 700; font-size: 13px; }
+.intranet-breadcrumb { color: #475569; flex-grow: 1; }
+.intranet-user { color: #64748b; white-space: nowrap; }
+.intranet-user b { color: #38bdf8; }
+
+.idor-alert { display: flex; align-items: flex-start; gap: 10px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-left: 4px solid #ef4444; padding: 11px 16px; margin: 14px 14px 0 14px; border-radius: 7px; font-size: 13px; color: #fca5a5; line-height: 1.5; }
+.idor-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+/* Employee card */
+.emp-card { display: flex; gap: 0; margin: 14px; background: #111827; border: 1px solid #1e293b; border-radius: 10px; overflow: hidden; }
+.emp-card-breach { border-color: rgba(239,68,68,0.35); box-shadow: 0 0 20px rgba(239,68,68,0.06); }
+
+.emp-sidebar { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 18px; background: #0d1526; border-right: 1px solid #1e293b; min-width: 110px; }
+.emp-avatar { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px; font-weight: 800; box-shadow: 0 4px 14px rgba(0,0,0,0.4); flex-shrink: 0; }
+.emp-id-tag { font-family: monospace; font-size: 11px; color: #475569; background: #1e293b; padding: 3px 8px; border-radius: 4px; }
+.clearance-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; border: 1px solid; letter-spacing: 0.5px; text-align: center; }
+
+.emp-main { flex: 1; padding: 18px 20px; overflow: hidden; }
+.emp-title-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.emp-name { margin: 0; color: #f8fafc; font-size: 20px; font-weight: 700; }
+.role-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 10px; border: 1px solid; }
+.dept-badge { font-size: 11px; font-weight: 600; color: #94a3b8; background: rgba(148,163,184,0.08); border: 1px solid #334155; padding: 3px 10px; border-radius: 10px; }
+
+.emp-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; }
+.emp-field { display: flex; flex-direction: column; gap: 2px; }
+.f-label { font-size: 11px; color: #475569; }
+.f-val { font-size: 13px; color: #cbd5e1; font-family: monospace; }
+
+/* Classified memo */
+.classified-memo { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; overflow: hidden; }
+.memo-header { display: flex; justify-content: space-between; align-items: center; background: rgba(239,68,68,0.1); padding: 8px 14px; border-bottom: 1px solid rgba(239,68,68,0.2); }
+.memo-stamp { font-size: 12px; font-weight: 800; color: #fca5a5; letter-spacing: 1px; }
+.memo-level { font-size: 11px; font-weight: 700; }
+.memo-content { margin: 0; padding: 12px 14px; color: #fca5a5; font-size: 13.5px; line-height: 1.6; }
+
+/* 404 page */
+.sim-404 { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; }
+.err-num { font-size: 72px; font-weight: 900; color: #1e293b; line-height: 1; }
+.err-msg { color: #ef4444; font-size: 16px; font-weight: 700; margin: 8px 0 4px; }
+.err-sub { color: #475569; font-size: 13px; }
+
+/* Admin Panel */
+.admin-page { color: #cbd5e1; }
+.admin-alert { border-left-color: #f59e0b !important; background: rgba(245,158,11,0.08) !important; border-color: rgba(245,158,11,0.3) !important; color: #fcd34d !important; }
+.admin-dashboard { padding: 14px; }
+.admin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+.admin-stat-card { background: #0d1526; border: 1px solid #1e293b; border-radius: 8px; padding: 12px; text-align: center; }
+.admin-stat-card.warn { border-color: rgba(239,68,68,0.3); }
+.admin-stat-num { font-size: 28px; font-weight: 800; color: #38bdf8; line-height: 1; }
+.admin-stat-card.warn .admin-stat-num { color: #ef4444; }
+.admin-stat-num-sm { font-size: 12px; font-weight: 700; color: #38bdf8; font-family: monospace; padding-top: 6px; }
+.admin-stat-label { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 5px; }
+.admin-table-wrap { background: #0d1526; border: 1px solid #1e293b; border-radius: 8px; overflow: hidden; }
+.admin-table-title { font-size: 12px; font-weight: 700; color: #f8fafc; padding: 10px 14px; border-bottom: 1px solid #1e293b; letter-spacing: 0.5px; text-transform: uppercase; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.admin-table thead { background: rgba(30,41,59,0.5); }
+.admin-table th { padding: 8px 12px; text-align: left; color: #64748b; font-weight: 600; border-bottom: 1px solid #1e293b; }
+.admin-table td { padding: 7px 12px; color: #94a3b8; border-bottom: 1px solid rgba(30,41,59,0.5); }
+.admin-table tbody tr:last-child td { border-bottom: none; }
+.admin-table .row-self td { color: #38bdf8; background: rgba(56,189,248,0.04); }
+.disc-admin { background: rgba(245,158,11,0.04); }
+.disc-admin-tag { background: rgba(245,158,11,0.12) !important; color: #fcd34d !important; }
+
+/* Discovery log */
+.disc-log { background: rgba(15,23,42,0.6); border: 1px solid #1e293b; border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
+.disc-log-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid #1e293b; background: #0d1526; }
+.disc-log-title { font-size: 13px; font-weight: 700; color: #f8fafc; }
+.disc-count { font-size: 12px; color: #ef4444; font-weight: 600; }
+.disc-entries { display: flex; flex-direction: column; gap: 0; }
+.disc-entry { display: flex; align-items: center; gap: 10px; padding: 9px 16px; border-bottom: 1px solid #0d1526; font-size: 13px; }
+.disc-entry:last-child { border-bottom: none; }
+.disc-icon { font-size: 14px; flex-shrink: 0; }
+.disc-info { flex: 1; color: #94a3b8; }
+.disc-info b { color: #e2e8f0; }
+.disc-tag { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+.disc-own .disc-tag { background: rgba(59,130,246,0.1); color: #93c5fd; }
+.disc-breach .disc-tag { background: rgba(239,68,68,0.12); color: #fca5a5; }
 
 /* Eğitim Adımı (Adım 3) Bilgi Kutuları */
 .edu-card { background: transparent; }
