@@ -101,12 +101,7 @@
                   <span class="intranet-user">{{ currentText.loggedAs }}: <b>Atakan</b></span>
                 </div>
 
-                <div v-if="displayedId !== '2'" class="idor-alert">
-                  <span class="idor-icon">⚠️</span>
-                  <span v-html="currentText.idorAlert"></span>
-                </div>
-
-                <div class="profile-card" :class="{ 'profile-breach': displayedId !== '2' }">
+                <div class="profile-card">
                   <div class="profile-header">
                     <div class="profile-avatar" :style="{ background: profileData.avatarColor }">{{ profileData.initial }}</div>
                     <div class="profile-meta">
@@ -136,12 +131,19 @@
                     </div>
                   </div>
 
-                  <div v-if="profileData.displaySecretMsg" class="classified-memo">
-                    <div class="memo-header">
-                      <span class="memo-stamp">⛔ {{ currentText.secMsg }}</span>
-                      <span class="memo-level" :style="{ color: profileData.clearanceColor }">{{ profileData.clearance }}</span>
+                  <div v-if="profileData.displaySecretMsg" class="profile-docs-section">
+                    <div class="docs-section-title">📁 {{ currentText.docsLabel }}</div>
+                    <div class="doc-item">
+                      <div class="doc-icon">📄</div>
+                      <div class="doc-info">
+                        <div class="doc-name">{{ currentText.docFileName }}</div>
+                        <div class="doc-meta">
+                          <span class="doc-clearance-tag" :style="{ color: profileData.clearanceColor, borderColor: profileData.clearanceColor }">{{ profileData.clearance }}</span>
+                          <span class="doc-size">TXT · 2 KB</span>
+                        </div>
+                      </div>
+                      <div class="doc-content">{{ profileData.displaySecretMsg }}</div>
                     </div>
-                    <p class="memo-content">{{ profileData.displaySecretMsg }}</p>
                   </div>
                 </div>
               </div>
@@ -392,6 +394,8 @@ const translations = {
     phone: "Telefon",
     joinDate: "İşe Giriş",
     secMsg: "GİZLİ BELGE",
+    docsLabel: "Belgeler",
+    docFileName: "dahili_not.txt",
     empDir: "Çalışan Rehberi",
     loggedAs: "Oturum",
     idorAlert: "<b>YETKİSİZ ERİŞİM TESPİT EDİLDİ</b> — Bu profil size ait değil! Sistem yetki kontrolü yapmıyor.",
@@ -478,6 +482,8 @@ const translations = {
     phone: "Phone",
     joinDate: "Joined",
     secMsg: "CLASSIFIED DOCUMENT",
+    docsLabel: "Documents",
+    docFileName: "internal_memo.txt",
     empDir: "Employee Directory",
     loggedAs: "Session",
     idorAlert: "<b>UNAUTHORIZED ACCESS DETECTED</b> — This profile does not belong to you! The system performs no authorization check.",
@@ -868,12 +874,17 @@ const finishPostTest = async () => {
 .detail-label { font-size: 12px; color: #475569; }
 .detail-val { font-size: 13px; color: #cbd5e1; font-family: monospace; text-align: right; }
 
-/* Classified memo */
-.classified-memo { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; overflow: hidden; }
-.memo-header { display: flex; justify-content: space-between; align-items: center; background: rgba(239,68,68,0.1); padding: 8px 14px; border-bottom: 1px solid rgba(239,68,68,0.2); }
-.memo-stamp { font-size: 12px; font-weight: 800; color: #fca5a5; letter-spacing: 1px; }
-.memo-level { font-size: 11px; font-weight: 700; }
-.memo-content { margin: 0; padding: 12px 14px; color: #fca5a5; font-size: 13.5px; line-height: 1.6; }
+/* Documents section */
+.profile-docs-section { border-top: 1px solid #1e293b; padding: 14px 22px 18px; }
+.docs-section-title { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
+.doc-item { background: #0d1526; border: 1px solid #1e293b; border-radius: 8px; padding: 12px 14px; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; gap: 4px 12px; }
+.doc-icon { font-size: 22px; grid-row: 1 / 3; align-self: center; }
+.doc-info { display: flex; align-items: center; gap: 10px; }
+.doc-name { font-size: 13px; font-weight: 600; color: #e2e8f0; font-family: monospace; }
+.doc-meta { display: flex; align-items: center; gap: 8px; }
+.doc-clearance-tag { font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 4px; border: 1px solid; }
+.doc-size { font-size: 11px; color: #475569; }
+.doc-content { grid-column: 2; font-size: 13px; color: #94a3b8; line-height: 1.6; padding-top: 6px; border-top: 1px solid #1e293b; margin-top: 4px; }
 
 /* 404 page */
 .sim-404 { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; }
