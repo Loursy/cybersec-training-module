@@ -180,27 +180,54 @@ app.post("/api/secure/login", async (req, res) => {
 // FIREBASE VERİ YÖNETİMİ (SKORLAR) - KORUMA EKLENDİ
 // ==========================================
 
+const ALL_MODULES = ["bac", "sqli", "cf"];
+
 app.post("/api/save-score", authenticateToken, async (req, res) => {
   const { email, module, preScore, postScore, answers } = req.body;
 
   try {
     const safeEmail = email.trim().toLowerCase();
     const diff = postScore - preScore;
+    const docRef = firestore.collection("results").doc(safeEmail);
 
-    await firestore
-      .collection("results")
-      .doc(safeEmail)
-      .set(
-        {
-          [module + "_pre"]: preScore,
-          [module + "_post"]: postScore,
-          [module + "_diff"]: diff,
-          [module + "_completed"]: true,
-          [module + "_answers"]: answers,
-          last_updated: admin.firestore.FieldValue.serverTimestamp(),
-        },
-        { merge: true },
-      );
+    // 1. Modül skorunu kaydet
+    await docRef.set(
+      {
+        [module + "_pre"]: preScore,
+        [module + "_post"]: postScore,
+        [module + "_diff"]: diff,
+        [module + "_completed"]: true,
+        [module + "_answers"]: answers,
+        last_updated: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+
+    // 2. Güncel dökümanı çek ve özet istatistikleri hesapla
+    const doc = await docRef.get();
+    const data = doc.data() || {};
+
+    const completedModules = ALL_MODULES.filter((m) => data[m + "_completed"]);
+    const completedCount = completedModules.length;
+
+    let summaryFields = { summary_completedCount: completedCount };
+
+    if (completedCount > 0) {
+      const totalPre = completedModules.reduce((sum, m) => sum + (data[m + "_pre"] || 0), 0);
+      const totalPost = completedModules.reduce((sum, m) => sum + (data[m + "_post"] || 0), 0);
+      const avgPre = Math.round(totalPre / completedCount);
+      const avgPost = Math.round(totalPost / completedCount);
+      summaryFields = {
+        summary_completedCount: completedCount,
+        summary_avgPre: avgPre,
+        summary_avgPost: avgPost,
+        summary_avgDiff: avgPost - avgPre,
+        summary_completedModules: completedModules.join(", "),
+      };
+    }
+
+    // 3. Özeti aynı dökümanın içine yaz
+    await docRef.set(summaryFields, { merge: true });
 
     res.json({ success: true });
   } catch (error) {
