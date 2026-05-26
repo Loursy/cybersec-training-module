@@ -103,9 +103,9 @@ const token = localStorage.getItem('token');
 const completedStatus = ref({ bac: false, sqli: false, cf: false });
 
 const modules = [
-  { key: 'bac',  icon: '🪪', owasp: 'A01', titleKey: 'm1Title', mc: '#3b82f6', mcDark: '#1d4ed8', mcRgb: '59, 130, 246' },
-  { key: 'sqli', icon: '💉', owasp: 'A05', titleKey: 'm2Title', mc: '#ef4444', mcDark: '#dc2626', mcRgb: '239, 68, 68' },
   { key: 'cf',   icon: '🔑', owasp: 'A07', titleKey: 'm3Title', mc: '#f59e0b', mcDark: '#d97706', mcRgb: '245, 158, 11' },
+  { key: 'sqli', icon: '💉', owasp: 'A05', titleKey: 'm2Title', mc: '#ef4444', mcDark: '#dc2626', mcRgb: '239, 68, 68' },
+  { key: 'bac',  icon: '🪪', owasp: 'A01', titleKey: 'm1Title', mc: '#3b82f6', mcDark: '#1d4ed8', mcRgb: '59, 130, 246' },
 ];
 
 const translations = {
