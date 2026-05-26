@@ -154,46 +154,39 @@
                   <span class="intranet-breadcrumb">/ {{ currentText.adminPanelLabel }}</span>
                   <span class="intranet-user">{{ currentText.loggedAs }}: <b>Atakan</b></span>
                 </div>
-                <div class="idor-alert admin-alert">
-                  <span class="idor-icon">🚨</span>
-                  <span v-html="currentText.adminBreach"></span>
+                <div class="admin-nav">
+                  <span class="admin-nav-item active">{{ currentText.adminNavUsers }}</span>
+                  <span class="admin-nav-item">{{ currentText.adminNavLogs }}</span>
+                  <span class="admin-nav-item">{{ currentText.adminNavSettings }}</span>
                 </div>
-                <div class="admin-dashboard">
-                  <div class="admin-stats">
-                    <div class="admin-stat-card">
-                      <div class="admin-stat-num">{{ adminData.totalUsers }}</div>
-                      <div class="admin-stat-label">{{ currentText.adminTotalUsers }}</div>
-                    </div>
-                    <div class="admin-stat-card">
-                      <div class="admin-stat-num">{{ adminData.activeSessions }}</div>
-                      <div class="admin-stat-label">{{ currentText.adminActiveSessions }}</div>
-                    </div>
-                    <div class="admin-stat-card warn">
-                      <div class="admin-stat-num">{{ adminData.pendingAlerts }}</div>
-                      <div class="admin-stat-label">{{ currentText.adminPendingAlerts }}</div>
-                    </div>
+                <div class="admin-body">
+                  <div class="admin-toolbar">
+                    <span class="admin-page-title">{{ currentText.adminUserList }}</span>
+                    <span class="admin-count">{{ adminData.totalUsers }} {{ currentText.adminTotalUsers }}</span>
                   </div>
-                  <div class="admin-table-wrap">
-                    <div class="admin-table-title">{{ currentText.adminUserList }}</div>
-                    <table class="admin-table">
-                      <thead>
-                        <tr>
-                          <th>{{ currentText.adminColId }}</th>
-                          <th>{{ currentText.adminColName }}</th>
-                          <th>{{ currentText.adminColRole }}</th>
-                          <th>{{ currentText.adminColEmail }}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="u in adminData.users" :key="u.id" :class="{ 'row-self': u.id === 2 }">
-                          <td>{{ u.id }}</td>
-                          <td>{{ u.name }}</td>
-                          <td>{{ u.role }}</td>
-                          <td>{{ u.email }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                  <table class="admin-table">
+                    <thead>
+                      <tr>
+                        <th>{{ currentText.adminColName }}</th>
+                        <th>{{ currentText.adminColRole }}</th>
+                        <th>{{ currentText.adminColEmail }}</th>
+                        <th>{{ currentText.adminColDept }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="u in adminData.users" :key="u.id" :class="{ 'row-self': u.id === 2 }">
+                        <td>
+                          <div class="admin-user-cell">
+                            <div class="admin-avatar">{{ u.name.charAt(0) }}</div>
+                            <span>{{ u.name }}</span>
+                          </div>
+                        </td>
+                        <td>{{ u.role }}</td>
+                        <td class="admin-email">{{ u.email }}</td>
+                        <td>{{ u.department }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
@@ -374,15 +367,18 @@ const translations = {
     gTitle: "OPERASYON BRİFİNGİ: IDOR",
     simDesc: "Şirketin İntranet portalına <b>YBS Uzmanı Atakan (Çalışan ID: 2)</b> olarak giriş yaptın.<br><br>📌 <b>URL'deki sayı ne anlama geliyor?</b><br>Adres çubuğundaki <code>/employee/profile/<b>2</b></code> ifadesinin sonundaki rakam, <u>veritabanındaki çalışan ID'sidir</u>. Sistem bu rakamı alıp direkt veritabanını sorgular — <b>bu ID'ye erişim hakkın var mı diye hiç kontrol etmez.</b><br><br>Aşağıdaki tarayıcının adres çubuğunu kullanarak iki senaryoyu dene:<br><br>⚡ <b>Senaryo 1 — IDOR:</b> Adres çubuğuna <code>/employee/profile/1</code> veya <code>/employee/profile/3</code> yaz, Enter'a bas. Başka çalışanların gizli bilgilerine ulaşabilecek misin?<br><br>🔐 <b>Senaryo 2 — Yetkisiz Admin:</b> Adres çubuğuna <code>/admin</code> yaz, Enter'a bas. Sistem senin admin olup olmadığını kontrol ediyor mu?",
     adminBreach: "<b>YETKİSİZ YÖNETİCİ PANELİ ERİŞİMİ</b> — Admin rolün yok! Sistem JWT token'ını doğruladı ama rolünü hiç kontrol etmedi.",
-    adminPanelLabel: "Admin Paneli",
-    adminTotalUsers: "Toplam Kullanıcı",
+    adminPanelLabel: "Yönetim Paneli",
+    adminTotalUsers: "kullanıcı",
     adminActiveSessions: "Aktif Oturum",
     adminPendingAlerts: "Bekleyen Uyarı",
     adminLastBackup: "Son Yedek",
-    adminUserList: "Kullanıcı Yönetimi",
+    adminUserList: "Kullanıcılar",
+    adminNavUsers: "Kullanıcılar",
+    adminNavLogs: "Güvenlik Logları",
+    adminNavSettings: "Ayarlar",
     adminColId: "ID",
     adminColName: "Ad Soyad",
-    adminColRole: "Rol",
+    adminColRole: "Unvan",
     adminColDept: "Departman",
     adminColEmail: "E-posta",
     discAdminTag: "ADMİN ERİŞİMİ ✓",
@@ -463,14 +459,17 @@ const translations = {
     simDesc: "You are logged into the company Intranet portal as <b>MIS Specialist Atakan (Employee ID: 2)</b>.<br><br>📌 <b>What does the number in the URL mean?</b><br>The number at the end of <code>/employee/profile/<b>2</b></code> is the <u>employee's database ID</u>. The system takes this number directly from the URL and queries the database — <b>it never checks whether you actually have access to that ID.</b><br><br>Use the address bar in the browser below to try both scenarios:<br><br>⚡ <b>Scenario 1 — IDOR:</b> Type <code>/employee/profile/1</code> or <code>/employee/profile/3</code> and press Enter. Can you reach other employees' confidential data?<br><br>🔐 <b>Scenario 2 — Unauthorized Admin:</b> Type <code>/admin</code> and press Enter. Does the system verify that you have admin privileges?",
     adminBreach: "<b>UNAUTHORIZED ADMIN PANEL ACCESS</b> — You have no admin role! The system verified your JWT token but never checked your role.",
     adminPanelLabel: "Admin Panel",
-    adminTotalUsers: "Total Users",
+    adminTotalUsers: "users",
     adminActiveSessions: "Active Sessions",
     adminPendingAlerts: "Pending Alerts",
     adminLastBackup: "Last Backup",
-    adminUserList: "User Management",
+    adminUserList: "Users",
+    adminNavUsers: "Users",
+    adminNavLogs: "Security Logs",
+    adminNavSettings: "Settings",
     adminColId: "ID",
     adminColName: "Name",
-    adminColRole: "Role",
+    adminColRole: "Title",
     adminColDept: "Department",
     adminColEmail: "Email",
     discAdminTag: "ADMIN ACCESS ✓",
@@ -894,23 +893,23 @@ const finishPostTest = async () => {
 
 /* Admin Panel */
 .admin-page { color: #cbd5e1; }
-.admin-alert { border-left-color: #f59e0b !important; background: rgba(245,158,11,0.08) !important; border-color: rgba(245,158,11,0.3) !important; color: #fcd34d !important; }
-.admin-dashboard { padding: 14px; }
-.admin-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
-.admin-stat-card { background: #0d1526; border: 1px solid #1e293b; border-radius: 8px; padding: 12px; text-align: center; }
-.admin-stat-card.warn { border-color: rgba(239,68,68,0.3); }
-.admin-stat-num { font-size: 28px; font-weight: 800; color: #38bdf8; line-height: 1; }
-.admin-stat-card.warn .admin-stat-num { color: #ef4444; }
-.admin-stat-num-sm { font-size: 12px; font-weight: 700; color: #38bdf8; font-family: monospace; padding-top: 6px; }
-.admin-stat-label { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 5px; }
-.admin-table-wrap { background: #0d1526; border: 1px solid #1e293b; border-radius: 8px; overflow: hidden; }
-.admin-table-title { font-size: 12px; font-weight: 700; color: #f8fafc; padding: 10px 14px; border-bottom: 1px solid #1e293b; letter-spacing: 0.5px; text-transform: uppercase; }
-.admin-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-.admin-table thead { background: rgba(30,41,59,0.5); }
-.admin-table th { padding: 8px 12px; text-align: left; color: #64748b; font-weight: 600; border-bottom: 1px solid #1e293b; }
-.admin-table td { padding: 7px 12px; color: #94a3b8; border-bottom: 1px solid rgba(30,41,59,0.5); }
+.admin-nav { display: flex; gap: 0; background: #0d1526; border-bottom: 1px solid #1e293b; padding: 0 16px; }
+.admin-nav-item { font-size: 12px; font-weight: 600; color: #475569; padding: 10px 16px; cursor: default; border-bottom: 2px solid transparent; }
+.admin-nav-item.active { color: #38bdf8; border-bottom-color: #38bdf8; }
+.admin-body { padding: 14px 16px; }
+.admin-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.admin-page-title { font-size: 13px; font-weight: 700; color: #e2e8f0; }
+.admin-count { font-size: 11px; color: #475569; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 13px; background: #0d1526; border: 1px solid #1e293b; border-radius: 8px; overflow: hidden; }
+.admin-table thead { background: #111827; }
+.admin-table th { padding: 9px 14px; text-align: left; color: #64748b; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid #1e293b; }
+.admin-table td { padding: 10px 14px; color: #94a3b8; border-bottom: 1px solid #0b1120; }
 .admin-table tbody tr:last-child td { border-bottom: none; }
 .admin-table .row-self td { color: #38bdf8; background: rgba(56,189,248,0.04); }
+.admin-user-cell { display: flex; align-items: center; gap: 9px; }
+.admin-avatar { width: 26px; height: 26px; border-radius: 50%; background: #1e293b; color: #94a3b8; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.admin-table .row-self .admin-avatar { background: rgba(56,189,248,0.15); color: #38bdf8; }
+.admin-email { font-family: monospace; font-size: 12px; }
 .disc-admin { background: rgba(245,158,11,0.04); }
 .disc-admin-tag { background: rgba(245,158,11,0.12) !important; color: #fcd34d !important; }
 
