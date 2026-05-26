@@ -609,6 +609,7 @@ const loadResource = async () => {
   const raw = targetPath.value.trim();
   if (!raw) return;
   const path = raw.startsWith('/') ? raw : '/' + raw;
+  targetPath.value = path; // adres çubuğunu normalize edilmiş haliyle güncelle
 
   isSimLoading.value = true;
   profileData.value = null;

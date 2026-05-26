@@ -41,6 +41,10 @@ const routes = [
     component: AuthFailures,
     meta: { requiresAuth: true },
   },
+  {
+    path: "/admin",
+    redirect: "/module/bac",
+  },
 ];
 
 const router = createRouter({
