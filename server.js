@@ -229,11 +229,89 @@ app.post("/api/save-score", authenticateToken, async (req, res) => {
     // 3. Özeti aynı dökümanın içine yaz
     await docRef.set(summaryFields, { merge: true });
 
+    // 4. Tüm kullanıcıların global istatistiklerini güncelle
+    await updateGlobalStats();
+
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 });
+
+async function updateGlobalStats() {
+  const snapshot = await firestore.collection("results").get();
+  const allUsers = snapshot.docs.map((d) => d.data());
+
+  const globalStats = {
+    totalUsers: allUsers.length,
+    totalUsersAllCompleted: 0,
+    global_avgPre: 0,
+    global_avgPost: 0,
+    global_avgDiff: 0,
+    global_successRate: 0, // % of users where avgPost > avgPre
+    last_updated: admin.firestore.FieldValue.serverTimestamp(),
+  };
+
+  // Per-module stats
+  for (const m of ALL_MODULES) {
+    globalStats[m + "_completions"] = 0;
+    globalStats[m + "_avgPre"] = 0;
+    globalStats[m + "_avgPost"] = 0;
+    globalStats[m + "_avgDiff"] = 0;
+    globalStats[m + "_successRate"] = 0;
+  }
+
+  if (allUsers.length === 0) {
+    await firestore.collection("stats").doc("global").set(globalStats);
+    return;
+  }
+
+  // Aggregate per-module
+  for (const m of ALL_MODULES) {
+    const completed = allUsers.filter((u) => u[m + "_completed"]);
+    if (completed.length === 0) continue;
+    const sumPre = completed.reduce((s, u) => s + (u[m + "_pre"] || 0), 0);
+    const sumPost = completed.reduce((s, u) => s + (u[m + "_post"] || 0), 0);
+    const avgPre = Math.round(sumPre / completed.length);
+    const avgPost = Math.round(sumPost / completed.length);
+    globalStats[m + "_completions"] = completed.length;
+    globalStats[m + "_avgPre"] = avgPre;
+    globalStats[m + "_avgPost"] = avgPost;
+    globalStats[m + "_avgDiff"] = avgPost - avgPre;
+    globalStats[m + "_successRate"] = Math.round(
+      (completed.filter((u) => (u[m + "_post"] || 0) > (u[m + "_pre"] || 0)).length / completed.length) * 100
+    );
+  }
+
+  // Aggregate across all users (only users who completed at least 1 module)
+  const usersWithAny = allUsers.filter((u) => ALL_MODULES.some((m) => u[m + "_completed"]));
+  const usersAllCompleted = allUsers.filter((u) => ALL_MODULES.every((m) => u[m + "_completed"]));
+
+  if (usersWithAny.length > 0) {
+    let totalPre = 0, totalPost = 0, count = 0;
+    for (const u of usersWithAny) {
+      for (const m of ALL_MODULES) {
+        if (u[m + "_completed"]) {
+          totalPre += u[m + "_pre"] || 0;
+          totalPost += u[m + "_post"] || 0;
+          count++;
+        }
+      }
+    }
+    const gAvgPre = Math.round(totalPre / count);
+    const gAvgPost = Math.round(totalPost / count);
+    globalStats.global_avgPre = gAvgPre;
+    globalStats.global_avgPost = gAvgPost;
+    globalStats.global_avgDiff = gAvgPost - gAvgPre;
+    globalStats.global_successRate = Math.round(
+      (usersWithAny.filter((u) => (u.summary_avgPost || 0) > (u.summary_avgPre || 0)).length / usersWithAny.length) * 100
+    );
+  }
+
+  globalStats.totalUsersAllCompleted = usersAllCompleted.length;
+
+  await firestore.collection("stats").doc("global").set(globalStats);
+}
 
 // Skor Çekme
 app.get("/api/get-user-stats/:email", authenticateToken, async (req, res) => {
