@@ -95,66 +95,62 @@
               </div>
 
               <div v-else-if="profileData" class="intranet-page fade-in">
-                <!-- Intranet nav -->
                 <div class="intranet-topbar">
-                  <span class="intranet-brand">🏢 GlobalCorp Intranet</span>
-                  <span class="intranet-breadcrumb">/ {{ currentText.empDir }} / #{{ displayedId }}</span>
-                  <span class="intranet-user">{{ currentText.loggedAs }}: <b>Atakan (ID:2)</b></span>
+                  <span class="intranet-brand">🏢 GlobalCorp İntranet</span>
+                  <span class="intranet-breadcrumb">/ {{ currentText.empDir }} / {{ profileData.name }}</span>
+                  <span class="intranet-user">{{ currentText.loggedAs }}: <b>Atakan</b></span>
                 </div>
 
-                <!-- IDOR banner -->
                 <div v-if="displayedId !== '2'" class="idor-alert">
                   <span class="idor-icon">⚠️</span>
                   <span v-html="currentText.idorAlert"></span>
                 </div>
 
-                <!-- Employee card -->
-                <div class="emp-card" :class="{ 'emp-card-breach': displayedId !== '2' }">
-                  <div class="emp-sidebar">
-                    <div class="emp-avatar" :style="{ background: profileData.avatarColor }">{{ profileData.initial }}</div>
-                    <div class="emp-id-tag">{{ profileData.empId }}</div>
-                    <div class="clearance-badge" :style="{ borderColor: profileData.clearanceColor, color: profileData.clearanceColor }">
-                      🔐 {{ profileData.clearance }}
+                <div class="profile-card" :class="{ 'profile-breach': displayedId !== '2' }">
+                  <div class="profile-header">
+                    <div class="profile-avatar" :style="{ background: profileData.avatarColor }">{{ profileData.initial }}</div>
+                    <div class="profile-meta">
+                      <div class="profile-name">{{ profileData.name }}</div>
+                      <div class="profile-tags">
+                        <span class="role-tag" :style="{ background: profileData.roleBg, color: profileData.roleColor, borderColor: profileData.roleColor }">{{ profileData.displayRole }}</span>
+                        <span class="dept-tag">{{ profileData.displayDept }}</span>
+                      </div>
+                      <span class="profile-empid">{{ profileData.empId }} &nbsp;·&nbsp; <span :style="{ color: profileData.clearanceColor }">{{ profileData.clearance }}</span></span>
                     </div>
                   </div>
-                  <div class="emp-main">
-                    <div class="emp-title-row">
-                      <h3 class="emp-name">{{ profileData.name }}</h3>
-                      <span class="role-badge" :style="{ background: profileData.roleBg, color: profileData.roleColor, borderColor: profileData.roleColor }">
-                        {{ profileData.displayRole }}
-                      </span>
-                      <span class="dept-badge">{{ profileData.displayDept }}</span>
+
+                  <div class="profile-divider"></div>
+
+                  <div class="profile-details">
+                    <div class="detail-row">
+                      <span class="detail-label">📧 {{ currentText.email }}</span>
+                      <span class="detail-val">{{ profileData.email }}</span>
                     </div>
-                    <div class="emp-fields">
-                      <div class="emp-field">
-                        <span class="f-label">📧 {{ currentText.email }}</span>
-                        <span class="f-val">{{ profileData.email }}</span>
-                      </div>
-                      <div class="emp-field">
-                        <span class="f-label">📞 {{ currentText.phone }}</span>
-                        <span class="f-val">{{ profileData.phone }}</span>
-                      </div>
-                      <div class="emp-field">
-                        <span class="f-label">🗓️ {{ currentText.joinDate }}</span>
-                        <span class="f-val">{{ profileData.joinYear }}</span>
-                      </div>
+                    <div class="detail-row">
+                      <span class="detail-label">📞 {{ currentText.phone }}</span>
+                      <span class="detail-val">{{ profileData.phone }}</span>
                     </div>
-                    <div v-if="profileData.displaySecretMsg" class="classified-memo">
-                      <div class="memo-header">
-                        <span class="memo-stamp">⛔ {{ currentText.secMsg }}</span>
-                        <span class="memo-level" :style="{ color: profileData.clearanceColor }">{{ profileData.clearance }}</span>
-                      </div>
-                      <p class="memo-content">{{ profileData.displaySecretMsg }}</p>
+                    <div class="detail-row">
+                      <span class="detail-label">🗓️ {{ currentText.joinDate }}</span>
+                      <span class="detail-val">{{ profileData.joinYear }}</span>
                     </div>
+                  </div>
+
+                  <div v-if="profileData.displaySecretMsg" class="classified-memo">
+                    <div class="memo-header">
+                      <span class="memo-stamp">⛔ {{ currentText.secMsg }}</span>
+                      <span class="memo-level" :style="{ color: profileData.clearanceColor }">{{ profileData.clearance }}</span>
+                    </div>
+                    <p class="memo-content">{{ profileData.displaySecretMsg }}</p>
                   </div>
                 </div>
               </div>
 
               <div v-else-if="adminData" class="admin-page fade-in">
                 <div class="intranet-topbar">
-                  <span class="intranet-brand">🏢 GlobalCorp Intranet</span>
+                  <span class="intranet-brand">🏢 GlobalCorp İntranet</span>
                   <span class="intranet-breadcrumb">/ {{ currentText.adminPanelLabel }}</span>
-                  <span class="intranet-user">{{ currentText.loggedAs }}: <b>Atakan (ID:2)</b></span>
+                  <span class="intranet-user">{{ currentText.loggedAs }}: <b>Atakan</b></span>
                 </div>
                 <div class="idor-alert admin-alert">
                   <span class="idor-icon">🚨</span>
@@ -174,10 +170,6 @@
                       <div class="admin-stat-num">{{ adminData.pendingAlerts }}</div>
                       <div class="admin-stat-label">{{ currentText.adminPendingAlerts }}</div>
                     </div>
-                    <div class="admin-stat-card">
-                      <div class="admin-stat-num-sm">{{ adminData.lastBackup }}</div>
-                      <div class="admin-stat-label">{{ currentText.adminLastBackup }}</div>
-                    </div>
                   </div>
                   <div class="admin-table-wrap">
                     <div class="admin-table-title">{{ currentText.adminUserList }}</div>
@@ -187,7 +179,6 @@
                           <th>{{ currentText.adminColId }}</th>
                           <th>{{ currentText.adminColName }}</th>
                           <th>{{ currentText.adminColRole }}</th>
-                          <th>{{ currentText.adminColDept }}</th>
                           <th>{{ currentText.adminColEmail }}</th>
                         </tr>
                       </thead>
@@ -196,7 +187,6 @@
                           <td>{{ u.id }}</td>
                           <td>{{ u.name }}</td>
                           <td>{{ u.role }}</td>
-                          <td>{{ u.department }}</td>
                           <td>{{ u.email }}</td>
                         </tr>
                       </tbody>
@@ -857,25 +847,26 @@ const finishPostTest = async () => {
 .idor-alert { display: flex; align-items: flex-start; gap: 10px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-left: 4px solid #ef4444; padding: 11px 16px; margin: 14px 14px 0 14px; border-radius: 7px; font-size: 13px; color: #fca5a5; line-height: 1.5; }
 .idor-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
 
-/* Employee card */
-.emp-card { display: flex; gap: 0; margin: 14px; background: #111827; border: 1px solid #1e293b; border-radius: 10px; overflow: hidden; }
-.emp-card-breach { border-color: rgba(239,68,68,0.35); box-shadow: 0 0 20px rgba(239,68,68,0.06); }
+/* Profile card */
+.profile-card { margin: 14px; background: #111827; border: 1px solid #1e293b; border-radius: 10px; overflow: hidden; }
+.profile-breach { border-color: rgba(239,68,68,0.35); box-shadow: 0 0 20px rgba(239,68,68,0.06); }
 
-.emp-sidebar { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 18px; background: #0d1526; border-right: 1px solid #1e293b; min-width: 110px; }
-.emp-avatar { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px; font-weight: 800; box-shadow: 0 4px 14px rgba(0,0,0,0.4); flex-shrink: 0; }
-.emp-id-tag { font-family: monospace; font-size: 11px; color: #475569; background: #1e293b; padding: 3px 8px; border-radius: 4px; }
-.clearance-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; border: 1px solid; letter-spacing: 0.5px; text-align: center; }
+.profile-header { display: flex; align-items: center; gap: 18px; padding: 20px 22px; }
+.profile-avatar { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 26px; font-weight: 800; box-shadow: 0 4px 14px rgba(0,0,0,0.4); flex-shrink: 0; }
+.profile-meta { display: flex; flex-direction: column; gap: 6px; }
+.profile-name { color: #f8fafc; font-size: 19px; font-weight: 700; line-height: 1.2; }
+.profile-tags { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+.role-tag { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 10px; border: 1px solid; }
+.dept-tag { font-size: 11px; font-weight: 600; color: #94a3b8; background: rgba(148,163,184,0.08); border: 1px solid #334155; padding: 3px 10px; border-radius: 10px; }
+.profile-empid { font-size: 11px; color: #475569; font-family: monospace; }
 
-.emp-main { flex: 1; padding: 18px 20px; overflow: hidden; }
-.emp-title-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-.emp-name { margin: 0; color: #f8fafc; font-size: 20px; font-weight: 700; }
-.role-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 10px; border: 1px solid; }
-.dept-badge { font-size: 11px; font-weight: 600; color: #94a3b8; background: rgba(148,163,184,0.08); border: 1px solid #334155; padding: 3px 10px; border-radius: 10px; }
+.profile-divider { height: 1px; background: #1e293b; margin: 0 22px; }
 
-.emp-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; }
-.emp-field { display: flex; flex-direction: column; gap: 2px; }
-.f-label { font-size: 11px; color: #475569; }
-.f-val { font-size: 13px; color: #cbd5e1; font-family: monospace; }
+.profile-details { display: flex; flex-direction: column; gap: 0; padding: 6px 22px 16px; }
+.detail-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #0d1526; }
+.detail-row:last-child { border-bottom: none; }
+.detail-label { font-size: 12px; color: #475569; }
+.detail-val { font-size: 13px; color: #cbd5e1; font-family: monospace; text-align: right; }
 
 /* Classified memo */
 .classified-memo { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; overflow: hidden; }
@@ -894,7 +885,7 @@ const finishPostTest = async () => {
 .admin-page { color: #cbd5e1; }
 .admin-alert { border-left-color: #f59e0b !important; background: rgba(245,158,11,0.08) !important; border-color: rgba(245,158,11,0.3) !important; color: #fcd34d !important; }
 .admin-dashboard { padding: 14px; }
-.admin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+.admin-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
 .admin-stat-card { background: #0d1526; border: 1px solid #1e293b; border-radius: 8px; padding: 12px; text-align: center; }
 .admin-stat-card.warn { border-color: rgba(239,68,68,0.3); }
 .admin-stat-num { font-size: 28px; font-weight: 800; color: #38bdf8; line-height: 1; }
