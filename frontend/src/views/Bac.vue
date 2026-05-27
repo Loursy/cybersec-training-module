@@ -281,7 +281,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
-import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute(); 
@@ -581,18 +581,6 @@ onMounted(async () => {
   isLoading.value = false;
 });
 
-// Component zaten mount edilmişken aynı rotaya (redirect ile) gelinirse simülasyonu sıfırla
-onBeforeRouteUpdate(() => {
-  profileData.value = null;
-  adminData.value = null;
-  simError.value = '';
-  discoveries.value = [];
-  simulationSuccess.value = false;
-  exploitStatus.value = 'idle';
-  targetPath.value = '/employee/profile/2';
-  displayedId.value = '2';
-  loadResource();
-});
 
 
 const calculateScore = (testPrefix) => {

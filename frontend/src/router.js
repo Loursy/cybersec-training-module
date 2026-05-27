@@ -43,7 +43,7 @@ const routes = [
   },
   {
     path: "/admin",
-    redirect: "/module/bac",
+    redirect: "/",
   },
 ];
 
